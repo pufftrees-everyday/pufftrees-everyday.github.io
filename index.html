@@ -814,6 +814,7 @@
 
     <div class="deck-actions">
       <button class="btn btn-primary" onclick="saveDeck()">Save</button>
+      <button class="btn btn-ghost" onclick="openImport()">Import</button>
       <button class="btn btn-ghost" onclick="exportDeck()">Export</button>
       <button class="btn btn-danger" onclick="clearDeck()">Clear</button>
     </div>
@@ -843,6 +844,22 @@
 </div>
 
 <div class="toast" id="toast"></div>
+
+<!-- IMPORT MODAL -->
+<div class="modal-overlay" id="import-overlay" onclick="closeImport(event)">
+  <div class="modal" style="grid-template-columns:1fr; max-width:500px;">
+    <div class="modal-body" style="padding:24px;">
+      <div class="modal-name" style="margin-bottom:6px;">Import from Curiosa</div>
+      <div class="modal-type" style="margin-bottom:14px;">Paste your decklist below. Copy it from the curiosa.io deck page.</div>
+      <textarea id="import-text" placeholder="1Archimago&#10;Artifact (4)&#10;1Ring of Morrigan&#10;1&#10;Minion (15)&#10;4Kettletop Leprechaun&#10;2&#10;..." style="width:100%;height:220px;background:var(--dusk);border:1px solid var(--border);color:var(--parchment);font-family:'Crimson Pro',serif;font-size:0.9rem;padding:10px;border-radius:4px;resize:vertical;outline:none;line-height:1.6;"></textarea>
+      <div style="display:flex;gap:8px;margin-top:12px;">
+        <button class="modal-add" style="flex:1" onclick="runImport()">Import Deck</button>
+        <button class="modal-add" style="flex:1;background:transparent;border-color:var(--border-strong);color:var(--rune);" onclick="closeImport()">Cancel</button>
+      </div>
+    </div>
+    <button class="modal-close" onclick="closeImport()">✕</button>
+  </div>
+</div>
 
 <script>
 // ── STATE ──
@@ -1159,7 +1176,87 @@ function clearDeck() {
   toast('Deck cleared');
 }
 
-// ── TOAST ──
+// ── IMPORT ──
+function openImport() {
+  document.getElementById('import-text').value = '';
+  document.getElementById('import-overlay').classList.add('open');
+}
+
+function closeImport(e) {
+  if (!e || e.target === document.getElementById('import-overlay')) {
+    document.getElementById('import-overlay').classList.remove('open');
+  }
+}
+
+function runImport() {
+  const text = document.getElementById('import-text').value.trim();
+  if (!text) return;
+
+  const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+  const newDeck = {};
+  let matched = 0, skipped = 0;
+  let isFirst = true;
+
+  // Section headers like "Artifact (4)", "Minion (15)" etc — skip them
+  const sectionHeader = /^(Avatar|Artifact|Minion|Magic|Aura|Site|Spell)\s*\(\d+\)/i;
+
+  for (const line of lines) {
+    if (sectionHeader.test(line)) continue;
+
+    // Format: quantity then card name, then cost on next line (we skip pure number lines)
+    // Lines look like: "1Ring of Morrigan" or "4Kettletop Leprechaun"
+    const match = line.match(/^(\d+)(.+)/);
+    if (!match) continue;
+
+    const qty = parseInt(match[1]);
+    const name = match[2].trim();
+
+    // Skip lines that are just a cost number after stripping qty (e.g. "11" meaning qty=1, name="1")
+    if (/^\d+$/.test(name)) continue;
+
+    // First line is the Avatar
+    if (isFirst) {
+      isFirst = false;
+      // Try to find avatar
+      const card = allCards.find(c => c.name.toLowerCase() === name.toLowerCase());
+      if (card) {
+        const key = String(card.id);
+        newDeck[key] = { card, qty: 1 };
+        matched++;
+      } else {
+        skipped++;
+      }
+      continue;
+    }
+
+    // Find card by name (case insensitive)
+    const card = allCards.find(c => c.name.toLowerCase() === name.toLowerCase());
+    if (card) {
+      const key = String(card.id);
+      if (newDeck[key]) {
+        newDeck[key].qty += qty;
+      } else {
+        newDeck[key] = { card, qty };
+      }
+      matched++;
+    } else {
+      skipped++;
+      console.warn('Card not found:', name);
+    }
+  }
+
+  if (matched === 0) {
+    toast('No cards matched — check the format');
+    return;
+  }
+
+  deck = newDeck;
+  renderDeck();
+  closeImport();
+  toast(`Imported ${matched} cards${skipped ? ` (${skipped} not found)` : ''}`);
+}
+
+
 function toast(msg) {
   const el = document.getElementById('toast');
   el.textContent = msg;
