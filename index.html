@@ -167,13 +167,86 @@
 
   /* CARD EXPLORER */
   .search-bar {
-    background: var(--abyss); border: 1px solid var(--border); border-radius: 6px;
-    padding: 14px 16px; margin-bottom: 16px;
-    display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+    background: var(--abyss);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 18px 20px;
+    margin-bottom: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
   }
 
-  .search-input-wrap { position: relative; flex: 1; min-width: 180px; }
-  .search-input-wrap svg { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; opacity: 0.4; fill: var(--arcane); }
+  .search-row { display: flex; gap: 10px; align-items: center; }
+
+  /* RUNE STONE FILTER GROUPS */
+  .filter-stones { display: flex; gap: 12px; flex-wrap: wrap; }
+
+  .filter-stone {
+    background: var(--void);
+    border: 1px solid var(--border);
+    border-top: 3px solid var(--mist);
+    border-radius: 2px;
+    padding: 10px 14px;
+    min-width: 110px;
+    flex: 1;
+  }
+
+  .stone-label {
+    font-family: 'Cinzel', serif;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--mist);
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .stone-clear {
+    background: none; border: none; color: var(--mist);
+    font-size: 0.7rem; cursor: pointer; padding: 0;
+    font-family: 'Crimson Pro', serif; font-style: italic;
+    transition: color 0.15s; line-height: 1;
+  }
+  .stone-clear:hover { color: var(--ember); }
+
+  .stone-options { display: flex; flex-direction: column; gap: 4px; }
+
+  .stone-option {
+    display: flex; align-items: center; gap: 8px;
+    font-family: 'Crimson Pro', serif; font-size: 0.95rem;
+    color: var(--mist); cursor: pointer;
+    padding: 3px 0;
+    transition: color 0.15s;
+    border: none; background: none; text-align: left; width: 100%;
+  }
+
+  .stone-option:hover { color: var(--shimmer); }
+
+  .stone-option.active { color: var(--shimmer); }
+
+  .rune-mark {
+    width: 14px; height: 14px; flex-shrink: 0;
+    border: 1px solid var(--mist);
+    border-radius: 1px;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s, border-color 0.15s;
+    font-size: 0.6rem; color: transparent;
+  }
+
+  .stone-option.active .rune-mark {
+    background: var(--rune);
+    border-color: var(--arcane);
+    color: var(--shimmer);
+  }
+
+  .active-summary {
+    font-size: 0.8rem; color: var(--rune); font-style: italic; padding: 2px 0 0;
+  }
+  .active-summary span { color: var(--arcane); }
 
   input[type="text"] { width: 100%; background: var(--dusk); border: 1px solid var(--border); color: var(--parchment); font-family: 'Crimson Pro', serif; font-size: 1rem; padding: 7px 12px 7px 34px; border-radius: 4px; outline: none; transition: border-color 0.2s; }
   input[type="text"]:focus { border-color: var(--rune); box-shadow: var(--glow); }
@@ -268,41 +341,55 @@
   <div id="card-explorer-section">
     <div class="section-title">Card Explorer</div>
     <div class="search-bar">
-      <div class="search-input-wrap">
-        <svg viewBox="0 0 20 20"><path d="M12.9 14.32a8 8 0 111.41-1.41l4.42 4.41-1.41 1.42-4.42-4.42zM8 14A6 6 0 108 2a6 6 0 000 12z"/></svg>
-        <input type="text" id="search-input" placeholder="Search cards…" autocomplete="off">
+      <div class="search-row">
+        <div class="search-input-wrap">
+          <svg viewBox="0 0 20 20"><path d="M12.9 14.32a8 8 0 111.41-1.41l4.42 4.41-1.41 1.42-4.42-4.42zM8 14A6 6 0 108 2a6 6 0 000 12z"/></svg>
+          <input type="text" id="search-input" placeholder="Search cards…" autocomplete="off">
+        </div>
+        <button class="stone-clear" onclick="clearAllFilters()" style="font-size:0.8rem;padding:6px 12px;border:1px solid var(--border);border-radius:3px;">✕ Clear all</button>
       </div>
-      <select id="filter-type" onchange="filterCards()">
-        <option value="">All Types</option>
-        <option value="Avatar">Avatar</option>
-        <option value="Minion">Minion</option>
-        <option value="Magic">Magic</option>
-        <option value="Artifact">Artifact</option>
-        <option value="Aura">Aura</option>
-        <option value="Site">Site</option>
-      </select>
-      <select id="filter-set" onchange="filterCards()">
-        <option value="">All Sets</option>
-        <option value="Alpha">Alpha</option>
-        <option value="Beta">Beta</option>
-        <option value="Arthurian Legends">Arthurian Legends</option>
-        <option value="Gothic">Gothic</option>
-        <option value="Promotional">Promotional</option>
-      </select>
-      <select id="filter-rarity" onchange="filterCards()">
-        <option value="">All Rarities</option>
-        <option value="Ordinary">Ordinary</option>
-        <option value="Exceptional">Exceptional</option>
-        <option value="Elite">Elite</option>
-        <option value="Unique">Unique</option>
-      </select>
-      <select id="filter-element" onchange="filterCards()">
-        <option value="">All Elements</option>
-        <option value="Air">Air</option>
-        <option value="Earth">Earth</option>
-        <option value="Fire">Fire</option>
-        <option value="Water">Water</option>
-      </select>
+      <div class="filter-stones">
+        <div class="filter-stone">
+          <div class="stone-label">Type <button class="stone-clear" onclick="clearGroup('type')">clear</button></div>
+          <div class="stone-options">
+            <button class="stone-option" data-group="type" data-value="Avatar" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Avatar</button>
+            <button class="stone-option" data-group="type" data-value="Minion" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Minion</button>
+            <button class="stone-option" data-group="type" data-value="Magic" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Magic</button>
+            <button class="stone-option" data-group="type" data-value="Artifact" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Artifact</button>
+            <button class="stone-option" data-group="type" data-value="Aura" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Aura</button>
+            <button class="stone-option" data-group="type" data-value="Site" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Site</button>
+          </div>
+        </div>
+        <div class="filter-stone">
+          <div class="stone-label">Set <button class="stone-clear" onclick="clearGroup('set')">clear</button></div>
+          <div class="stone-options">
+            <button class="stone-option" data-group="set" data-value="Alpha" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Alpha</button>
+            <button class="stone-option" data-group="set" data-value="Beta" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Beta</button>
+            <button class="stone-option" data-group="set" data-value="Arthurian Legends" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Arthurian Legends</button>
+            <button class="stone-option" data-group="set" data-value="Gothic" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Gothic</button>
+            <button class="stone-option" data-group="set" data-value="Promotional" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Promotional</button>
+          </div>
+        </div>
+        <div class="filter-stone">
+          <div class="stone-label">Rarity <button class="stone-clear" onclick="clearGroup('rarity')">clear</button></div>
+          <div class="stone-options">
+            <button class="stone-option" data-group="rarity" data-value="Ordinary" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Ordinary</button>
+            <button class="stone-option" data-group="rarity" data-value="Exceptional" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Exceptional</button>
+            <button class="stone-option" data-group="rarity" data-value="Elite" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Elite</button>
+            <button class="stone-option" data-group="rarity" data-value="Unique" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Unique</button>
+          </div>
+        </div>
+        <div class="filter-stone">
+          <div class="stone-label">Element <button class="stone-clear" onclick="clearGroup('element')">clear</button></div>
+          <div class="stone-options">
+            <button class="stone-option" data-group="element" data-value="Air" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Air</button>
+            <button class="stone-option" data-group="element" data-value="Earth" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Earth</button>
+            <button class="stone-option" data-group="element" data-value="Fire" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Fire</button>
+            <button class="stone-option" data-group="element" data-value="Water" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Water</button>
+          </div>
+        </div>
+      </div>
+      <div class="active-summary" id="active-summary"></div>
     </div>
     <div id="result-count" class="result-count"></div>
     <div id="card-grid" class="card-grid">
@@ -404,19 +491,57 @@ function renderCards(cards, append = false) {
   document.getElementById('result-count').textContent = `Showing ${Math.min(visibleCount, currentCards.length)} of ${currentCards.length} cards`;
 }
 
+// FILTERS
+const activeFilters = { type: new Set(), set: new Set(), rarity: new Set(), element: new Set() };
+
+function toggleChip(btn) {
+  const group = btn.dataset.group;
+  const value = btn.dataset.value;
+  if (activeFilters[group].has(value)) {
+    activeFilters[group].delete(value);
+    btn.classList.remove('active');
+  } else {
+    activeFilters[group].add(value);
+    btn.classList.add('active');
+  }
+  filterCards();
+  updateSummary();
+}
+
+function clearGroup(group) {
+  activeFilters[group].clear();
+  document.querySelectorAll(`.stone-option[data-group="${group}"]`).forEach(b => b.classList.remove('active'));
+  filterCards();
+  updateSummary();
+}
+
+function clearAllFilters() {
+  Object.keys(activeFilters).forEach(g => activeFilters[g].clear());
+  document.querySelectorAll('.stone-option.active').forEach(c => c.classList.remove('active'));
+  document.getElementById('search-input').value = '';
+  filterCards();
+  updateSummary();
+}
+
+function updateSummary() {
+  const parts = [];
+  if (activeFilters.type.size) parts.push([...activeFilters.type].join(', '));
+  if (activeFilters.set.size) parts.push([...activeFilters.set].join(', '));
+  if (activeFilters.rarity.size) parts.push([...activeFilters.rarity].join(', '));
+  if (activeFilters.element.size) parts.push([...activeFilters.element].join(', '));
+  const el = document.getElementById('active-summary');
+  el.innerHTML = parts.length ? `Filtering by: <span>${parts.join(' · ')}</span>` : '';
+}
+
 // FILTER
 function filterCards() {
   const q = document.getElementById('search-input').value.toLowerCase();
-  const type = document.getElementById('filter-type').value;
-  const set = document.getElementById('filter-set').value;
-  const rarity = document.getElementById('filter-rarity').value;
-  const element = document.getElementById('filter-element').value;
   const filtered = allCards.filter(c =>
     (!q || c.name.toLowerCase().includes(q)) &&
-    (!type || c.type === type) &&
-    (!set || c.set === set) &&
-    (!rarity || c.rarity === rarity) &&
-    (!element || (c.element || '').includes(element))
+    (!activeFilters.type.size || activeFilters.type.has(c.type)) &&
+    (!activeFilters.set.size || activeFilters.set.has(c.set)) &&
+    (!activeFilters.rarity.size || activeFilters.rarity.has(c.rarity)) &&
+    (!activeFilters.element.size || [...activeFilters.element].some(el => (c.element||'').includes(el)))
   );
   renderCards(filtered);
 }
