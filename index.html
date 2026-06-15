@@ -211,8 +211,8 @@
   /* MODAL */
   .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(11,10,15,0.85); z-index: 200; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
   .modal-overlay.open { display: flex; }
-  .modal { background: var(--dusk); border: 1px solid var(--border-strong); border-radius: 8px; box-shadow: 0 0 60px rgba(155,135,212,0.2); max-width: 600px; width: 90vw; display: grid; grid-template-columns: 180px 1fr; overflow: hidden; position: relative; }
-  .modal-img img { width: 180px; height: 240px; object-fit: cover; display: block; background: var(--twilight); }
+  .modal { background: var(--dusk); border: 1px solid var(--border-strong); border-radius: 8px; box-shadow: 0 0 60px rgba(155,135,212,0.2); max-width: 900px; width: 92vw; display: grid; grid-template-columns: 320px 1fr; overflow: hidden; position: relative; }
+  .modal-img img { width: 320px; height: 426px; object-fit: cover; display: block; background: var(--twilight); }
   .modal-body { padding: 20px; display: flex; flex-direction: column; gap: 10px; }
   .modal-name { font-family: 'Cinzel', serif; font-size: 1.1rem; font-weight: 600; color: var(--gold); }
   .modal-type { font-size: 0.85rem; color: var(--arcane); font-style: italic; }
@@ -356,10 +356,13 @@
 
 <script>
 let allCards = [];
+let currentCards = [];
+let visibleCount = 200;
 let deck = {};
 let currentModalCard = null;
 let activeDeckId = null;
 const IMAGE_BASE = 'https://pub-5999238092ad418ca60e7a9ad641cf57.r2.dev/';
+const PAGE_SIZE = 200;
 
 // LOAD CARDS
 async function loadCards() {
@@ -391,7 +394,7 @@ async function loadCards() {
         set: firstSet ? firstSet.name : '',
         slug: firstVariant ? firstVariant.slug : null,
       };
-    });
+    }).sort((a, b) => a.name.localeCompare(b.name));
     filterCards();
   } catch(e) {
     console.error('loadCards failed:', e);
@@ -407,19 +410,26 @@ function getImageUrl(card) {
 function escId(id) { return String(id).replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
 
 // RENDER CARDS
-function renderCards(cards) {
+function renderCards(cards, append = false) {
   const deckOpen = document.getElementById('deck-builder-section').style.display !== 'none';
   const grid = document.getElementById('card-grid');
-  if (!cards.length) { grid.innerHTML = '<div class="status" style="padding:40px 0">No cards match your search.</div>'; return; }
-  const shown = cards.slice(0, 200);
-  grid.innerHTML = shown.map(card => `
+  if (!append) {
+    currentCards = cards;
+    visibleCount = PAGE_SIZE;
+    if (!cards.length) { grid.innerHTML = '<div class="status" style="padding:40px 0">No cards match your search.</div>'; return; }
+    grid.innerHTML = '';
+  }
+  const shown = currentCards.slice(append ? visibleCount - PAGE_SIZE : 0, visibleCount);
+  const html = shown.map(card => `
     <div class="card-thumb" onclick="openModal('${escId(card.id)}')">
       <img src="${getImageUrl(card)}" alt="${card.name}" loading="lazy" onerror="this.style.opacity='0'">
       ${deckOpen ? `<div class="add-btn" onclick="event.stopPropagation();addCard('${escId(card.id)}')">+</div>` : ''}
       <div class="card-thumb-name">${card.name}</div>
       <div class="card-thumb-meta">${[card.type, card.rarity, card.set].filter(Boolean).join(' · ')}</div>
     </div>`).join('');
-  document.getElementById('result-count').textContent = `${cards.length}${cards.length > 200 ? ' (showing 200)' : ''} cards`;
+  if (append) { grid.insertAdjacentHTML('beforeend', html); }
+  else { grid.innerHTML = html; }
+  document.getElementById('result-count').textContent = `Showing ${Math.min(visibleCount, currentCards.length)} of ${currentCards.length} cards`;
 }
 
 // FILTER
@@ -437,10 +447,20 @@ function filterCards() {
     (!element || (c.element || '').includes(element))
   );
   renderCards(filtered);
-  document.getElementById('result-count').textContent = `${filtered.length}${filtered.length > 200 ? ' (showing 200)' : ''} cards`;
 }
 
 document.getElementById('search-input').addEventListener('input', filterCards);
+
+// INFINITE SCROLL
+window.addEventListener('scroll', () => {
+  if (visibleCount >= currentCards.length) return;
+  const scrollBottom = window.innerHeight + window.scrollY;
+  const docHeight = document.documentElement.scrollHeight;
+  if (scrollBottom >= docHeight - 400) {
+    visibleCount += PAGE_SIZE;
+    renderCards(currentCards, true);
+  }
+});
 
 // ADD TO DECK
 function getCard(id) { return allCards.find(c => c.id === id || c.name === id); }
