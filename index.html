@@ -386,7 +386,7 @@ async function loadCards() {
         life: g.life,
         thresholds: g.thresholds || {},
         rules_text: g.rulesText || '',
-        element: (card.elements || []).join(', '),
+        element: Array.isArray(card.elements) ? card.elements.join(', ') : (card.elements || ''),
         subTypes: card.subTypes || '',
         set: firstSet ? firstSet.name : '',
         slug: firstVariant ? firstVariant.slug : null,
