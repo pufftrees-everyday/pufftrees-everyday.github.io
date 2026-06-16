@@ -63,9 +63,55 @@
     justify-content: center;
     overflow: hidden;
   }
-  .player.top { transform: rotate(180deg); border-bottom: 2px solid var(--mist); }
-  .player-1 { background: radial-gradient(ellipse at center, #1a1420 0%, var(--void) 75%); }
-  .player-2 { background: radial-gradient(ellipse at center, #14181f 0%, var(--void) 75%); }
+  .player.top { transform: rotate(180deg); }
+  .player-1 {
+    background:
+      radial-gradient(ellipse at center 40%, rgba(155,135,212,0.06) 0%, transparent 55%),
+      radial-gradient(ellipse at center, #1c1626 0%, #0d0a12 70%, var(--void) 100%);
+  }
+  .player-2 {
+    background:
+      radial-gradient(ellipse at center 40%, rgba(143,184,212,0.05) 0%, transparent 55%),
+      radial-gradient(ellipse at center, #161a22 0%, #0c0e14 70%, var(--void) 100%);
+  }
+
+  /* Carved stone frame around each player zone */
+  .player::before {
+    content: '';
+    position: absolute;
+    inset: 8px;
+    border: 2px solid rgba(155,135,212,0.12);
+    border-radius: 4px;
+    box-shadow:
+      inset 0 0 0 1px rgba(0,0,0,0.5),
+      inset 0 0 24px rgba(0,0,0,0.6);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* Ornamental corner runes */
+  .corner {
+    position: absolute;
+    width: 26px; height: 26px;
+    border: 2px solid var(--gold);
+    opacity: 0.35;
+    z-index: 2;
+    pointer-events: none;
+  }
+  .corner.tl { top: 8px; left: 8px; border-right: none; border-bottom: none; border-radius: 4px 0 0 0; }
+  .corner.tr { top: 8px; right: 8px; border-left: none; border-bottom: none; border-radius: 0 4px 0 0; }
+  .corner.bl { bottom: 8px; left: 8px; border-right: none; border-top: none; border-radius: 0 0 0 4px; }
+  .corner.br { bottom: 8px; right: 8px; border-left: none; border-top: none; border-radius: 0 0 4px 0; }
+  .corner::after {
+    content: '✦';
+    position: absolute;
+    font-size: 0.6rem;
+    color: var(--gold);
+  }
+  .corner.tl::after { top: -2px; left: -2px; }
+  .corner.tr::after { top: -2px; right: -2px; }
+  .corner.bl::after { bottom: -2px; left: -2px; }
+  .corner.br::after { bottom: -2px; right: -2px; }
 
   /* LIFE SECTION */
   .life-section {
@@ -75,6 +121,7 @@
     align-items: center;
     justify-content: center;
     position: relative;
+    z-index: 3;
   }
 
   /* Tap zones for life */
@@ -106,7 +153,7 @@
   }
   .life-number {
     font-family: 'Cinzel', serif;
-    font-size: 6rem;
+    font-size: 5rem;
     font-weight: 700;
     line-height: 1;
     color: var(--parchment);
@@ -114,14 +161,48 @@
   }
   .life-label {
     font-family: 'Cinzel', serif;
-    font-size: 0.7rem;
+    font-size: 0.65rem;
     letter-spacing: 0.3em;
     text-transform: uppercase;
     color: var(--gold);
-    margin-top: 4px;
+    margin-top: 2px;
   }
 
   .life-number.low { color: var(--ember); text-shadow: 0 0 30px rgba(196,97,74,0.5); }
+
+  /* Death's Door — life becomes a skull */
+  .life-number.deaths-door {
+    color: var(--ember);
+    font-size: 4.5rem;
+    text-shadow: 0 0 35px rgba(196,97,74,0.7);
+  }
+  .player.at-deaths-door .life-label { color: var(--ember); }
+
+  /* Death's Door button */
+  .deaths-door-btn {
+    z-index: 3;
+    pointer-events: auto;
+    margin-top: 10px;
+    font-family: 'Cinzel', serif;
+    font-size: 0.6rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    background: rgba(196,97,74,0.12);
+    border: 1px solid rgba(196,97,74,0.4);
+    color: var(--ember);
+    padding: 6px 14px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .deaths-door-btn:active { background: rgba(196,97,74,0.3); }
+  .player.at-deaths-door .deaths-door-btn {
+    background: var(--ember);
+    border-color: var(--ember);
+    color: #fff;
+  }
 
   /* Explicit +/- buttons */
   .life-buttons {
@@ -131,6 +212,7 @@
     margin-top: 8px;
     pointer-events: auto;
   }
+  .player.at-deaths-door .life-buttons { opacity: 0.25; pointer-events: none; }
   .life-btn {
     width: 48px; height: 48px;
     border-radius: 50%;
@@ -150,10 +232,14 @@
     display: flex;
     align-items: stretch;
     width: 100%;
-    border-top: 1px solid var(--border);
-    background: rgba(11,10,15,0.5);
+    border-top: 2px solid rgba(155,135,212,0.2);
+    background:
+      linear-gradient(180deg, rgba(37,35,56,0.6) 0%, rgba(11,10,15,0.7) 100%);
+    box-shadow: inset 0 2px 8px rgba(0,0,0,0.5), 0 -1px 0 rgba(255,255,255,0.04);
     flex-shrink: 0;
-    height: 88px;
+    height: 165px;
+    position: relative;
+    z-index: 4;
   }
 
   .resource {
@@ -162,30 +248,35 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 2px;
-    border-right: 1px solid var(--border);
+    gap: 1px;
+    border-right: 1px solid rgba(0,0,0,0.4);
+    box-shadow: inset 1px 0 0 rgba(255,255,255,0.03);
     position: relative;
-    cursor: pointer;
-    transition: background 0.1s;
   }
   .resource:last-child { border-right: none; }
-  .resource:active { background: rgba(155,135,212,0.08); }
 
   .resource-icon {
-    font-size: 0.85rem;
+    font-size: 0.7rem;
     font-weight: 700;
     font-family: 'Cinzel', serif;
     letter-spacing: 0.05em;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
   }
-  .resource.air .resource-icon { color: var(--air); }
-  .resource.earth .resource-icon { color: var(--earth); }
-  .resource.fire .resource-icon { color: var(--fire); }
-  .resource.water .resource-icon { color: var(--water); }
-  .resource.mana .resource-icon { color: var(--gold); }
+  .resource-icon svg { width: 38px; height: 38px; display: block; }
+  .resource-icon img { width: 42px; height: 42px; display: block; object-fit: contain; }
+  .resource-icon .el-name { font-size: 0.6rem; letter-spacing: 0.08em; text-transform: uppercase; }
+  .resource.air .resource-icon, .resource.air svg { color: var(--air); fill: var(--air); }
+  .resource.earth .resource-icon, .resource.earth svg { color: var(--earth); fill: var(--earth); }
+  .resource.fire .resource-icon, .resource.fire svg { color: var(--fire); fill: var(--fire); }
+  .resource.water .resource-icon, .resource.water svg { color: var(--water); fill: var(--water); }
+  .resource.mana .resource-icon, .resource.mana svg { color: var(--gold); fill: var(--gold); }
 
   .resource-value {
     font-family: 'Cinzel', serif;
-    font-size: 1.6rem;
+    font-size: 2.1rem;
     font-weight: 700;
     color: var(--parchment);
     line-height: 1;
@@ -197,26 +288,45 @@
     color: var(--mist);
   }
 
-  /* Resource mini controls */
-  .resource-controls {
-    position: absolute;
-    inset: 0;
+  /* Up/down arrows for resources */
+  .res-arrow {
+    width: 100%;
     display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--mist);
+    font-size: 0.95rem;
+    cursor: pointer;
+    padding: 3px 0;
+    transition: color 0.1s, background 0.1s;
+    line-height: 1;
   }
-  .resource-tap { flex: 1; }
+  .res-arrow:active { color: var(--arcane); background: rgba(155,135,212,0.12); }
+
+  /* Resource mini controls (legacy, unused now) */
+  .resource-controls { display: none; }
 
   /* CENTER BAR */
   .center-bar {
-    height: 44px;
-    background: var(--abyss);
-    border-top: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
+    height: 50px;
+    background:
+      linear-gradient(180deg, #2a2640 0%, #14121d 50%, #2a2640 100%);
+    border-top: 2px solid rgba(200,169,110,0.25);
+    border-bottom: 2px solid rgba(200,169,110,0.25);
+    box-shadow: inset 0 0 20px rgba(0,0,0,0.6), 0 0 12px rgba(0,0,0,0.5);
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 20px;
     flex-shrink: 0;
-    z-index: 10;
+    z-index: 20;
+    position: relative;
+  }
+  .center-bar::before, .center-bar::after {
+    content: '❖';
+    color: var(--gold);
+    opacity: 0.5;
+    font-size: 0.8rem;
   }
   .center-btn {
     font-family: 'Cinzel', serif;
@@ -326,6 +436,7 @@
 
   <!-- PLAYER 2 (TOP, rotated) -->
   <div class="player top player-2" data-player="2">
+    <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
     <div class="life-section">
       <div class="life-tap minus" ontouchstart="changeLife(2,-1)" onclick="changeLife(2,-1)"><span class="life-tap-hint">−</span></div>
       <div class="life-tap plus" ontouchstart="changeLife(2,1)" onclick="changeLife(2,1)"><span class="life-tap-hint">+</span></div>
@@ -336,14 +447,15 @@
           <div class="life-btn" ontouchstart="event.stopPropagation();changeLife(2,-1)" onclick="event.stopPropagation();changeLife(2,-1)">−</div>
           <div class="life-btn" ontouchstart="event.stopPropagation();changeLife(2,1)" onclick="event.stopPropagation();changeLife(2,1)">+</div>
         </div>
+        <button class="deaths-door-btn" onclick="event.stopPropagation();toggleDeathsDoor(2)">☠ Death's Door</button>
       </div>
     </div>
     <div class="resource-bar">
-      <div class="resource air" data-p="2" data-r="air"><div class="resource-icon">Air</div><div class="resource-value" id="air-2">0</div><div class="resource-controls"><div class="resource-tap" onclick="changeRes(2,'air',-1)"></div><div class="resource-tap" onclick="changeRes(2,'air',1)"></div></div></div>
-      <div class="resource earth" data-p="2" data-r="earth"><div class="resource-icon">Earth</div><div class="resource-value" id="earth-2">0</div><div class="resource-controls"><div class="resource-tap" onclick="changeRes(2,'earth',-1)"></div><div class="resource-tap" onclick="changeRes(2,'earth',1)"></div></div></div>
-      <div class="resource fire" data-p="2" data-r="fire"><div class="resource-icon">Fire</div><div class="resource-value" id="fire-2">0</div><div class="resource-controls"><div class="resource-tap" onclick="changeRes(2,'fire',-1)"></div><div class="resource-tap" onclick="changeRes(2,'fire',1)"></div></div></div>
-      <div class="resource water" data-p="2" data-r="water"><div class="resource-icon">Water</div><div class="resource-value" id="water-2">0</div><div class="resource-controls"><div class="resource-tap" onclick="changeRes(2,'water',-1)"></div><div class="resource-tap" onclick="changeRes(2,'water',1)"></div></div></div>
-      <div class="resource mana" data-p="2" data-r="mana"><div class="resource-icon">◈</div><div class="resource-value" id="mana-2">0</div><div class="resource-controls"><div class="resource-tap" onclick="changeRes(2,'mana',-1)"></div><div class="resource-tap" onclick="changeRes(2,'mana',1)"></div></div></div>
+      <div class="resource air"><div class="res-arrow" onclick="changeRes(2,'air',1)">▲</div><div class="resource-icon"><img src="air.png" alt="Air"><span class="el-name">Air</span></div><div class="resource-value" id="air-2">0</div><div class="res-arrow" onclick="changeRes(2,'air',-1)">▼</div></div>
+      <div class="resource earth"><div class="res-arrow" onclick="changeRes(2,'earth',1)">▲</div><div class="resource-icon"><img src="earth.png" alt="Earth"><span class="el-name">Earth</span></div><div class="resource-value" id="earth-2">0</div><div class="res-arrow" onclick="changeRes(2,'earth',-1)">▼</div></div>
+      <div class="resource fire"><div class="res-arrow" onclick="changeRes(2,'fire',1)">▲</div><div class="resource-icon"><img src="fire.png" alt="Fire"><span class="el-name">Fire</span></div><div class="resource-value" id="fire-2">0</div><div class="res-arrow" onclick="changeRes(2,'fire',-1)">▼</div></div>
+      <div class="resource water"><div class="res-arrow" onclick="changeRes(2,'water',1)">▲</div><div class="resource-icon"><img src="water.png" alt="Water"><span class="el-name">Water</span></div><div class="resource-value" id="water-2">0</div><div class="res-arrow" onclick="changeRes(2,'water',-1)">▼</div></div>
+      <div class="resource mana"><div class="res-arrow" onclick="changeRes(2,'mana',1)">▲</div><div class="resource-icon"><svg viewBox="0 0 24 24"><path d="M12 2 L20 12 L12 22 L4 12 Z" opacity="0.35"/><path d="M12 6 L16.5 12 L12 18 L7.5 12 Z"/></svg><span class="el-name">Mana</span></div><div class="resource-value" id="mana-2">0</div><div class="res-arrow" onclick="changeRes(2,'mana',-1)">▼</div></div>
     </div>
   </div>
 
@@ -356,6 +468,7 @@
 
   <!-- PLAYER 1 (BOTTOM) -->
   <div class="player player-1" data-player="1">
+    <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
     <div class="life-section">
       <div class="life-tap minus" ontouchstart="changeLife(1,-1)" onclick="changeLife(1,-1)"><span class="life-tap-hint">−</span></div>
       <div class="life-tap plus" ontouchstart="changeLife(1,1)" onclick="changeLife(1,1)"><span class="life-tap-hint">+</span></div>
@@ -366,14 +479,15 @@
           <div class="life-btn" ontouchstart="event.stopPropagation();changeLife(1,-1)" onclick="event.stopPropagation();changeLife(1,-1)">−</div>
           <div class="life-btn" ontouchstart="event.stopPropagation();changeLife(1,1)" onclick="event.stopPropagation();changeLife(1,1)">+</div>
         </div>
+        <button class="deaths-door-btn" onclick="event.stopPropagation();toggleDeathsDoor(1)">☠ Death's Door</button>
       </div>
     </div>
     <div class="resource-bar">
-      <div class="resource air" data-p="1" data-r="air"><div class="resource-icon">Air</div><div class="resource-value" id="air-1">0</div><div class="resource-controls"><div class="resource-tap" onclick="changeRes(1,'air',-1)"></div><div class="resource-tap" onclick="changeRes(1,'air',1)"></div></div></div>
-      <div class="resource earth" data-p="1" data-r="earth"><div class="resource-icon">Earth</div><div class="resource-value" id="earth-1">0</div><div class="resource-controls"><div class="resource-tap" onclick="changeRes(1,'earth',-1)"></div><div class="resource-tap" onclick="changeRes(1,'earth',1)"></div></div></div>
-      <div class="resource fire" data-p="1" data-r="fire"><div class="resource-icon">Fire</div><div class="resource-value" id="fire-1">0</div><div class="resource-controls"><div class="resource-tap" onclick="changeRes(1,'fire',-1)"></div><div class="resource-tap" onclick="changeRes(1,'fire',1)"></div></div></div>
-      <div class="resource water" data-p="1" data-r="water"><div class="resource-icon">Water</div><div class="resource-value" id="water-1">0</div><div class="resource-controls"><div class="resource-tap" onclick="changeRes(1,'water',-1)"></div><div class="resource-tap" onclick="changeRes(1,'water',1)"></div></div></div>
-      <div class="resource mana" data-p="1" data-r="mana"><div class="resource-icon">◈</div><div class="resource-value" id="mana-1">0</div><div class="resource-controls"><div class="resource-tap" onclick="changeRes(1,'mana',-1)"></div><div class="resource-tap" onclick="changeRes(1,'mana',1)"></div></div></div>
+      <div class="resource air"><div class="res-arrow" onclick="changeRes(1,'air',1)">▲</div><div class="resource-icon"><img src="air.png" alt="Air"><span class="el-name">Air</span></div><div class="resource-value" id="air-1">0</div><div class="res-arrow" onclick="changeRes(1,'air',-1)">▼</div></div>
+      <div class="resource earth"><div class="res-arrow" onclick="changeRes(1,'earth',1)">▲</div><div class="resource-icon"><img src="earth.png" alt="Earth"><span class="el-name">Earth</span></div><div class="resource-value" id="earth-1">0</div><div class="res-arrow" onclick="changeRes(1,'earth',-1)">▼</div></div>
+      <div class="resource fire"><div class="res-arrow" onclick="changeRes(1,'fire',1)">▲</div><div class="resource-icon"><img src="fire.png" alt="Fire"><span class="el-name">Fire</span></div><div class="resource-value" id="fire-1">0</div><div class="res-arrow" onclick="changeRes(1,'fire',-1)">▼</div></div>
+      <div class="resource water"><div class="res-arrow" onclick="changeRes(1,'water',1)">▲</div><div class="resource-icon"><img src="water.png" alt="Water"><span class="el-name">Water</span></div><div class="resource-value" id="water-1">0</div><div class="res-arrow" onclick="changeRes(1,'water',-1)">▼</div></div>
+      <div class="resource mana"><div class="res-arrow" onclick="changeRes(1,'mana',1)">▲</div><div class="resource-icon"><svg viewBox="0 0 24 24"><path d="M12 2 L20 12 L12 22 L4 12 Z" opacity="0.35"/><path d="M12 6 L16.5 12 L12 18 L7.5 12 Z"/></svg><span class="el-name">Mana</span></div><div class="resource-value" id="mana-1">0</div><div class="res-arrow" onclick="changeRes(1,'mana',-1)">▼</div></div>
     </div>
   </div>
 
@@ -415,8 +529,8 @@
 // ── STATE ──
 let startLife = 20;
 let state = {
-  1: { life: 20, air: 0, earth: 0, fire: 0, water: 0, mana: 0 },
-  2: { life: 20, air: 0, earth: 0, fire: 0, water: 0, mana: 0 },
+  1: { life: 20, air: 0, earth: 0, fire: 0, water: 0, mana: 0, deathsDoor: false },
+  2: { life: 20, air: 0, earth: 0, fire: 0, water: 0, mana: 0, deathsDoor: false },
 };
 
 // Load saved state
@@ -435,7 +549,15 @@ function saveState() {
 
 // ── LIFE ──
 function changeLife(player, delta) {
+  if (state[player].deathsDoor) return; // locked at death's door
   state[player].life += delta;
+  updatePlayer(player);
+  saveState();
+  haptic();
+}
+
+function toggleDeathsDoor(player) {
+  state[player].deathsDoor = !state[player].deathsDoor;
   updatePlayer(player);
   saveState();
   haptic();
@@ -453,8 +575,18 @@ function changeRes(player, res, delta) {
 function updatePlayer(player) {
   const s = state[player];
   const lifeEl = document.getElementById('life-' + player);
-  lifeEl.textContent = s.life;
-  lifeEl.classList.toggle('low', s.life <= 5);
+  const playerEl = document.querySelector('.player-' + player);
+  if (s.deathsDoor) {
+    lifeEl.textContent = '☠';
+    lifeEl.classList.add('deaths-door');
+    lifeEl.classList.remove('low');
+    if (playerEl) playerEl.classList.add('at-deaths-door');
+  } else {
+    lifeEl.textContent = s.life;
+    lifeEl.classList.remove('deaths-door');
+    lifeEl.classList.toggle('low', s.life <= 5);
+    if (playerEl) playerEl.classList.remove('at-deaths-door');
+  }
   document.getElementById('air-' + player).textContent = s.air;
   document.getElementById('earth-' + player).textContent = s.earth;
   document.getElementById('fire-' + player).textContent = s.fire;
@@ -494,8 +626,8 @@ function confirmReset() {
 function closeReset() { document.getElementById('reset-modal').classList.remove('open'); }
 function doReset() {
   state = {
-    1: { life: startLife, air: 0, earth: 0, fire: 0, water: 0, mana: 0 },
-    2: { life: startLife, air: 0, earth: 0, fire: 0, water: 0, mana: 0 },
+    1: { life: startLife, air: 0, earth: 0, fire: 0, water: 0, mana: 0, deathsDoor: false },
+    2: { life: startLife, air: 0, earth: 0, fire: 0, water: 0, mana: 0, deathsDoor: false },
   };
   updateAll();
   saveState();
