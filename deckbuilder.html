@@ -113,7 +113,7 @@
   .card-list::-webkit-scrollbar { width: 4px; }
   .card-list::-webkit-scrollbar-thumb { background: var(--mist); border-radius: 2px; }
 
-  .card-list-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 6px; }
+  .card-list-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
 
   .card-item {
     cursor: pointer;
@@ -126,7 +126,7 @@
   }
   .card-item:hover { border-color: var(--arcane); transform: translateY(-1px); }
   .card-item img { width: 100%; aspect-ratio: 3/4; object-fit: cover; display: block; }
-  .card-item-name { padding: 3px 5px; font-size: 0.68rem; color: var(--shimmer); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.3; }
+  .card-item-name { padding: 5px 8px; font-size: 0.85rem; color: var(--shimmer); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.3; }
 
   /* deck count badge on card */
   .card-item .in-deck-badge {
@@ -219,18 +219,22 @@
   .dvg-card:hover { border-color: var(--arcane); box-shadow: var(--glow); }
   .dvg-card img { width: 100%; aspect-ratio: 3/4; object-fit: cover; display: block; border-radius: 3px; }
 
-  /* Site cards always rotated in deck view */
+  /* Site cards always rotated in deck view — full card visible */
   .dvg-card.is-site {
     aspect-ratio: 4/3;
-    overflow: hidden;
-    display: flex; align-items: center; justify-content: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--dusk);
+    overflow: visible;
   }
   .dvg-card.is-site img {
-    width: 133%;
+    position: absolute;
+    width: 75%;
     aspect-ratio: 3/4;
     transform: rotate(90deg);
-    object-fit: cover;
-    flex-shrink: 0;
+    object-fit: contain;
+    transform-origin: center center;
   }
 
   .dvg-qty {
