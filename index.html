@@ -392,7 +392,48 @@
   select:focus { border-color: var(--rune); }
   select option { background: var(--dusk); }
 
-  .result-count { font-size: 0.8rem; color: var(--rune); font-style: italic; margin-bottom: 14px; }
+  .result-count { font-size: 0.8rem; color: var(--rune); font-style: italic; }
+
+  /* FILTER TOGGLE — wraps the stone filters */
+  .filter-toggle-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    background: #13111e; border: 3px solid #2a2640;
+    border-bottom: none; padding: 10px 16px;
+    cursor: pointer; user-select: none; transition: background 0.15s;
+  }
+  .filter-toggle-bar:hover { background: #1a1728; }
+  .filter-toggle-bar-label {
+    font-family: 'Cinzel', serif; font-size: 0.72rem; font-weight: 700;
+    letter-spacing: 0.18em; text-transform: uppercase; color: var(--rune);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .filter-toggle-bar-label .filter-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--mist); transition: background 0.2s;
+  }
+  .filter-toggle-bar.has-active .filter-dot { background: var(--arcane); }
+  .filter-toggle-bar .filter-arrow { font-size: 0.7rem; color: var(--mist); transition: transform 0.2s; }
+  .filter-toggle-bar.open .filter-arrow { transform: rotate(180deg); }
+
+  .filter-stones-panel { display: none; }
+  .filter-stones-panel.open { display: block; }
+
+  /* SORT BAR */
+  .sort-bar {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 14px; flex-wrap: wrap;
+  }
+  .sort-label { font-family: 'Cinzel', serif; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--mist); }
+  .sort-btn {
+    font-family: 'Cinzel', serif; font-size: 0.65rem; font-weight: 600;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    background: #13111e; border: 1px solid #2a2640;
+    color: var(--rune); padding: 5px 12px; cursor: pointer;
+    transition: all 0.15s; border-radius: 2px; display: flex; align-items: center; gap: 5px;
+  }
+  .sort-btn:hover { border-color: var(--arcane); color: var(--arcane); }
+  .sort-btn.active { background: var(--rune); border-color: var(--arcane); color: #fff; }
+  .sort-dir { font-size: 0.8rem; }
 
   .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
 
@@ -489,50 +530,63 @@
         </div>
         <button class="clear-all-btn" onclick="clearAllFilters()">✕ Clear all</button>
       </div>
-      <div class="filter-stones">
-        <div class="filter-stone">
-          <div class="stone-label">Type <button class="stone-clear" onclick="clearGroup('type')">clear</button></div>
-          <div class="stone-options">
-            <button class="stone-option" data-group="type" data-value="Avatar" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Avatar</button>
-            <button class="stone-option" data-group="type" data-value="Minion" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Minion</button>
-            <button class="stone-option" data-group="type" data-value="Magic" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Magic</button>
-            <button class="stone-option" data-group="type" data-value="Artifact" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Artifact</button>
-            <button class="stone-option" data-group="type" data-value="Aura" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Aura</button>
-            <button class="stone-option" data-group="type" data-value="Site" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Site</button>
-          </div>
+
+      <!-- COLLAPSIBLE FILTERS TOGGLE -->
+      <div class="filter-toggle-bar open" id="filter-toggle-bar" onclick="toggleFilters()">
+        <div class="filter-toggle-bar-label">
+          <span class="filter-dot"></span>
+          Filters
         </div>
-        <div class="filter-stone">
-          <div class="stone-label">Set <button class="stone-clear" onclick="clearGroup('set')">clear</button></div>
-          <div class="stone-options">
-            <button class="stone-option" data-group="set" data-value="Alpha" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Alpha</button>
-            <button class="stone-option" data-group="set" data-value="Beta" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Beta</button>
-            <button class="stone-option" data-group="set" data-value="Arthurian Legends" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Arthurian Legends</button>
-            <button class="stone-option" data-group="set" data-value="Gothic" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Gothic</button>
-            <button class="stone-option" data-group="set" data-value="Dragonlord" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Dragonlord</button>
-            <button class="stone-option" data-group="set" data-value="Promotional" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Promotional</button>
-          </div>
-        </div>
-        <div class="filter-stone">
-          <div class="stone-label">Rarity <button class="stone-clear" onclick="clearGroup('rarity')">clear</button></div>
-          <div class="stone-options">
-            <button class="stone-option" data-group="rarity" data-value="Ordinary" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Ordinary</button>
-            <button class="stone-option" data-group="rarity" data-value="Exceptional" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Exceptional</button>
-            <button class="stone-option" data-group="rarity" data-value="Elite" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Elite</button>
-            <button class="stone-option" data-group="rarity" data-value="Unique" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Unique</button>
-          </div>
-        </div>
-        <div class="filter-stone">
-          <div class="stone-label">Element <button class="stone-clear" onclick="clearGroup('element')">clear</button></div>
-          <div class="stone-options">
-            <button class="stone-option" data-group="element" data-value="Air" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Air</button>
-            <button class="stone-option" data-group="element" data-value="Earth" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Earth</button>
-            <button class="stone-option" data-group="element" data-value="Fire" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Fire</button>
-            <button class="stone-option" data-group="element" data-value="Water" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Water</button>
-          </div>
-        </div>
+        <span class="filter-arrow">▼</span>
       </div>
-      <div class="stone-foundation">
-        <div class="active-summary" id="active-summary"></div>
+
+      <!-- FILTER STONES PANEL -->
+      <div class="filter-stones-panel open" id="filter-stones-panel">
+        <div class="filter-stones">
+          <div class="filter-stone">
+            <div class="stone-label">Type <button class="stone-clear" onclick="clearGroup('type')">clear</button></div>
+            <div class="stone-options">
+              <button class="stone-option" data-group="type" data-value="Avatar" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Avatar</button>
+              <button class="stone-option" data-group="type" data-value="Minion" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Minion</button>
+              <button class="stone-option" data-group="type" data-value="Magic" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Magic</button>
+              <button class="stone-option" data-group="type" data-value="Artifact" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Artifact</button>
+              <button class="stone-option" data-group="type" data-value="Aura" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Aura</button>
+              <button class="stone-option" data-group="type" data-value="Site" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Site</button>
+            </div>
+          </div>
+          <div class="filter-stone">
+            <div class="stone-label">Set <button class="stone-clear" onclick="clearGroup('set')">clear</button></div>
+            <div class="stone-options">
+              <button class="stone-option" data-group="set" data-value="Alpha" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Alpha</button>
+              <button class="stone-option" data-group="set" data-value="Beta" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Beta</button>
+              <button class="stone-option" data-group="set" data-value="Arthurian Legends" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Arthurian Legends</button>
+              <button class="stone-option" data-group="set" data-value="Gothic" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Gothic</button>
+              <button class="stone-option" data-group="set" data-value="Dragonlord" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Dragonlord</button>
+              <button class="stone-option" data-group="set" data-value="Promotional" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Promotional</button>
+            </div>
+          </div>
+          <div class="filter-stone">
+            <div class="stone-label">Rarity <button class="stone-clear" onclick="clearGroup('rarity')">clear</button></div>
+            <div class="stone-options">
+              <button class="stone-option" data-group="rarity" data-value="Ordinary" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Ordinary</button>
+              <button class="stone-option" data-group="rarity" data-value="Exceptional" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Exceptional</button>
+              <button class="stone-option" data-group="rarity" data-value="Elite" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Elite</button>
+              <button class="stone-option" data-group="rarity" data-value="Unique" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Unique</button>
+            </div>
+          </div>
+          <div class="filter-stone">
+            <div class="stone-label">Element <button class="stone-clear" onclick="clearGroup('element')">clear</button></div>
+            <div class="stone-options">
+              <button class="stone-option" data-group="element" data-value="Air" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Air</button>
+              <button class="stone-option" data-group="element" data-value="Earth" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Earth</button>
+              <button class="stone-option" data-group="element" data-value="Fire" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Fire</button>
+              <button class="stone-option" data-group="element" data-value="Water" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Water</button>
+            </div>
+          </div>
+        </div>
+        <div class="stone-foundation">
+          <div class="active-summary" id="active-summary"></div>
+        </div>
       </div>
     </div>
 
@@ -645,6 +699,11 @@
 
     </div>
     <div id="result-count" class="result-count"></div>
+    <div class="sort-bar">
+      <span class="sort-label">Sort:</span>
+      <button class="sort-btn active" id="sort-az" onclick="setSort('az')">A–Z <span class="sort-dir" id="dir-az">↓</span></button>
+      <button class="sort-btn" id="sort-cost" onclick="setSort('cost')">Mana Cost <span class="sort-dir" id="dir-cost">↓</span></button>
+    </div>
     <div id="card-grid" class="card-grid">
       <div class="status"><span class="loading-rune">⧫</span>Consulting the arcane archives…</div>
     </div>
@@ -751,6 +810,53 @@ function renderCards(cards, append = false) {
 
 // FILTERS
 const activeFilters = { type: new Set(), set: new Set(), rarity: new Set(), element: new Set() };
+
+function toggleFilters() {
+  const bar = document.getElementById('filter-toggle-bar');
+  const panel = document.getElementById('filter-stones-panel');
+  bar.classList.toggle('open');
+  panel.classList.toggle('open');
+}
+
+function updateFilterDot() {
+  const hasActive = Object.values(activeFilters).some(s => s.size > 0);
+  const bar = document.getElementById('filter-toggle-bar');
+  if (bar) bar.classList.toggle('has-active', hasActive);
+}
+
+// SORT
+let currentSort = 'az';
+let sortReversed = false;
+
+function setSort(sort) {
+  if (currentSort === sort) {
+    sortReversed = !sortReversed;
+  } else {
+    currentSort = sort;
+    sortReversed = false;
+  }
+  // Update button states
+  document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('sort-' + sort).classList.add('active');
+  document.getElementById('dir-az').textContent = currentSort === 'az' ? (sortReversed ? '↑' : '↓') : '↓';
+  document.getElementById('dir-cost').textContent = currentSort === 'cost' ? (sortReversed ? '↑' : '↓') : '↓';
+  filterCards();
+}
+
+function sortCards(cards) {
+  const sorted = [...cards];
+  if (currentSort === 'az') {
+    sorted.sort((a, b) => a.name.localeCompare(b.name));
+  } else if (currentSort === 'cost') {
+    sorted.sort((a, b) => {
+      const ca = a.cost ?? 999;
+      const cb = b.cost ?? 999;
+      return ca !== cb ? ca - cb : a.name.localeCompare(b.name);
+    });
+  }
+  if (sortReversed) sorted.reverse();
+  return sorted;
+}
 const advFilters = { minionSubtype: new Set(), artifactSubtype: new Set(), siteSubtype: new Set(), keyword: new Set() };
 
 function toggleChip(btn) {
@@ -763,6 +869,7 @@ function toggleChip(btn) {
     activeFilters[group].add(value);
     btn.classList.add('active');
   }
+  updateFilterDot();
   filterCards();
   updateSummary();
 }
@@ -810,6 +917,7 @@ function clearAllFilters() {
   document.getElementById('search-input').value = '';
   clearRanges();
   updateAdvToggleDot();
+  updateFilterDot();
   filterCards();
   updateSummary();
 }
@@ -883,7 +991,7 @@ function filterCards() {
 
     return true;
   });
-  renderCards(filtered);
+  renderCards(sortCards(filtered));
 }
 
 document.getElementById('search-input').addEventListener('input', filterCards);
