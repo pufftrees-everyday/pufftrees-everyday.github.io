@@ -459,9 +459,122 @@
   .modal-btn.danger { background: rgba(196,97,74,0.15); border-color: var(--ember); color: var(--ember); }
 
   .hint-text { font-size: 0.85rem; color: var(--mist); font-style: italic; margin-top: 16px; line-height: 1.5; }
+
+  /* ── DICE ROLL INTRO ── */
+  .dice-overlay {
+    position: fixed; inset: 0; z-index: 300;
+    background:
+      radial-gradient(ellipse at center, #15121d 0%, var(--void) 80%);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 0;
+  }
+  .dice-overlay.hidden { display: none; }
+
+  .dice-half {
+    flex: 1; width: 100%;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 14px; position: relative;
+  }
+  .dice-half.top { transform: rotate(180deg); border-bottom: 2px solid rgba(155,135,212,0.2); }
+
+  .dice-half-label {
+    font-family: 'Cinzel', serif; font-size: 0.7rem; font-weight: 700;
+    letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold);
+  }
+  .dice-row { display: flex; gap: 14px; }
+
+  .die {
+    width: 58px; height: 58px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+    box-shadow: inset 0 2px 6px rgba(255,255,255,0.25), inset 0 -3px 8px rgba(0,0,0,0.5), 0 4px 10px rgba(0,0,0,0.5);
+    border: 1px solid rgba(0,0,0,0.4);
+  }
+  .die.rolling { animation: diceShake 0.6s ease-in-out; }
+  @keyframes diceShake {
+    0% { transform: translateY(-40px) rotate(0deg) scale(0.8); opacity: 0; }
+    15% { opacity: 1; }
+    25% { transform: translateY(0) rotate(160deg) scale(1.1); }
+    50% { transform: translateY(-10px) rotate(310deg) scale(0.95); }
+    75% { transform: translateY(0) rotate(420deg) scale(1.05); }
+    100% { transform: translateY(0) rotate(360deg) scale(1); }
+  }
+
+  /* Dragon-scale die faces — pip grid */
+  .die-pips { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3,1fr); width: 70%; height: 70%; gap: 2px; }
+  .pip { width: 100%; height: 100%; border-radius: 50%; align-self: center; justify-self: center; }
+  .pip.on { background: rgba(255,255,255,0.95); box-shadow: 0 0 4px rgba(0,0,0,0.4); }
+  .pip.off { background: transparent; }
+
+  .die-total {
+    font-family: 'Cinzel', serif; font-size: 2.4rem; font-weight: 700;
+    color: var(--parchment); line-height: 1;
+    text-shadow: 0 0 20px rgba(200,169,110,0.4);
+    min-height: 2.4rem;
+  }
+  .die-total .total-label { font-size: 0.65rem; letter-spacing: 0.2em; color: var(--gold); display: block; margin-top: 2px; }
+
+  .dice-winner {
+    font-family: 'Cinzel Decorative', serif; font-size: 1.1rem; font-weight: 700;
+    color: var(--gold); text-shadow: 0 0 24px rgba(200,169,110,0.6);
+    opacity: 0; transition: opacity 0.5s; text-align: center; min-height: 1.4rem;
+  }
+  .dice-winner.show { opacity: 1; }
+  .dice-half.is-winner .dice-half-label { color: var(--gold); }
+  .dice-half.is-winner::after {
+    content: ''; position: absolute; inset: 12px;
+    border: 2px solid rgba(200,169,110,0.4); border-radius: 8px;
+    pointer-events: none;
+    animation: winnerGlow 1.5s ease-in-out infinite;
+  }
+  @keyframes winnerGlow { 0%,100% { opacity: 0.3; } 50% { opacity: 0.8; } }
+
+  /* Center controls of dice screen */
+  .dice-center {
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
+    padding: 16px 0; z-index: 2;
+  }
+  .dice-btn {
+    font-family: 'Cinzel', serif; font-size: 0.7rem; font-weight: 600;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    background: var(--rune); border: 1px solid var(--arcane); color: #fff;
+    padding: 11px 22px; border-radius: 4px; cursor: pointer; transition: background 0.15s;
+  }
+  .dice-btn:active { background: var(--arcane); }
+  .dice-btn.ghost { background: transparent; color: var(--rune); }
+  .dice-skip {
+    font-family: 'Cinzel', serif; font-size: 0.62rem; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--mist); background: none; border: none;
+    cursor: pointer; text-decoration: underline; padding: 4px;
+  }
 </style>
 </head>
 <body>
+
+<!-- ── DICE ROLL INTRO ── -->
+<div class="dice-overlay" id="dice-overlay">
+  <div class="dice-half top">
+    <div class="dice-half-label">Player 2</div>
+    <div class="dice-row" id="dice-row-2"></div>
+    <div class="die-total" id="dice-total-2"></div>
+    <div class="dice-winner" id="dice-winner-2"></div>
+  </div>
+
+  <div class="dice-center">
+    <button class="dice-btn" id="dice-roll-btn" onclick="rollDice()">⚄ Roll for First</button>
+    <button class="dice-skip" onclick="dismissDice()">Skip to tracker →</button>
+  </div>
+
+  <div class="dice-half">
+    <div class="dice-half-label">Player 1</div>
+    <div class="dice-row" id="dice-row-1"></div>
+    <div class="die-total" id="dice-total-1"></div>
+    <div class="dice-winner" id="dice-winner-1"></div>
+  </div>
+</div>
 
 <div class="tracker">
 
@@ -739,10 +852,130 @@ if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('tracker-sw.js').catch(() => {});
 }
 
+// ── DICE ROLL INTRO ──
+// Dragon-themed dice colors per player (3 each, different shades)
+const DICE_COLORS = {
+  1: ['#7a3b3b', '#a14a3a', '#c4614a'], // ember/red dragon scales
+  2: ['#3b5a7a', '#3a6a8a', '#5a8ab0'], // blue dragon scales
+};
+
+// Pip layouts for each die face (1-6) on a 3x3 grid (indices 0-8)
+const PIP_MAP = {
+  1: [4],
+  2: [0, 8],
+  3: [0, 4, 8],
+  4: [0, 2, 6, 8],
+  5: [0, 2, 4, 6, 8],
+  6: [0, 2, 3, 5, 6, 8],
+};
+
+function dieFaceHTML(value, color) {
+  const on = new Set(PIP_MAP[value]);
+  let pips = '';
+  for (let i = 0; i < 9; i++) {
+    pips += `<div class="pip ${on.has(i) ? 'on' : 'off'}"></div>`;
+  }
+  return `<div class="die" style="background:linear-gradient(145deg, ${color} 0%, #1a1620 140%);">
+    <div class="die-pips">${pips}</div>
+  </div>`;
+}
+
+function renderDiceInitial() {
+  [1, 2].forEach(p => {
+    const row = document.getElementById('dice-row-' + p);
+    row.innerHTML = DICE_COLORS[p].map(c => dieFaceHTML(1, c)).join('');
+    document.getElementById('dice-total-' + p).innerHTML = '';
+    document.getElementById('dice-winner-' + p).classList.remove('show');
+    document.getElementById('dice-winner-' + p).textContent = '';
+  });
+  document.querySelectorAll('.dice-half').forEach(h => h.classList.remove('is-winner'));
+}
+
+let diceRolling = false;
+function rollDice() {
+  if (diceRolling) return;
+  diceRolling = true;
+  haptic();
+
+  const btn = document.getElementById('dice-roll-btn');
+  btn.disabled = true;
+  btn.style.opacity = '0.5';
+
+  const totals = {};
+  [1, 2].forEach(p => {
+    document.getElementById('dice-winner-' + p).classList.remove('show');
+    document.querySelector('.dice-half' + (p === 2 ? '.top' : ':not(.top)'))?.classList.remove('is-winner');
+    const row = document.getElementById('dice-row-' + p);
+    const colors = DICE_COLORS[p];
+    const values = [rand6(), rand6(), rand6()];
+    totals[p] = values[0] + values[1] + values[2];
+    row.innerHTML = values.map((v, i) => dieFaceHTML(v, colors[i])).join('');
+    // Trigger the roll animation
+    [...row.children].forEach((die, i) => {
+      die.classList.add('rolling');
+      die.style.animationDelay = (i * 0.08) + 's';
+    });
+    document.getElementById('dice-total-' + p).innerHTML = '';
+  });
+
+  // After animation, show totals and winner
+  setTimeout(() => {
+    [1, 2].forEach(p => {
+      document.getElementById('dice-total-' + p).innerHTML =
+        `${totals[p]}<span class="total-label">Total</span>`;
+    });
+    declareWinner(totals);
+    diceRolling = false;
+    btn.disabled = false;
+    btn.style.opacity = '1';
+    btn.textContent = '⚄ Roll Again';
+    haptic();
+  }, 800);
+}
+
+function declareWinner(totals) {
+  const halves = { 1: document.querySelector('.dice-half:not(.top)'), 2: document.querySelector('.dice-half.top') };
+  if (totals[1] === totals[2]) {
+    [1, 2].forEach(p => {
+      const w = document.getElementById('dice-winner-' + p);
+      w.textContent = 'Tie — roll again!';
+      w.classList.add('show');
+    });
+    return;
+  }
+  const winner = totals[1] > totals[2] ? 1 : 2;
+  const loser = winner === 1 ? 2 : 1;
+  halves[winner].classList.add('is-winner');
+  const wEl = document.getElementById('dice-winner-' + winner);
+  wEl.textContent = 'Goes First';
+  wEl.classList.add('show');
+  // Add a "start game" button under the winner banner via the center
+  const btn = document.getElementById('dice-roll-btn');
+  // Insert a Begin button if not present
+  if (!document.getElementById('dice-begin-btn')) {
+    const begin = document.createElement('button');
+    begin.id = 'dice-begin-btn';
+    begin.className = 'dice-btn';
+    begin.textContent = '⚔ Begin Game';
+    begin.onclick = dismissDice;
+    btn.parentNode.insertBefore(begin, btn.nextSibling);
+  }
+}
+
+function rand6() { return Math.floor(Math.random() * 6) + 1; }
+
+function dismissDice() {
+  const overlay = document.getElementById('dice-overlay');
+  overlay.style.transition = 'opacity 0.4s';
+  overlay.style.opacity = '0';
+  setTimeout(() => overlay.classList.add('hidden'), 400);
+}
+
 // ── INIT ──
 loadState();
 updateAll();
 requestWakeLock();
+renderDiceInitial();
 
 // Wire up all life/resource/button handlers with pointerup (fires once per tap,
 // no touch+click double-fire)
