@@ -124,6 +124,37 @@
     z-index: 3;
   }
 
+  /* Floating damage/heal indicators */
+  .life-floaters {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none;
+    z-index: 5;
+    overflow: hidden;
+  }
+  .floater {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    font-size: 2rem;
+    pointer-events: none;
+    animation: floatUp 1s ease-out forwards;
+    text-shadow: 0 0 12px rgba(0,0,0,0.8);
+  }
+  .floater.dmg { color: var(--ember); }
+  .floater.heal { color: var(--sage); }
+  .floater.total {
+    font-size: 1.3rem;
+    opacity: 0.85;
+  }
+  @keyframes floatUp {
+    0% { transform: translate(-50%, 10px) scale(0.7); opacity: 0; }
+    20% { transform: translate(-50%, 0) scale(1.1); opacity: 1; }
+    100% { transform: translate(-50%, -70px) scale(1); opacity: 0; }
+  }
+
   /* Tap zones for life */
   .life-tap {
     position: absolute;
@@ -438,16 +469,17 @@
   <div class="player top player-2" data-player="2">
     <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
     <div class="life-section">
-      <div class="life-tap minus" ontouchstart="changeLife(2,-1)" onclick="changeLife(2,-1)"><span class="life-tap-hint">−</span></div>
-      <div class="life-tap plus" ontouchstart="changeLife(2,1)" onclick="changeLife(2,1)"><span class="life-tap-hint">+</span></div>
+      <div class="life-tap minus" data-life-tap="2" data-delta="-1"><span class="life-tap-hint">−</span></div>
+      <div class="life-tap plus" data-life-tap="2" data-delta="1"><span class="life-tap-hint">+</span></div>
+      <div class="life-floaters" id="floaters-2"></div>
       <div class="life-display">
         <div class="life-number" id="life-2">20</div>
         <div class="life-label">Life</div>
         <div class="life-buttons">
-          <div class="life-btn" ontouchstart="event.stopPropagation();changeLife(2,-1)" onclick="event.stopPropagation();changeLife(2,-1)">−</div>
-          <div class="life-btn" ontouchstart="event.stopPropagation();changeLife(2,1)" onclick="event.stopPropagation();changeLife(2,1)">+</div>
+          <div class="life-btn" data-life-btn="2" data-delta="-1">−</div>
+          <div class="life-btn" data-life-btn="2" data-delta="1">+</div>
         </div>
-        <button class="deaths-door-btn" onclick="event.stopPropagation();toggleDeathsDoor(2)">☠ Death's Door</button>
+        <button class="deaths-door-btn" data-dd="2">☠ Death's Door</button>
       </div>
     </div>
     <div class="resource-bar">
@@ -470,16 +502,17 @@
   <div class="player player-1" data-player="1">
     <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
     <div class="life-section">
-      <div class="life-tap minus" ontouchstart="changeLife(1,-1)" onclick="changeLife(1,-1)"><span class="life-tap-hint">−</span></div>
-      <div class="life-tap plus" ontouchstart="changeLife(1,1)" onclick="changeLife(1,1)"><span class="life-tap-hint">+</span></div>
+      <div class="life-tap minus" data-life-tap="1" data-delta="-1"><span class="life-tap-hint">−</span></div>
+      <div class="life-tap plus" data-life-tap="1" data-delta="1"><span class="life-tap-hint">+</span></div>
+      <div class="life-floaters" id="floaters-1"></div>
       <div class="life-display">
         <div class="life-number" id="life-1">20</div>
         <div class="life-label">Life</div>
         <div class="life-buttons">
-          <div class="life-btn" ontouchstart="event.stopPropagation();changeLife(1,-1)" onclick="event.stopPropagation();changeLife(1,-1)">−</div>
-          <div class="life-btn" ontouchstart="event.stopPropagation();changeLife(1,1)" onclick="event.stopPropagation();changeLife(1,1)">+</div>
+          <div class="life-btn" data-life-btn="1" data-delta="-1">−</div>
+          <div class="life-btn" data-life-btn="1" data-delta="1">+</div>
         </div>
-        <button class="deaths-door-btn" onclick="event.stopPropagation();toggleDeathsDoor(1)">☠ Death's Door</button>
+        <button class="deaths-door-btn" data-dd="1">☠ Death's Door</button>
       </div>
     </div>
     <div class="resource-bar">
@@ -548,12 +581,65 @@ function saveState() {
 }
 
 // ── LIFE ──
+// Track running deltas per player for the "total" floater
+const lifeRun = { 1: { sum: 0, timer: null, totalEl: null }, 2: { sum: 0, timer: null, totalEl: null } };
+
 function changeLife(player, delta) {
   if (state[player].deathsDoor) return; // locked at death's door
   state[player].life += delta;
   updatePlayer(player);
   saveState();
   haptic();
+  showFloater(player, delta);
+}
+
+function showFloater(player, delta) {
+  const container = document.getElementById('floaters-' + player);
+  if (!container) return;
+
+  // Individual hit floater (-1 / +1)
+  const f = document.createElement('div');
+  f.className = 'floater ' + (delta < 0 ? 'dmg' : 'heal');
+  f.textContent = (delta > 0 ? '+' : '') + delta;
+  // Slight random horizontal offset so rapid taps don't perfectly overlap
+  const offset = (Math.random() * 50 - 25);
+  f.style.marginLeft = offset + 'px';
+  container.appendChild(f);
+  setTimeout(() => f.remove(), 1000);
+
+  // Running total floater — sits below, updates in place
+  const run = lifeRun[player];
+  run.sum += delta;
+  clearTimeout(run.timer);
+  if (run.sum !== 0) {
+    if (!run.totalEl || !run.totalEl.isConnected) {
+      const t = document.createElement('div');
+      t.className = 'floater total ' + (run.sum < 0 ? 'dmg' : 'heal');
+      t.style.animation = 'none';
+      t.style.marginTop = '50px';
+      t.style.opacity = '0.9';
+      container.appendChild(t);
+      run.totalEl = t;
+    }
+    run.totalEl.className = 'floater total ' + (run.sum < 0 ? 'dmg' : 'heal');
+    run.totalEl.style.animation = 'none';
+    run.totalEl.style.marginTop = '50px';
+    run.totalEl.style.opacity = '0.9';
+    run.totalEl.textContent = (run.sum > 0 ? '+' : '') + run.sum + ' total';
+  } else if (run.totalEl) {
+    run.totalEl.remove(); run.totalEl = null;
+  }
+  run.timer = setTimeout(() => {
+    run.sum = 0;
+    if (run.totalEl) {
+      // fade it out then remove
+      run.totalEl.style.transition = 'opacity 0.4s';
+      run.totalEl.style.opacity = '0';
+      const el = run.totalEl;
+      setTimeout(() => el.remove(), 400);
+      run.totalEl = null;
+    }
+  }, 1400);
 }
 
 function toggleDeathsDoor(player) {
@@ -657,6 +743,42 @@ if ('serviceWorker' in navigator) {
 loadState();
 updateAll();
 requestWakeLock();
+
+// Wire up all life/resource/button handlers with pointerup (fires once per tap,
+// no touch+click double-fire)
+function bindTap(el, handler) {
+  if (!el) return;
+  let handled = false;
+  el.addEventListener('pointerup', e => {
+    e.preventDefault();
+    e.stopPropagation();
+    handler();
+    handled = true;
+    setTimeout(() => handled = false, 50);
+  });
+  // Fallback for any environment without pointer events
+  el.addEventListener('click', e => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!handled) handler();
+  });
+}
+
+// Life tap zones
+document.querySelectorAll('[data-life-tap]').forEach(el => {
+  const p = +el.dataset.lifeTap, d = +el.dataset.delta;
+  bindTap(el, () => changeLife(p, d));
+});
+// Life +/- buttons
+document.querySelectorAll('[data-life-btn]').forEach(el => {
+  const p = +el.dataset.lifeBtn, d = +el.dataset.delta;
+  bindTap(el, () => changeLife(p, d));
+});
+// Death's door buttons
+document.querySelectorAll('[data-dd]').forEach(el => {
+  const p = +el.dataset.dd;
+  bindTap(el, () => toggleDeathsDoor(p));
+});
 
 // Prevent double-tap zoom
 let lastTouch = 0;

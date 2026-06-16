@@ -1,7 +1,7 @@
 // Grimoire Life Tracker — Service Worker
 // Caches the tracker so it works offline once loaded.
 
-const CACHE = 'grimoire-tracker-v2';
+const CACHE = 'grimoire-tracker-v3';
 const ASSETS = [
   'tracker.html',
   'manifest.json',
