@@ -84,14 +84,54 @@
   }
 
   .explorer-search {
-    padding: 12px;
-    border-bottom: 3px solid #2a2640;
+    padding: 12px 12px 0;
     background: #13111e;
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 0;
   }
+
+  .explorer-search-top {
+    display: flex; gap: 8px; align-items: center;
+    padding-bottom: 10px;
+  }
+
+  .filter-toggle-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    background: #0d0b14; border-top: 1px solid #2a2640;
+    padding: 7px 12px; cursor: pointer; user-select: none;
+    flex-shrink: 0; transition: background 0.15s;
+  }
+  .filter-toggle-bar:hover { background: #13111e; }
+  .filter-toggle-label {
+    font-family: 'Cinzel', serif; font-size: 0.62rem; font-weight: 700;
+    letter-spacing: 0.16em; text-transform: uppercase; color: var(--rune);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .filter-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--mist); transition: background 0.2s; }
+  .filter-toggle-bar.has-active .filter-dot { background: var(--arcane); }
+  .filter-toggle-bar .advanced-toggle-arrow { font-size: 0.6rem; color: var(--mist); transition: transform 0.2s; }
+  .filter-toggle-bar.open .advanced-toggle-arrow { transform: rotate(180deg); }
+
+  .filter-panel {
+    display: none; flex-direction: column; gap: 8px;
+    background: #0d0b14; border-top: 1px solid #2a2640;
+    padding: 10px 12px; flex-shrink: 0;
+  }
+  .filter-panel.open { display: flex; }
+
+  .filter-panel-footer {
+    display: flex; justify-content: flex-end; padding-top: 4px;
+  }
+  .clear-all-filters-btn {
+    font-family: 'Cinzel', serif; font-size: 0.6rem; font-weight: 600;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    background: none; border: 1px solid rgba(196,97,74,0.3);
+    color: var(--ember); padding: 3px 10px; cursor: pointer;
+    transition: background 0.15s;
+  }
+  .clear-all-filters-btn:hover { background: rgba(196,97,74,0.12); }
 
   .search-input-wrap { position: relative; }
   .search-input-wrap svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 13px; height: 13px; opacity: 0.35; fill: var(--arcane); pointer-events: none; }
@@ -247,16 +287,26 @@
   .deck-body::-webkit-scrollbar { width: 4px; }
   .deck-body::-webkit-scrollbar-thumb { background: var(--mist); border-radius: 2px; }
 
-  .deck-section { padding: 12px 16px; border-bottom: 3px solid #2a2640; }
+  .deck-section { padding: 0 16px; border-bottom: 3px solid #2a2640; }
 
   .deck-section-header {
     font-family: 'Cinzel', serif; font-size: 0.72rem; font-weight: 700;
     letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold);
-    margin-bottom: 10px; padding-bottom: 6px;
+    padding: 10px 0 8px;
     border-bottom: 2px solid #0b0a0f;
     box-shadow: 0 1px 0 rgba(255,255,255,0.04);
     display: flex; justify-content: space-between; align-items: center;
+    cursor: pointer; user-select: none;
+    transition: color 0.15s;
   }
+  .deck-section-header:hover { color: var(--gold-bright, #e8c87a); }
+
+  .deck-section-header-left { display: flex; align-items: center; gap: 8px; }
+  .deck-section-arrow { font-size: 0.6rem; color: var(--mist); transition: transform 0.2s; }
+  .deck-section.collapsed .deck-section-arrow { transform: rotate(-90deg); }
+
+  .deck-section-body { padding: 10px 0 14px; }
+  .deck-section.collapsed .deck-section-body { display: none; }
 
   .deck-section-header .section-count {
     font-family: 'Crimson Pro', serif; font-style: normal;
@@ -411,11 +461,24 @@
   <!-- LEFT: CARD EXPLORER -->
   <div class="explorer">
     <div class="explorer-search">
-      <div class="search-input-wrap">
-        <svg viewBox="0 0 20 20"><path d="M12.9 14.32a8 8 0 111.41-1.41l4.42 4.41-1.41 1.42-4.42-4.42zM8 14A6 6 0 108 2a6 6 0 000 12z"/></svg>
-        <input type="text" id="search-input" placeholder="Search cards…" autocomplete="off">
+      <div class="explorer-search-top">
+        <div class="search-input-wrap" style="flex:1">
+          <svg viewBox="0 0 20 20"><path d="M12.9 14.32a8 8 0 111.41-1.41l4.42 4.41-1.41 1.42-4.42-4.42zM8 14A6 6 0 108 2a6 6 0 000 12z"/></svg>
+          <input type="text" id="search-input" placeholder="Search cards…" autocomplete="off">
+        </div>
+        <div class="result-count" id="result-count" style="white-space:nowrap;padding:0;margin:0;"></div>
       </div>
-      <div class="filter-row" id="type-filters">
+    </div>
+
+    <!-- FILTER TOGGLE BAR -->
+    <div class="filter-toggle-bar open" id="filter-toggle-bar" onclick="toggleFilterPanel()">
+      <div class="filter-toggle-label"><span class="filter-dot"></span>Filters</div>
+      <span class="advanced-toggle-arrow">▼</span>
+    </div>
+
+    <!-- FILTER PANEL -->
+    <div class="filter-panel open" id="filter-panel">
+      <div class="filter-row">
         <button class="filter-chip" data-group="type" data-value="Avatar" onclick="toggleChip(this)">Avatar</button>
         <button class="filter-chip" data-group="type" data-value="Minion" onclick="toggleChip(this)">Minion</button>
         <button class="filter-chip" data-group="type" data-value="Magic" onclick="toggleChip(this)">Magic</button>
@@ -423,7 +486,7 @@
         <button class="filter-chip" data-group="type" data-value="Aura" onclick="toggleChip(this)">Aura</button>
         <button class="filter-chip" data-group="type" data-value="Site" onclick="toggleChip(this)">Site</button>
       </div>
-      <div class="filter-row" id="set-filters">
+      <div class="filter-row">
         <button class="filter-chip" data-group="set" data-value="Alpha" onclick="toggleChip(this)">Alpha</button>
         <button class="filter-chip" data-group="set" data-value="Beta" onclick="toggleChip(this)">Beta</button>
         <button class="filter-chip" data-group="set" data-value="Arthurian Legends" onclick="toggleChip(this)">Arthurian</button>
@@ -431,13 +494,15 @@
         <button class="filter-chip" data-group="set" data-value="Dragonlord" onclick="toggleChip(this)">Dragonlord</button>
         <button class="filter-chip" data-group="set" data-value="Promotional" onclick="toggleChip(this)">Promo</button>
       </div>
-      <div class="filter-row" id="rarity-filters">
+      <div class="filter-row">
         <button class="filter-chip" data-group="rarity" data-value="Ordinary" onclick="toggleChip(this)">Ordinary</button>
         <button class="filter-chip" data-group="rarity" data-value="Exceptional" onclick="toggleChip(this)">Exceptional</button>
         <button class="filter-chip" data-group="rarity" data-value="Elite" onclick="toggleChip(this)">Elite</button>
         <button class="filter-chip" data-group="rarity" data-value="Unique" onclick="toggleChip(this)">Unique</button>
       </div>
-      <div class="result-count" id="result-count"></div>
+      <div class="filter-panel-footer">
+        <button class="clear-all-filters-btn" onclick="clearAllFilters()">✕ Clear All Filters</button>
+      </div>
     </div>
 
     <!-- ADVANCED TOGGLE -->
@@ -682,10 +747,42 @@ function escId(id) { return String(id).replace(/\\/g,'\\\\').replace(/'/g,"\\'")
 const activeFilters = { type: new Set(), set: new Set(), rarity: new Set() };
 const advFilters = { minionSubtype: new Set(), artifactSubtype: new Set(), siteSubtype: new Set(), keyword: new Set() };
 
+// Track collapsed state for deck sections
+const sectionCollapsed = { avatar: false, atlas: false, spellbook: false };
+
+function toggleFilterPanel() {
+  const bar = document.getElementById('filter-toggle-bar');
+  const panel = document.getElementById('filter-panel');
+  bar.classList.toggle('open');
+  panel.classList.toggle('open');
+}
+
+function clearAllFilters() {
+  Object.keys(activeFilters).forEach(g => activeFilters[g].clear());
+  Object.keys(advFilters).forEach(g => advFilters[g].clear());
+  document.querySelectorAll('.filter-chip.active, .adv-chip.active').forEach(c => c.classList.remove('active'));
+  clearRanges();
+  updateFilterDot();
+  updateAdvDot();
+  filterCards();
+}
+
+function updateFilterDot() {
+  const hasActive = Object.values(activeFilters).some(s => s.size > 0);
+  document.getElementById('filter-toggle-bar').classList.toggle('has-active', hasActive);
+}
+
+function toggleDeckSection(section) {
+  sectionCollapsed[section] = !sectionCollapsed[section];
+  const el = document.getElementById('deck-section-' + section);
+  if (el) el.classList.toggle('collapsed', sectionCollapsed[section]);
+}
+
 function toggleChip(btn) {
   const { group, value } = btn.dataset;
   if (activeFilters[group].has(value)) { activeFilters[group].delete(value); btn.classList.remove('active'); }
   else { activeFilters[group].add(value); btn.classList.add('active'); }
+  updateFilterDot();
   filterCards();
 }
 
@@ -961,12 +1058,12 @@ function groupByType(entries) {
 function renderSection(title, section, entries, reqMsg, isOk, req, groups) {
   const count = entries.reduce((s,[,v])=>s+v.qty,0);
   const reqClass = isOk ? 'ok' : 'warn';
+  const collapsed = sectionCollapsed[section] ? 'collapsed' : '';
 
   let cardsHtml = '';
   if (!entries.length) {
     cardsHtml = `<div class="deck-empty-msg">No ${title.toLowerCase()} cards yet.</div>`;
   } else if (groups) {
-    // Grouped by subtype
     const typeOrder = ['Avatar','Site','Minion','Magic','Artifact','Aura','Other'];
     const types = [...new Set([...typeOrder.filter(t=>groups[t]),...Object.keys(groups).filter(t=>!typeOrder.includes(t))])];
     cardsHtml = types.map(type => {
@@ -980,13 +1077,18 @@ function renderSection(title, section, entries, reqMsg, isOk, req, groups) {
   }
 
   return `
-    <div class="deck-section">
-      <div class="deck-section-header">
-        <span>${title} <span class="section-count">${count}</span></span>
+    <div class="deck-section ${collapsed}" id="deck-section-${section}">
+      <div class="deck-section-header" onclick="toggleDeckSection('${section}')">
+        <div class="deck-section-header-left">
+          <span class="deck-section-arrow">▼</span>
+          <span>${title} <span class="section-count">${count}</span></span>
+        </div>
         <span class="section-req ${reqClass}">${req} ${reqMsg ? '— ' + reqMsg : (isOk ? '✓' : '')}</span>
       </div>
-      ${reqMsg && !isOk ? `<div class="violation">${reqMsg}</div>` : ''}
-      <div class="deck-card-grid">${cardsHtml}</div>
+      <div class="deck-section-body">
+        ${reqMsg && !isOk ? `<div class="violation">${reqMsg}</div>` : ''}
+        <div class="deck-card-grid">${cardsHtml}</div>
+      </div>
     </div>`;
 }
 
