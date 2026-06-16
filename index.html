@@ -402,6 +402,11 @@
   .card-thumb-name { padding: 6px 8px; font-size: 0.82rem; color: var(--shimmer); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .card-thumb-meta { padding: 0 8px 6px; font-size: 0.72rem; color: var(--rune); font-style: italic; }
 
+  /* Site-only mode: rotate cards to landscape, full image visible */
+  .card-grid.sites-only { grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); }
+  .card-grid.sites-only .card-thumb { aspect-ratio: 4/3; display: flex; align-items: center; justify-content: center; }
+  .card-grid.sites-only .card-thumb img { position: absolute; width: 75%; aspect-ratio: 3/4; transform: rotate(90deg); object-fit: contain; }
+
   .add-btn { position: absolute; top: 6px; right: 6px; width: 28px; height: 28px; background: rgba(11,10,15,0.85); border: 1px solid var(--border-strong); border-radius: 50%; color: var(--arcane); font-size: 1.2rem; display: flex; align-items: center; justify-content: center; cursor: pointer; opacity: 0; transition: opacity 0.15s, background 0.15s; }
   .card-thumb:hover .add-btn { opacity: 1; }
   .add-btn:hover { background: var(--rune); color: #fff; }
@@ -450,7 +455,7 @@
 <body>
 
 <header>
-  <div class="logo">Grimoire <span>· Sorcery TCG</span></div>
+  <div class="logo"><a href="index.html" style="color:var(--gold);text-decoration:none;">Grimoire</a> <span>· <a href="https://sorcerytcg.com/" target="_blank" style="color:var(--arcane);text-decoration:none;font-weight:400;">Sorcery TCG</a></span></div>
   <div class="header-nav">
     <a href="https://drive.google.com/file/d/1sgQo0xf0N2teIR0zlyl91g9j6LVncZnr/view" target="_blank" class="header-link">Rulebook</a>
     <a href="https://play.sorcerytcg.com/" target="_blank" class="header-link">Play Network</a>
@@ -716,11 +721,16 @@ function escId(id) { return String(id).replace(/\\/g,'\\\\').replace(/'/g,"\\'")
 // RENDER CARDS
 function renderCards(cards, append = false) {
   const grid = document.getElementById('card-grid');
+  // Apply site-only rotation mode when Site is the only active type filter
+  const sitesOnly = activeFilters.type.size === 1 && activeFilters.type.has('Site');
   if (!append) {
     currentCards = cards;
     visibleCount = PAGE_SIZE;
+    grid.classList.toggle('sites-only', sitesOnly);
     if (!cards.length) { grid.innerHTML = '<div class="status" style="padding:40px 0">No cards match your search.</div>'; return; }
     grid.innerHTML = '';
+  } else {
+    grid.classList.toggle('sites-only', sitesOnly);
   }
   const shown = currentCards.slice(append ? visibleCount - PAGE_SIZE : 0, visibleCount);
   const html = shown.map(card => `
