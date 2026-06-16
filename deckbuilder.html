@@ -209,15 +209,29 @@
   .section-req.warn { color: var(--ember); }
 
   /* VISUAL CARD GRID IN DECK */
-  .deck-card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 6px; }
+  .deck-card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
 
   .dvg-card {
-    position: relative; border-radius: 4px; overflow: hidden;
+    position: relative; border-radius: 4px;
     border: 1px solid var(--border); background: var(--dusk);
     cursor: pointer; transition: border-color 0.15s, box-shadow 0.15s;
   }
   .dvg-card:hover { border-color: var(--arcane); box-shadow: var(--glow); }
-  .dvg-card img { width: 100%; aspect-ratio: 3/4; object-fit: cover; display: block; }
+  .dvg-card img { width: 100%; aspect-ratio: 3/4; object-fit: cover; display: block; border-radius: 3px; }
+
+  /* Site cards always rotated in deck view */
+  .dvg-card.is-site {
+    aspect-ratio: 4/3;
+    overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .dvg-card.is-site img {
+    width: 133%;
+    aspect-ratio: 3/4;
+    transform: rotate(90deg);
+    object-fit: cover;
+    flex-shrink: 0;
+  }
 
   .dvg-qty {
     position: absolute; top: 3px; left: 3px;
@@ -236,9 +250,9 @@
   }
   .dvg-card:hover .dvg-controls { opacity: 1; }
 
-  .qty-btn { width: 22px; height: 22px; background: var(--dusk); border: 1px solid var(--border-strong); color: var(--arcane); font-size: 0.9rem; border-radius: 3px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.15s; }
+  .qty-btn { width: 30px; height: 30px; background: var(--dusk); border: 1px solid var(--border-strong); color: var(--arcane); font-size: 1.1rem; border-radius: 3px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.15s; }
   .qty-btn:hover { background: var(--rune); color: #fff; }
-  .del-btn { width: 22px; height: 22px; background: rgba(196,97,74,0.15); border: 1px solid rgba(196,97,74,0.4); color: var(--ember); font-size: 0.75rem; border-radius: 3px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.15s; }
+  .del-btn { width: 30px; height: 30px; background: rgba(196,97,74,0.15); border: 1px solid rgba(196,97,74,0.4); color: var(--ember); font-size: 0.9rem; border-radius: 3px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.15s; }
   .del-btn:hover { background: rgba(196,97,74,0.35); }
 
   /* violation label */
@@ -770,7 +784,8 @@ function renderSection(title, section, entries, reqMsg, isOk, req, groups) {
 }
 
 function renderDeckCard(section, key, card, qty) {
-  return `<div class="dvg-card" onclick="openModal('${escId(card.id)}')">
+  const isSite = card.type === 'Site';
+  return `<div class="dvg-card${isSite ? ' is-site' : ''}" onclick="openModal('${escId(card.id)}')">
     <img src="${getImageUrl(card)}" alt="${card.name}" loading="lazy" onerror="this.style.opacity='0.2'">
     ${qty > 1 ? `<div class="dvg-qty">×${qty}</div>` : ''}
     <div class="dvg-controls">
@@ -778,6 +793,7 @@ function renderDeckCard(section, key, card, qty) {
       <button class="qty-btn" onclick="event.stopPropagation();changeQty('${section}','${key}',1)">+</button>` : ''}
       <button class="del-btn" onclick="event.stopPropagation();removeCard('${section}','${key}')">✕</button>
     </div>
+  </div>`;
   </div>`;
 }
 
