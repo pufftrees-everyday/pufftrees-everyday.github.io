@@ -223,6 +223,10 @@
   .price-market { font-family: 'Cinzel', serif; font-size: 0.75rem; font-weight: 600; color: var(--gold); }
   .price-foil { font-size: 0.7rem; color: var(--arcane); font-style: italic; }
 
+  .qty-have, .qty-want { display: flex; gap: 3px; margin-top: 4px; }
+  .qty-mini { width: 24px; height: 24px; border-radius: 3px; border: 1px solid var(--border-strong); background: rgba(11,10,15,0.8); color: var(--shimmer); font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.15s; }
+  .qty-mini:hover { background: var(--rune); color: #fff; }
+
   /* STATUS */
   .status { padding: 60px 24px; text-align: center; color: var(--mist); font-style: italic; }
   .loading-rune { font-size: 2.5rem; display: block; margin-bottom: 16px; animation: pulse 2s infinite; }
@@ -441,7 +445,7 @@ const advFilters = { minionSubtype: new Set(), artifactSubtype: new Set(), siteS
 const IMAGE_BASE = 'https://pub-5999238092ad418ca60e7a9ad641cf57.r2.dev/';
 
 // ── COLLECTION STORAGE ──
-// collection[cardName] = { have: bool, want: bool }
+// collection[cardName] = { have: number, want: number }
 function getCollection() {
   try { return JSON.parse(localStorage.getItem('grimoire_collection') || '{}'); } catch { return {}; }
 }
@@ -451,44 +455,61 @@ function saveCollection(col) {
 
 function toggleFlag(cardId, flag) {
   const col = getCollection();
-  if (!col[cardId]) col[cardId] = { have: false, want: false };
-  col[cardId][flag] = !col[cardId][flag];
-  // Clean up empty entries
+  if (!col[cardId]) col[cardId] = { have: 0, want: 0 };
+  // Toggle: if 0 set to 1, if >0 set to 0
+  col[cardId][flag] = col[cardId][flag] > 0 ? 0 : 1;
   if (!col[cardId].have && !col[cardId].want) delete col[cardId];
   saveCollection(col);
   updateStats();
-  // Update this card's display without full re-render
   const thumb = document.querySelector(`.card-thumb[data-id="${CSS.escape(cardId)}"]`);
   if (thumb) updateCardThumbFlags(thumb, cardId, col[cardId]);
-  // If we're in a filtered view, re-filter
+  if (currentView !== 'all') filterCards();
+}
+
+function changeQty(cardId, flag, delta) {
+  const col = getCollection();
+  if (!col[cardId]) col[cardId] = { have: 0, want: 0 };
+  col[cardId][flag] = Math.max(0, (col[cardId][flag] || 0) + delta);
+  if (!col[cardId].have && !col[cardId].want) delete col[cardId];
+  saveCollection(col);
+  updateStats();
+  const thumb = document.querySelector(`.card-thumb[data-id="${CSS.escape(cardId)}"]`);
+  if (thumb) updateCardThumbFlags(thumb, cardId, col[cardId]);
   if (currentView !== 'all') filterCards();
 }
 
 function updateCardThumbFlags(thumb, cardId, entry) {
-  const have = entry?.have || false;
-  const want = entry?.want || false;
-  thumb.classList.toggle('flag-have', have);
-  thumb.classList.toggle('flag-want', want);
-  // Update badges
+  const have = entry?.have || 0;
+  const want = entry?.want || 0;
+  thumb.classList.toggle('flag-have', have > 0);
+  thumb.classList.toggle('flag-want', want > 0);
   let badge = thumb.querySelector('.flag-badge');
   if (!badge) { badge = document.createElement('div'); badge.className = 'flag-badge'; thumb.appendChild(badge); }
-  badge.innerHTML = (have ? '<span class="badge badge-have">Have</span>' : '') + (want ? '<span class="badge badge-want">Want</span>' : '');
-  // Update buttons
+  badge.innerHTML =
+    (have > 0 ? `<span class="badge badge-have">Have ${have > 1 ? '×'+have : ''}</span>` : '') +
+    (want > 0 ? `<span class="badge badge-want">Want ${want > 1 ? '×'+want : ''}</span>` : '');
   const haveBtn = thumb.querySelector('.have-btn');
   const wantBtn = thumb.querySelector('.want-btn');
-  if (haveBtn) haveBtn.classList.toggle('on', have);
-  if (wantBtn) wantBtn.classList.toggle('on', want);
+  if (haveBtn) { haveBtn.classList.toggle('on', have > 0); haveBtn.textContent = have > 0 ? `✓ Have ×${have}` : '✓ Have'; }
+  if (wantBtn) { wantBtn.classList.toggle('on', want > 0); wantBtn.textContent = want > 0 ? `♡ Want ×${want}` : '♡ Want'; }
+  // Update qty buttons
+  const haveQty = thumb.querySelector('.qty-have');
+  const wantQty = thumb.querySelector('.qty-want');
+  if (haveQty) haveQty.style.display = have > 0 ? 'flex' : 'none';
+  if (wantQty) wantQty.style.display = want > 0 ? 'flex' : 'none';
 }
 
 function updateStats() {
   const col = getCollection();
-  const haveCards = Object.entries(col).filter(([,v]) => v.have);
-  const wantCards = Object.entries(col).filter(([,v]) => v.want);
-  const haveValue = haveCards.reduce((sum, [name]) => sum + (prices[name]?.market || 0), 0);
-  const wantValue = wantCards.reduce((sum, [name]) => sum + (prices[name]?.market || 0), 0);
+  const haveEntries = Object.entries(col).filter(([,v]) => v.have > 0);
+  const wantEntries = Object.entries(col).filter(([,v]) => v.want > 0);
+  const haveQty = haveEntries.reduce((s, [,v]) => s + v.have, 0);
+  const wantQty = wantEntries.reduce((s, [,v]) => s + v.want, 0);
+  const haveValue = haveEntries.reduce((sum, [name, v]) => sum + (prices[name]?.market || 0) * v.have, 0);
+  const wantValue = wantEntries.reduce((sum, [name, v]) => sum + (prices[name]?.market || 0) * v.want, 0);
   document.getElementById('stat-total').textContent = allCards.length;
-  document.getElementById('stat-have').textContent = haveCards.length;
-  document.getElementById('stat-want').textContent = wantCards.length;
+  document.getElementById('stat-have').textContent = haveQty;
+  document.getElementById('stat-want').textContent = wantQty;
   const haveValEl = document.getElementById('stat-have-value');
   const wantValEl = document.getElementById('stat-want-value');
   if (haveValEl) haveValEl.textContent = haveValue > 0 ? ` ($${haveValue.toFixed(2)})` : '';
@@ -564,25 +585,31 @@ function renderCards(cards, append = false) {
   const shown = currentCards.slice(append ? visibleCount - PAGE_SIZE : 0, visibleCount);
   const html = shown.map(card => {
     const entry = col[card.id] || {};
-    const have = entry.have || false;
-    const want = entry.want || false;
-    const flagClass = (have && want ? ' flag-have flag-want' : have ? ' flag-have' : want ? ' flag-want' : '');
+    const have = entry.have || 0;
+    const want = entry.want || 0;
+    const flagClass = (have > 0 && want > 0 ? ' flag-have flag-want' : have > 0 ? ' flag-have' : want > 0 ? ' flag-want' : '');
     const price = prices[card.name];
     const priceHtml = price?.market != null
-      ? `<div class="card-price">
-          <span class="price-market">$${price.market.toFixed(2)}</span>
-          ${price.foilMarket != null ? `<span class="price-foil">✦$${price.foilMarket.toFixed(2)}</span>` : ''}
-        </div>`
+      ? `<div class="card-price"><span class="price-market">$${price.market.toFixed(2)}</span></div>`
       : '';
+    const escId = card.id.replace(/'/g, "\\'");
     return `<div class="card-thumb${flagClass}" data-id="${card.id}" onclick="void(0)">
       <img src="${getImageUrl(card)}" alt="${card.name}" loading="lazy" onerror="this.style.opacity='0.2'">
       <div class="flag-badge">
-        ${have ? '<span class="badge badge-have">Have</span>' : ''}
-        ${want ? '<span class="badge badge-want">Want</span>' : ''}
+        ${have > 0 ? `<span class="badge badge-have">Have${have > 1 ? ' ×'+have : ''}</span>` : ''}
+        ${want > 0 ? `<span class="badge badge-want">Want${want > 1 ? ' ×'+want : ''}</span>` : ''}
       </div>
       <div class="card-flags">
-        <button class="flag-btn have-btn${have ? ' on' : ''}" onclick="event.stopPropagation();toggleFlag('${card.id}','have')">✓ Have</button>
-        <button class="flag-btn want-btn${want ? ' on' : ''}" onclick="event.stopPropagation();toggleFlag('${card.id}','want')">♡ Want</button>
+        <button class="flag-btn have-btn${have > 0 ? ' on' : ''}" onclick="event.stopPropagation();toggleFlag('${escId}','have')">${have > 0 ? '✓ Have ×'+have : '✓ Have'}</button>
+        <button class="flag-btn want-btn${want > 0 ? ' on' : ''}" onclick="event.stopPropagation();toggleFlag('${escId}','want')">${want > 0 ? '♡ Want ×'+want : '♡ Want'}</button>
+        <div class="qty-have" style="display:${have > 0 ? 'flex' : 'none'}">
+          <button class="qty-mini" onclick="event.stopPropagation();changeQty('${escId}','have',-1)">−</button>
+          <button class="qty-mini" onclick="event.stopPropagation();changeQty('${escId}','have',1)">+</button>
+        </div>
+        <div class="qty-want" style="display:${want > 0 ? 'flex' : 'none'}">
+          <button class="qty-mini" onclick="event.stopPropagation();changeQty('${escId}','want',-1)">−</button>
+          <button class="qty-mini" onclick="event.stopPropagation();changeQty('${escId}','want',1)">+</button>
+        </div>
       </div>
       <div class="card-thumb-name">${card.name}</div>
       <div class="card-thumb-meta">${[card.type, card.rarity, card.set].filter(Boolean).join(' · ')}</div>
@@ -674,9 +701,9 @@ function filterCards() {
 
   const filtered = allCards.filter(c => {
     // View filter
-    if (currentView === 'have' && !col[c.id]?.have) return false;
-    if (currentView === 'want' && !col[c.id]?.want) return false;
-    if (currentView === 'missing' && col[c.id]?.have) return false;
+    if (currentView === 'have' && !(col[c.id]?.have > 0)) return false;
+    if (currentView === 'want' && !(col[c.id]?.want > 0)) return false;
+    if (currentView === 'missing' && col[c.id]?.have > 0) return false;
     // Search
     if (q && !c.name.toLowerCase().includes(q)) return false;
     // Basic filters
@@ -704,29 +731,25 @@ function filterCards() {
 // ── EXPORTS ──
 function exportList(flag, filename, title) {
   const col = getCollection();
-  const cards = allCards.filter(c => col[c.id]?.[flag]);
+  const cards = allCards.filter(c => col[c.id]?.[flag] > 0);
   if (!cards.length) { toast(`No cards flagged as ${flag}`); return; }
 
-  // Sort alphabetically
   cards.sort((a, b) => a.name.localeCompare(b.name));
 
-  // Calculate total price
-  const totalPrice = cards.reduce((sum, c) => sum + (prices[c.name]?.market || 0), 0);
+  const totalQty = cards.reduce((s, c) => s + (col[c.id]?.[flag] || 0), 0);
+  const totalPrice = cards.reduce((sum, c) => sum + (prices[c.name]?.market || 0) * (col[c.id]?.[flag] || 1), 0);
   const priceStr = totalPrice > 0 ? `$${totalPrice.toFixed(2)}` : 'N/A (no price data)';
 
-  // Group by set then rarity (alphabetical within each group)
   const groups = {};
   cards.forEach(c => {
-    const set = c.set || 'Unknown Set';
-    const rarity = c.rarity || 'Unknown';
-    const key = `${set} — ${rarity}`;
+    const key = `${c.set || 'Unknown Set'} — ${c.rarity || 'Unknown'}`;
     (groups[key] = groups[key] || []).push(c);
   });
 
   const lines = [
     `// ${title}`,
     `// Generated ${new Date().toLocaleDateString()} by Pufftrees`,
-    `// Total cards: ${cards.length}`,
+    `// Total cards: ${totalQty} (${cards.length} unique)`,
     `// Total price: ${priceStr}`,
     ''
   ];
@@ -734,9 +757,11 @@ function exportList(flag, filename, title) {
   Object.entries(groups).sort().forEach(([group, gcards]) => {
     lines.push(`// ${group}`);
     gcards.forEach(c => {
+      const qty = col[c.id]?.[flag] || 1;
       const price = prices[c.name]?.market;
-      const priceTag = price != null ? ` — $${price.toFixed(2)}` : '';
-      lines.push(`${c.name}${priceTag}`);
+      const priceTag = price != null ? ` — $${(price * qty).toFixed(2)}${qty > 1 ? ` (${qty}× $${price.toFixed(2)})` : ''}` : '';
+      const qtyTag = qty > 1 ? `${qty}x ` : '';
+      lines.push(`${qtyTag}${c.name}${priceTag}`);
     });
     lines.push('');
   });
@@ -745,7 +770,7 @@ function exportList(flag, filename, title) {
   a.href = URL.createObjectURL(new Blob([lines.join('\n')], {type:'text/plain'}));
   a.download = filename;
   a.click();
-  toast(`Exported ${cards.length} cards`);
+  toast(`Exported ${totalQty} cards (${cards.length} unique)`);
 }
 
 function exportWantList() { exportList('want', 'want_list.txt', 'Sorcery TCG — Want List'); }
