@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grimoire — Videos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --void: #0b0a0f;
+    --abyss: #111018;
+    --dusk: #1a1826;
+    --twilight: #252338;
+    --mist: #3a3658;
+    --rune: #6b5fa0;
+    --arcane: #9b87d4;
+    --shimmer: #c9bfee;
+    --parchment: #e8e0cc;
+    --gold: #c8a96e;
+    --ember: #c4614a;
+    --border: rgba(155,135,212,0.18);
+    --border-strong: rgba(155,135,212,0.35);
+    --glow: 0 0 20px rgba(155,135,212,0.15);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--void); color: var(--parchment); font-family: 'Crimson Pro', Georgia, serif; font-size: 17px; line-height: 1.5; min-height: 100vh; }
+
+  /* HEADER */
+  header { background: linear-gradient(180deg, #0d0b14 0%, var(--void) 100%); border-bottom: 1px solid var(--border); padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 60px; position: sticky; top: 0; z-index: 100; backdrop-filter: blur(8px); }
+  .logo { font-family: 'Cinzel', serif; font-size: 1.3rem; font-weight: 700; color: var(--gold); text-shadow: 0 0 20px rgba(200,169,110,0.4); }
+  .header-left { display: flex; align-items: center; gap: 16px; }
+  .header-right { display: flex; gap: 12px; align-items: center; }
+  .header-link { font-family: 'Cinzel', serif; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--rune); text-decoration: none; transition: color 0.2s; }
+  .header-link:hover, .header-link.active { color: var(--arcane); }
+  .btn { padding: 7px 16px; font-family: 'Cinzel', serif; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; border-radius: 3px; cursor: pointer; border: 1px solid transparent; transition: all 0.2s; }
+  .btn-ghost { background: transparent; border-color: var(--border-strong); color: var(--rune); }
+  .btn-ghost:hover { border-color: var(--arcane); color: var(--arcane); }
+  .btn-primary { background: var(--rune); border-color: var(--arcane); color: #fff; }
+  .btn-primary:hover { background: var(--arcane); }
+
+  /* PAGE */
+  .page { padding: 28px 28px 48px; max-width: 1600px; margin: 0 auto; }
+
+  /* SECTION TITLE */
+  .section-title {
+    font-family: 'Cinzel', serif; font-size: 0.78rem; font-weight: 700;
+    letter-spacing: 0.2em; text-transform: uppercase; color: var(--rune);
+    margin-bottom: 20px; display: flex; align-items: center; gap: 14px;
+  }
+  .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .section-title span { color: var(--mist); font-weight: 400; font-size: 0.68rem; letter-spacing: 0.1em; }
+
+  /* FEATURED VIDEOS */
+  .featured-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 20px; margin-bottom: 48px; }
+
+  .video-card { background: var(--dusk); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; transition: border-color 0.2s, box-shadow 0.2s; }
+  .video-card:hover { border-color: var(--arcane); box-shadow: var(--glow); }
+
+  .video-embed { position: relative; padding-bottom: 56.25%; height: 0; }
+  .video-embed iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
+
+  .video-info { padding: 12px 14px; }
+  .video-title { font-family: 'Cinzel', serif; font-size: 0.85rem; font-weight: 600; color: var(--shimmer); margin-bottom: 4px; line-height: 1.4; }
+  .video-channel { font-size: 0.78rem; color: var(--rune); font-style: italic; }
+  .video-note { font-size: 0.8rem; color: var(--mist); margin-top: 4px; }
+
+  /* CHANNEL SECTIONS */
+  .channel-section { margin-bottom: 44px; }
+  .channel-header { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+  .channel-name { font-family: 'Cinzel', serif; font-size: 0.9rem; font-weight: 700; color: var(--gold); }
+  .channel-link { font-size: 0.75rem; color: var(--rune); text-decoration: none; font-style: italic; transition: color 0.2s; }
+  .channel-link:hover { color: var(--arcane); }
+  .channel-status { font-size: 0.75rem; color: var(--mist); font-style: italic; }
+
+  .channel-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+
+  /* RSS CARD (before clicking) */
+  .rss-card { background: var(--dusk); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; cursor: pointer; transition: border-color 0.2s, box-shadow 0.2s; }
+  .rss-card:hover { border-color: var(--arcane); box-shadow: var(--glow); }
+
+  .rss-thumb { position: relative; padding-bottom: 56.25%; background: var(--twilight); overflow: hidden; }
+  .rss-thumb img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
+  .rss-play { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(11,10,15,0.4); opacity: 0; transition: opacity 0.2s; }
+  .rss-card:hover .rss-play { opacity: 1; }
+  .rss-play-icon { width: 48px; height: 48px; background: var(--rune); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: #fff; }
+
+  .rss-info { padding: 10px 12px 12px; }
+  .rss-title { font-size: 0.85rem; color: var(--shimmer); line-height: 1.4; margin-bottom: 4px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .rss-date { font-size: 0.72rem; color: var(--mist); font-style: italic; }
+
+  /* Expanded embed replacing rss-card */
+  .rss-card.expanded { cursor: default; }
+  .rss-card.expanded:hover { border-color: var(--arcane); }
+
+  /* LOADING / ERROR */
+  .channel-loading { color: var(--mist); font-style: italic; font-size: 0.9rem; padding: 20px 0; }
+  .channel-error { color: var(--ember); font-style: italic; font-size: 0.85rem; padding: 16px 0; }
+
+  /* ADD FEATURED FORM */
+  .add-featured-form {
+    background: var(--abyss); border: 1px solid var(--border); border-radius: 6px;
+    padding: 16px 20px; margin-bottom: 24px;
+    display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap;
+  }
+  .form-group { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 200px; }
+  .form-group label { font-family: 'Cinzel', serif; font-size: 0.62rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--rune); }
+  .form-group input { background: #0b0a0f; border: 2px solid #2a2640; color: var(--parchment); font-family: 'Crimson Pro', serif; font-size: 0.95rem; padding: 7px 10px; outline: none; border-radius: 0; transition: border-color 0.2s; }
+  .form-group input:focus { border-color: var(--rune); }
+  .form-group input::placeholder { color: #3a3658; font-style: italic; }
+
+  /* TOAST */
+  .toast { position: fixed; bottom: 20px; right: 20px; background: var(--dusk); border: 1px solid var(--border-strong); color: var(--shimmer); font-size: 0.9rem; padding: 9px 16px; border-radius: 4px; z-index: 999; opacity: 0; transform: translateY(6px); transition: opacity 0.2s, transform 0.2s; pointer-events: none; font-style: italic; }
+  .toast.show { opacity: 1; transform: translateY(0); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <div class="logo"><a href="index.html" style="color:var(--gold);text-decoration:none;">Grimoire</a></div>
+    <a href="collection.html" class="header-link">My Collection</a>
+    <button class="btn btn-ghost" onclick="window.location.href='index.html'">My Decks</button>
+    <button class="btn btn-primary" onclick="window.location.href='deckbuilder.html'">✦ New Deck</button>
+  </div>
+  <div class="header-right">
+    <a href="https://drive.google.com/file/d/1sgQo0xf0N2teIR0zlyl91g9j6LVncZnr/view" target="_blank" class="header-link">Rulebook</a>
+    <a href="https://play.sorcerytcg.com/" target="_blank" class="header-link">Play Network</a>
+    <a href="https://sorcerytcg.com/" target="_blank" class="header-link">Sorcery TCG</a>
+  </div>
+</header>
+
+<div class="page">
+
+  <!-- FEATURED VIDEOS -->
+  <div class="section-title">⧫ Featured Videos <span>Hand-picked favourites</span></div>
+
+  <!-- Add featured form -->
+  <div class="add-featured-form">
+    <div class="form-group">
+      <label>YouTube URL</label>
+      <input type="text" id="add-url" placeholder="https://youtube.com/watch?v=...">
+    </div>
+    <div class="form-group">
+      <label>Title (optional)</label>
+      <input type="text" id="add-title" placeholder="Leave blank to use video title">
+    </div>
+    <div class="form-group">
+      <label>Note (optional)</label>
+      <input type="text" id="add-note" placeholder="e.g. Great intro to Earth decks">
+    </div>
+    <button class="btn btn-primary" onclick="addFeatured()" style="flex-shrink:0;align-self:flex-end;">+ Add Video</button>
+  </div>
+
+  <div class="featured-grid" id="featured-grid">
+    <!-- Rendered by JS -->
+  </div>
+
+  <!-- CHANNEL FEEDS -->
+  <div class="section-title">📺 Latest from Channels <span>Auto-updated from RSS</span></div>
+
+  <div id="channels-container">
+    <!-- Rendered by JS -->
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── CHANNELS CONFIG ──
+const CHANNELS = [
+  {
+    name: 'The Assorted Animals',
+    handle: '@TheAssortedAnimals',
+    url: 'https://www.youtube.com/@TheAssortedAnimals',
+    channelId: 'UCaO-qqRZVlaGvF5AE0EmbNg',
+  },
+  {
+    name: "Winning On Death's Door",
+    handle: '@winningondeathsdoor',
+    url: 'https://www.youtube.com/@winningondeathsdoor',
+    channelId: 'UCRXYlCNyqqEW7NiHBwiiSBw',
+  },
+  {
+    name: 'SorceryTCG (Official)',
+    handle: '@SorceryTCG',
+    url: 'https://www.youtube.com/@SorceryTCG',
+    channelId: 'UCqmv-SKT0_SO5FbP3vGZ_uQ',
+  },
+];
+
+// ── FEATURED VIDEOS STORAGE ──
+function getFeatured() {
+  try { return JSON.parse(localStorage.getItem('grimoire_featured_videos') || '[]'); } catch { return []; }
+}
+function saveFeatured(list) {
+  localStorage.setItem('grimoire_featured_videos', JSON.stringify(list));
+}
+
+function extractVideoId(url) {
+  const m = url.match(/(?:v=|youtu\.be\/|embed\/)([a-zA-Z0-9_-]{11})/);
+  return m ? m[1] : null;
+}
+
+function addFeatured() {
+  const url = document.getElementById('add-url').value.trim();
+  const title = document.getElementById('add-title').value.trim();
+  const note = document.getElementById('add-note').value.trim();
+  const videoId = extractVideoId(url);
+  if (!videoId) { toast('Could not extract video ID — check the URL'); return; }
+  const list = getFeatured();
+  if (list.find(v => v.videoId === videoId)) { toast('Already in featured list'); return; }
+  list.push({ videoId, title: title || '', note: note || '', addedAt: Date.now() });
+  saveFeatured(list);
+  document.getElementById('add-url').value = '';
+  document.getElementById('add-title').value = '';
+  document.getElementById('add-note').value = '';
+  renderFeatured();
+  toast('Video added to featured!');
+}
+
+function removeFeatured(videoId) {
+  const list = getFeatured().filter(v => v.videoId !== videoId);
+  saveFeatured(list);
+  renderFeatured();
+  toast('Removed from featured');
+}
+
+function renderFeatured() {
+  const list = getFeatured();
+  const grid = document.getElementById('featured-grid');
+  if (!list.length) {
+    grid.innerHTML = `<div style="color:var(--mist);font-style:italic;font-size:0.9rem;padding:8px 0;grid-column:1/-1;">No featured videos yet — paste a YouTube URL above to add one.</div>`;
+    return;
+  }
+  grid.innerHTML = list.map(v => `
+    <div class="video-card">
+      <div class="video-embed">
+        <iframe src="https://www.youtube.com/embed/${v.videoId}" allowfullscreen loading="lazy"></iframe>
+      </div>
+      <div class="video-info">
+        ${v.title ? `<div class="video-title">${v.title}</div>` : ''}
+        ${v.note ? `<div class="video-note">${v.note}</div>` : ''}
+        <div style="margin-top:8px;">
+          <button onclick="removeFeatured('${v.videoId}')" style="font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;background:none;border:1px solid rgba(196,97,74,0.3);color:var(--ember);padding:3px 8px;cursor:pointer;border-radius:2px;">Remove</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── RSS CHANNEL FEEDS ──
+// Use a CORS proxy to fetch YouTube RSS feeds
+const RSS_PROXY = 'https://api.rss2json.com/v1/api.json?rss_url=';
+
+async function fetchChannelFeed(channel) {
+  const rssUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${channel.channelId}`;
+  const proxyUrl = `${RSS_PROXY}${encodeURIComponent(rssUrl)}&count=8`;
+  const res = await fetch(proxyUrl);
+  if (!res.ok) throw new Error('Feed fetch failed');
+  const data = await res.json();
+  if (data.status !== 'ok') throw new Error(data.message || 'Feed error');
+  return data.items || [];
+}
+
+function getVideoIdFromFeedItem(item) {
+  // rss2json returns the link as the YouTube watch URL
+  return extractVideoId(item.link || item.guid || '');
+}
+
+function timeAgo(dateStr) {
+  const d = new Date(dateStr);
+  const now = new Date();
+  const diff = Math.floor((now - d) / 1000);
+  if (diff < 3600) return `${Math.floor(diff/60)}m ago`;
+  if (diff < 86400) return `${Math.floor(diff/3600)}h ago`;
+  if (diff < 604800) return `${Math.floor(diff/86400)}d ago`;
+  if (diff < 2592000) return `${Math.floor(diff/604800)}w ago`;
+  return d.toLocaleDateString();
+}
+
+let expandedVideos = new Set();
+
+function expandVideo(cardEl, videoId) {
+  if (expandedVideos.has(videoId)) return;
+  expandedVideos.add(videoId);
+  cardEl.classList.add('expanded');
+  cardEl.innerHTML = `
+    <div class="video-embed">
+      <iframe src="https://www.youtube.com/embed/${videoId}?autoplay=1" allowfullscreen allow="autoplay"></iframe>
+    </div>`;
+}
+
+async function renderChannels() {
+  const container = document.getElementById('channels-container');
+  container.innerHTML = CHANNELS.map(ch => `
+    <div class="channel-section" id="channel-${ch.channelId}">
+      <div class="channel-header">
+        <div class="channel-name">${ch.name}</div>
+        <a href="${ch.url}" target="_blank" class="channel-link">↗ ${ch.handle}</a>
+        <span class="channel-status" id="status-${ch.channelId}">Loading…</span>
+      </div>
+      <div class="channel-grid" id="grid-${ch.channelId}">
+        ${[...Array(4)].map(() => `<div style="background:var(--dusk);border-radius:6px;aspect-ratio:16/9;animation:pulse 2s infinite;"></div>`).join('')}
+      </div>
+    </div>
+  `).join('');
+
+  // Fetch each channel
+  for (const ch of CHANNELS) {
+    const statusEl = document.getElementById(`status-${ch.channelId}`);
+    const gridEl = document.getElementById(`grid-${ch.channelId}`);
+    try {
+      const items = await fetchChannelFeed(ch);
+      statusEl.textContent = `${items.length} latest videos`;
+
+      gridEl.innerHTML = items.map(item => {
+        const videoId = getVideoIdFromFeedItem(item);
+        if (!videoId) return '';
+        const thumb = `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`;
+        const title = item.title || 'Untitled';
+        const date = item.pubDate ? timeAgo(item.pubDate) : '';
+        return `<div class="rss-card" id="rss-${videoId}" onclick="expandVideo(this,'${videoId}')">
+          <div class="rss-thumb">
+            <img src="${thumb}" alt="${title}" loading="lazy">
+            <div class="rss-play"><div class="rss-play-icon">▶</div></div>
+          </div>
+          <div class="rss-info">
+            <div class="rss-title">${title}</div>
+            <div class="rss-date">${date}</div>
+          </div>
+        </div>`;
+      }).join('');
+    } catch(e) {
+      statusEl.textContent = 'Could not load feed';
+      statusEl.style.color = 'var(--ember)';
+      gridEl.innerHTML = `<div class="channel-error">Could not load videos from ${ch.name}. <a href="${ch.url}" target="_blank" style="color:var(--arcane)">Visit channel →</a></div>`;
+    }
+  }
+}
+
+// ── TOAST ──
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('show');
+  clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('show'), 2400);
+}
+
+// ── INIT ──
+renderFeatured();
+renderChannels();
+</script>
+</body>
+</html>
