@@ -707,17 +707,37 @@ function exportList(flag, filename, title) {
   const cards = allCards.filter(c => col[c.id]?.[flag]);
   if (!cards.length) { toast(`No cards flagged as ${flag}`); return; }
 
-  // Group by set then type
+  // Sort alphabetically
+  cards.sort((a, b) => a.name.localeCompare(b.name));
+
+  // Calculate total price
+  const totalPrice = cards.reduce((sum, c) => sum + (prices[c.name]?.market || 0), 0);
+  const priceStr = totalPrice > 0 ? `$${totalPrice.toFixed(2)}` : 'N/A (no price data)';
+
+  // Group by set then rarity (alphabetical within each group)
   const groups = {};
   cards.forEach(c => {
-    const key = `${c.set || 'Unknown'} — ${c.type || 'Other'}`;
+    const set = c.set || 'Unknown Set';
+    const rarity = c.rarity || 'Unknown';
+    const key = `${set} — ${rarity}`;
     (groups[key] = groups[key] || []).push(c);
   });
 
-  const lines = [`// ${title}`, `// Generated ${new Date().toLocaleDateString()}`, `// ${cards.length} cards`, ''];
+  const lines = [
+    `// ${title}`,
+    `// Generated ${new Date().toLocaleDateString()} by Pufftrees`,
+    `// Total cards: ${cards.length}`,
+    `// Total price: ${priceStr}`,
+    ''
+  ];
+
   Object.entries(groups).sort().forEach(([group, gcards]) => {
     lines.push(`// ${group}`);
-    gcards.forEach(c => lines.push(`${c.name} (${c.rarity || 'Unknown'})`));
+    gcards.forEach(c => {
+      const price = prices[c.name]?.market;
+      const priceTag = price != null ? ` — $${price.toFixed(2)}` : '';
+      lines.push(`${c.name}${priceTag}`);
+    });
     lines.push('');
   });
 
