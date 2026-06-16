@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0b0a0f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Grimoire Tracker">
+<link rel="manifest" href="manifest.json">
+<title>Grimoire — Life Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Pro:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --void: #0b0a0f;
+    --abyss: #111018;
+    --dusk: #1a1826;
+    --twilight: #252338;
+    --mist: #3a3658;
+    --rune: #6b5fa0;
+    --arcane: #9b87d4;
+    --shimmer: #c9bfee;
+    --parchment: #e8e0cc;
+    --gold: #c8a96e;
+    --ember: #c4614a;
+    --sage: #5a8a6a;
+    --air: #8fb8d4;
+    --earth: #9a8b5a;
+    --fire: #c4614a;
+    --water: #5a8ab0;
+    --border: rgba(155,135,212,0.18);
+    --border-strong: rgba(155,135,212,0.35);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; -webkit-user-select: none; user-select: none; }
+
+  html, body {
+    background: var(--void);
+    color: var(--parchment);
+    font-family: 'Crimson Pro', Georgia, serif;
+    height: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
+    position: fixed;
+    width: 100%;
+  }
+
+  .tracker {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    height: 100dvh;
+  }
+
+  /* PLAYER ZONE */
+  .player {
+    flex: 1;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  .player.top { transform: rotate(180deg); border-bottom: 2px solid var(--mist); }
+  .player-1 { background: radial-gradient(ellipse at center, #1a1420 0%, var(--void) 75%); }
+  .player-2 { background: radial-gradient(ellipse at center, #14181f 0%, var(--void) 75%); }
+
+  /* LIFE SECTION */
+  .life-section {
+    flex: 1;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  /* Tap zones for life */
+  .life-tap {
+    position: absolute;
+    top: 0; bottom: 0;
+    width: 38%;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+  .life-tap.minus { left: 0; }
+  .life-tap.plus { right: 0; }
+  .life-tap-hint {
+    font-size: 2.5rem;
+    color: var(--mist);
+    opacity: 0;
+    transition: opacity 0.15s;
+    font-family: 'Cinzel', serif;
+  }
+  .life-tap:active .life-tap-hint { opacity: 0.5; }
+
+  .life-display {
+    text-align: center;
+    z-index: 1;
+    pointer-events: none;
+  }
+  .life-number {
+    font-family: 'Cinzel', serif;
+    font-size: 6rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--parchment);
+    text-shadow: 0 0 30px rgba(200,169,110,0.3);
+  }
+  .life-label {
+    font-family: 'Cinzel', serif;
+    font-size: 0.7rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-top: 4px;
+  }
+
+  .life-number.low { color: var(--ember); text-shadow: 0 0 30px rgba(196,97,74,0.5); }
+
+  /* Explicit +/- buttons */
+  .life-buttons {
+    display: flex;
+    gap: 14px;
+    z-index: 3;
+    margin-top: 8px;
+    pointer-events: auto;
+  }
+  .life-btn {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    border: 2px solid var(--border-strong);
+    background: rgba(11,10,15,0.6);
+    color: var(--arcane);
+    font-size: 1.6rem;
+    font-family: 'Cinzel', serif;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: background 0.1s, transform 0.1s;
+  }
+  .life-btn:active { background: var(--rune); color: #fff; transform: scale(0.92); }
+
+  /* RESOURCE BAR (thresholds + mana) */
+  .resource-bar {
+    display: flex;
+    align-items: stretch;
+    width: 100%;
+    border-top: 1px solid var(--border);
+    background: rgba(11,10,15,0.5);
+    flex-shrink: 0;
+    height: 88px;
+  }
+
+  .resource {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    border-right: 1px solid var(--border);
+    position: relative;
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+  .resource:last-child { border-right: none; }
+  .resource:active { background: rgba(155,135,212,0.08); }
+
+  .resource-icon {
+    font-size: 0.85rem;
+    font-weight: 700;
+    font-family: 'Cinzel', serif;
+    letter-spacing: 0.05em;
+  }
+  .resource.air .resource-icon { color: var(--air); }
+  .resource.earth .resource-icon { color: var(--earth); }
+  .resource.fire .resource-icon { color: var(--fire); }
+  .resource.water .resource-icon { color: var(--water); }
+  .resource.mana .resource-icon { color: var(--gold); }
+
+  .resource-value {
+    font-family: 'Cinzel', serif;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--parchment);
+    line-height: 1;
+  }
+  .resource-label {
+    font-size: 0.55rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--mist);
+  }
+
+  /* Resource mini controls */
+  .resource-controls {
+    position: absolute;
+    inset: 0;
+    display: flex;
+  }
+  .resource-tap { flex: 1; }
+
+  /* CENTER BAR */
+  .center-bar {
+    height: 44px;
+    background: var(--abyss);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    flex-shrink: 0;
+    z-index: 10;
+  }
+  .center-btn {
+    font-family: 'Cinzel', serif;
+    font-size: 0.62rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    background: none;
+    border: 1px solid var(--border-strong);
+    color: var(--rune);
+    padding: 6px 14px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .center-btn:active { background: var(--rune); color: #fff; }
+  .center-logo {
+    font-family: 'Cinzel', serif;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--gold);
+    letter-spacing: 0.1em;
+  }
+
+  /* SETTINGS MODAL */
+  .modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(11,10,15,0.92);
+    z-index: 100;
+    align-items: center; justify-content: center;
+    backdrop-filter: blur(6px);
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--dusk);
+    border: 1px solid var(--border-strong);
+    border-radius: 10px;
+    padding: 28px;
+    width: 88%;
+    max-width: 360px;
+    text-align: center;
+  }
+  .modal h2 {
+    font-family: 'Cinzel', serif;
+    font-size: 1.1rem;
+    color: var(--gold);
+    margin-bottom: 20px;
+    letter-spacing: 0.1em;
+  }
+  .modal-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+    gap: 12px;
+  }
+  .modal-row label {
+    font-size: 1rem;
+    color: var(--shimmer);
+  }
+  .stepper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .stepper button {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    border: 1px solid var(--border-strong);
+    background: var(--abyss);
+    color: var(--arcane);
+    font-size: 1.3rem;
+    cursor: pointer;
+  }
+  .stepper button:active { background: var(--rune); color: #fff; }
+  .stepper-value {
+    font-family: 'Cinzel', serif;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--parchment);
+    min-width: 44px;
+  }
+  .modal-btns { display: flex; gap: 10px; margin-top: 8px; }
+  .modal-btn {
+    flex: 1;
+    font-family: 'Cinzel', serif;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    border: 1px solid transparent;
+  }
+  .modal-btn.primary { background: var(--rune); border-color: var(--arcane); color: #fff; }
+  .modal-btn.ghost { background: transparent; border-color: var(--border-strong); color: var(--rune); }
+  .modal-btn.danger { background: rgba(196,97,74,0.15); border-color: var(--ember); color: var(--ember); }
+
+  .hint-text { font-size: 0.85rem; color: var(--mist); font-style: italic; margin-top: 16px; line-height: 1.5; }
+</style>
+</head>
+<body>
+
+<div class="tracker">
+
+  <!-- PLAYER 2 (TOP, rotated) -->
+  <div class="player top player-2" data-player="2">
+    <div class="life-section">
+      <div class="life-tap minus" ontouchstart="changeLife(2,-1)" onclick="changeLife(2,-1)"><span class="life-tap-hint">−</span></div>
+      <div class="life-tap plus" ontouchstart="changeLife(2,1)" onclick="changeLife(2,1)"><span class="life-tap-hint">+</span></div>
+      <div class="life-display">
+        <div class="life-number" id="life-2">20</div>
+        <div class="life-label">Life</div>
+        <div class="life-buttons">
+          <div class="life-btn" ontouchstart="event.stopPropagation();changeLife(2,-1)" onclick="event.stopPropagation();changeLife(2,-1)">−</div>
+          <div class="life-btn" ontouchstart="event.stopPropagation();changeLife(2,1)" onclick="event.stopPropagation();changeLife(2,1)">+</div>
+        </div>
+      </div>
+    </div>
+    <div class="resource-bar">
+      <div class="resource air" data-p="2" data-r="air"><div class="resource-icon">Air</div><div class="resource-value" id="air-2">0</div><div class="resource-controls"><div class="resource-tap" onclick="changeRes(2,'air',-1)"></div><div class="resource-tap" onclick="changeRes(2,'air',1)"></div></div></div>
+      <div class="resource earth" data-p="2" data-r="earth"><div class="resource-icon">Earth</div><div class="resource-value" id="earth-2">0</div><div class="resource-controls"><div class="resource-tap" onclick="changeRes(2,'earth',-1)"></div><div class="resource-tap" onclick="changeRes(2,'earth',1)"></div></div></div>
+      <div class="resource fire" data-p="2" data-r="fire"><div class="resource-icon">Fire</div><div class="resource-value" id="fire-2">0</div><div class="resource-controls"><div class="resource-tap" onclick="changeRes(2,'fire',-1)"></div><div class="resource-tap" onclick="changeRes(2,'fire',1)"></div></div></div>
+      <div class="resource water" data-p="2" data-r="water"><div class="resource-icon">Water</div><div class="resource-value" id="water-2">0</div><div class="resource-controls"><div class="resource-tap" onclick="changeRes(2,'water',-1)"></div><div class="resource-tap" onclick="changeRes(2,'water',1)"></div></div></div>
+      <div class="resource mana" data-p="2" data-r="mana"><div class="resource-icon">◈</div><div class="resource-value" id="mana-2">0</div><div class="resource-controls"><div class="resource-tap" onclick="changeRes(2,'mana',-1)"></div><div class="resource-tap" onclick="changeRes(2,'mana',1)"></div></div></div>
+    </div>
+  </div>
+
+  <!-- CENTER BAR -->
+  <div class="center-bar">
+    <button class="center-btn" onclick="openSettings()">⚙ Settings</button>
+    <div class="center-logo">⧫ Grimoire</div>
+    <button class="center-btn" onclick="confirmReset()">↻ Reset</button>
+  </div>
+
+  <!-- PLAYER 1 (BOTTOM) -->
+  <div class="player player-1" data-player="1">
+    <div class="life-section">
+      <div class="life-tap minus" ontouchstart="changeLife(1,-1)" onclick="changeLife(1,-1)"><span class="life-tap-hint">−</span></div>
+      <div class="life-tap plus" ontouchstart="changeLife(1,1)" onclick="changeLife(1,1)"><span class="life-tap-hint">+</span></div>
+      <div class="life-display">
+        <div class="life-number" id="life-1">20</div>
+        <div class="life-label">Life</div>
+        <div class="life-buttons">
+          <div class="life-btn" ontouchstart="event.stopPropagation();changeLife(1,-1)" onclick="event.stopPropagation();changeLife(1,-1)">−</div>
+          <div class="life-btn" ontouchstart="event.stopPropagation();changeLife(1,1)" onclick="event.stopPropagation();changeLife(1,1)">+</div>
+        </div>
+      </div>
+    </div>
+    <div class="resource-bar">
+      <div class="resource air" data-p="1" data-r="air"><div class="resource-icon">Air</div><div class="resource-value" id="air-1">0</div><div class="resource-controls"><div class="resource-tap" onclick="changeRes(1,'air',-1)"></div><div class="resource-tap" onclick="changeRes(1,'air',1)"></div></div></div>
+      <div class="resource earth" data-p="1" data-r="earth"><div class="resource-icon">Earth</div><div class="resource-value" id="earth-1">0</div><div class="resource-controls"><div class="resource-tap" onclick="changeRes(1,'earth',-1)"></div><div class="resource-tap" onclick="changeRes(1,'earth',1)"></div></div></div>
+      <div class="resource fire" data-p="1" data-r="fire"><div class="resource-icon">Fire</div><div class="resource-value" id="fire-1">0</div><div class="resource-controls"><div class="resource-tap" onclick="changeRes(1,'fire',-1)"></div><div class="resource-tap" onclick="changeRes(1,'fire',1)"></div></div></div>
+      <div class="resource water" data-p="1" data-r="water"><div class="resource-icon">Water</div><div class="resource-value" id="water-1">0</div><div class="resource-controls"><div class="resource-tap" onclick="changeRes(1,'water',-1)"></div><div class="resource-tap" onclick="changeRes(1,'water',1)"></div></div></div>
+      <div class="resource mana" data-p="1" data-r="mana"><div class="resource-icon">◈</div><div class="resource-value" id="mana-1">0</div><div class="resource-controls"><div class="resource-tap" onclick="changeRes(1,'mana',-1)"></div><div class="resource-tap" onclick="changeRes(1,'mana',1)"></div></div></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- SETTINGS MODAL -->
+<div class="modal-overlay" id="settings-modal">
+  <div class="modal">
+    <h2>⚙ Settings</h2>
+    <div class="modal-row">
+      <label>Starting Life</label>
+      <div class="stepper">
+        <button onclick="adjustStartLife(-1)">−</button>
+        <div class="stepper-value" id="start-life-value">20</div>
+        <button onclick="adjustStartLife(1)">+</button>
+      </div>
+    </div>
+    <div class="modal-btns">
+      <button class="modal-btn ghost" onclick="closeSettings()">Close</button>
+      <button class="modal-btn primary" onclick="applyStartLife()">Apply & Reset</button>
+    </div>
+    <div class="hint-text">Tap the left/right side of a life total to −/+ it, or use the round buttons. Tap the left/right of a resource to adjust it.</div>
+  </div>
+</div>
+
+<!-- RESET CONFIRM MODAL -->
+<div class="modal-overlay" id="reset-modal">
+  <div class="modal">
+    <h2>↻ New Game?</h2>
+    <div class="hint-text" style="margin-top:0;margin-bottom:20px;">This will reset both players' life to <span id="reset-life-text">20</span>, and clear all thresholds and mana.</div>
+    <div class="modal-btns">
+      <button class="modal-btn ghost" onclick="closeReset()">Cancel</button>
+      <button class="modal-btn danger" onclick="doReset()">Reset Game</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── STATE ──
+let startLife = 20;
+let state = {
+  1: { life: 20, air: 0, earth: 0, fire: 0, water: 0, mana: 0 },
+  2: { life: 20, air: 0, earth: 0, fire: 0, water: 0, mana: 0 },
+};
+
+// Load saved state
+function loadState() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('grimoire_tracker') || 'null');
+    if (saved) {
+      state = saved.state || state;
+      startLife = saved.startLife || 20;
+    }
+  } catch(e) {}
+}
+function saveState() {
+  localStorage.setItem('grimoire_tracker', JSON.stringify({ state, startLife }));
+}
+
+// ── LIFE ──
+function changeLife(player, delta) {
+  state[player].life += delta;
+  updatePlayer(player);
+  saveState();
+  haptic();
+}
+
+// ── RESOURCES ──
+function changeRes(player, res, delta) {
+  state[player][res] = Math.max(0, state[player][res] + delta);
+  updatePlayer(player);
+  saveState();
+  haptic();
+}
+
+// ── RENDER ──
+function updatePlayer(player) {
+  const s = state[player];
+  const lifeEl = document.getElementById('life-' + player);
+  lifeEl.textContent = s.life;
+  lifeEl.classList.toggle('low', s.life <= 5);
+  document.getElementById('air-' + player).textContent = s.air;
+  document.getElementById('earth-' + player).textContent = s.earth;
+  document.getElementById('fire-' + player).textContent = s.fire;
+  document.getElementById('water-' + player).textContent = s.water;
+  document.getElementById('mana-' + player).textContent = s.mana;
+}
+function updateAll() { updatePlayer(1); updatePlayer(2); }
+
+// ── HAPTIC ──
+function haptic() {
+  if (navigator.vibrate) navigator.vibrate(8);
+}
+
+// ── SETTINGS ──
+let tempStartLife = 20;
+function openSettings() {
+  tempStartLife = startLife;
+  document.getElementById('start-life-value').textContent = tempStartLife;
+  document.getElementById('settings-modal').classList.add('open');
+}
+function closeSettings() { document.getElementById('settings-modal').classList.remove('open'); }
+function adjustStartLife(delta) {
+  tempStartLife = Math.max(1, tempStartLife + delta);
+  document.getElementById('start-life-value').textContent = tempStartLife;
+}
+function applyStartLife() {
+  startLife = tempStartLife;
+  closeSettings();
+  doReset();
+}
+
+// ── RESET ──
+function confirmReset() {
+  document.getElementById('reset-life-text').textContent = startLife;
+  document.getElementById('reset-modal').classList.add('open');
+}
+function closeReset() { document.getElementById('reset-modal').classList.remove('open'); }
+function doReset() {
+  state = {
+    1: { life: startLife, air: 0, earth: 0, fire: 0, water: 0, mana: 0 },
+    2: { life: startLife, air: 0, earth: 0, fire: 0, water: 0, mana: 0 },
+  };
+  updateAll();
+  saveState();
+  closeReset();
+  haptic();
+}
+
+// ── KEEP SCREEN AWAKE ──
+let wakeLock = null;
+async function requestWakeLock() {
+  try {
+    if ('wakeLock' in navigator) {
+      wakeLock = await navigator.wakeLock.request('screen');
+    }
+  } catch(e) {}
+}
+document.addEventListener('visibilitychange', () => {
+  if (wakeLock !== null && document.visibilityState === 'visible') requestWakeLock();
+});
+
+// ── REGISTER SERVICE WORKER ──
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('tracker-sw.js').catch(() => {});
+}
+
+// ── INIT ──
+loadState();
+updateAll();
+requestWakeLock();
+
+// Prevent double-tap zoom
+let lastTouch = 0;
+document.addEventListener('touchend', e => {
+  const now = Date.now();
+  if (now - lastTouch < 300) e.preventDefault();
+  lastTouch = now;
+}, { passive: false });
+</script>
+</body>
+</html>
