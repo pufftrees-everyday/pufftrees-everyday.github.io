@@ -53,6 +53,7 @@
     .add-featured-form { flex-direction: column; align-items: stretch; }
     .form-group { min-width: 0; }
     .channel-player { max-width: 100% !important; }
+    .channel-layout { grid-template-columns: 1fr !important; }
   }
   .btn { padding: 7px 16px; font-family: 'Cinzel', serif; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; border-radius: 3px; cursor: pointer; border: 1px solid transparent; transition: all 0.2s; }
   .btn-ghost { background: transparent; border-color: var(--border-strong); color: var(--rune); }
@@ -95,8 +96,42 @@
   .channel-status { font-size: 0.75rem; color: var(--mist); font-style: italic; }
 
   .channel-grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
-  .channel-player { background: var(--dusk); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; max-width: 780px; }
+  .channel-layout { display: grid; grid-template-columns: minmax(0, 1.6fr) 1fr; gap: 20px; align-items: start; }
+  .channel-player { background: var(--dusk); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
   .channel-browse { padding: 12px 16px; border-top: 1px solid var(--border); }
+
+  .channel-about {
+    background: var(--dusk);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 18px 20px;
+    align-self: stretch;
+  }
+  .channel-about-label {
+    font-family: 'Cinzel', serif; font-size: 0.62rem; font-weight: 700;
+    letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold);
+    margin-bottom: 12px; padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .channel-about-desc {
+    font-size: 1rem; line-height: 1.6; color: var(--parchment); margin-bottom: 16px;
+  }
+  .channel-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 18px; }
+  .channel-tag {
+    font-family: 'Cinzel', serif; font-size: 0.6rem; font-weight: 600;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    background: rgba(155,135,212,0.1); border: 1px solid var(--border);
+    color: var(--arcane); padding: 4px 10px; border-radius: 20px;
+  }
+  .channel-sub-btn {
+    display: inline-block;
+    font-family: 'Cinzel', serif; font-size: 0.65rem; font-weight: 600;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    background: var(--ember); border: 1px solid var(--ember);
+    color: #fff; text-decoration: none;
+    padding: 9px 16px; border-radius: 4px; transition: opacity 0.15s;
+  }
+  .channel-sub-btn:hover { opacity: 0.85; }
   .browse-link { font-family: 'Cinzel', serif; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.08em; color: var(--arcane); text-decoration: none; transition: color 0.2s; }
   .browse-link:hover { color: var(--shimmer); }
 
@@ -196,18 +231,24 @@ const CHANNELS = [
     handle: '@TheAssortedAnimals',
     url: 'https://www.youtube.com/@TheAssortedAnimals',
     channelId: 'UCaO-qqRZVlaGvF5AE0EmbNg',
+    desc: 'Sorcery: Contested Realm gameplay, deck techs, and strategy from a creator deep in the competitive scene. A great place to see real matches played out and learn how archetypes pilot.',
+    tags: ['Gameplay', 'Deck Tech', 'Strategy'],
   },
   {
     name: "Winning On Death's Door",
     handle: '@winningondeathsdoor',
     url: 'https://www.youtube.com/@winningondeathsdoor',
     channelId: 'UCRXYlCNyqqEW7NiHBwiiSBw',
+    desc: "A Sorcery: Contested Realm channel bringing you deck profiles, gameplay videos, and discussion on all things Sorcery — with a focus on clawing back wins from the brink at Death's Door.",
+    tags: ['Deck Profiles', 'Gameplay', 'Discussion'],
   },
   {
     name: 'SorceryTCG (Official)',
     handle: '@SorceryTCG',
     url: 'https://www.youtube.com/@SorceryTCG',
     channelId: 'UCqmv-SKT0_SO5FbP3vGZ_uQ',
+    desc: 'The official channel for Sorcery: Contested Realm — an "old school" fantasy card game for players with a rich imagination, tactical nerve, and an appreciation for hand-painted art. Official reveals, tutorials, and event coverage.',
+    tags: ['Official', 'Reveals', 'Tutorials'],
   },
 ];
 
@@ -278,14 +319,15 @@ function renderFeatured() {
 
 async function renderChannels() {
   const container = document.getElementById('channels-container');
-  container.innerHTML = CHANNELS.map(ch => `
+  container.innerHTML = CHANNELS.map(ch => {
+    const tags = (ch.tags || []).map(t => `<span class="channel-tag">${t}</span>`).join('');
+    return `
     <div class="channel-section">
       <div class="channel-header">
         <div class="channel-name">${ch.name}</div>
         <a href="${ch.url}" target="_blank" class="channel-link">↗ ${ch.handle}</a>
       </div>
-      <div class="channel-grid">
-        <!-- Embed the channel's uploads playlist -->
+      <div class="channel-layout">
         <div class="channel-player">
           <div class="video-embed">
             <iframe
@@ -300,9 +342,15 @@ async function renderChannels() {
             </a>
           </div>
         </div>
+        <div class="channel-about">
+          <div class="channel-about-label">About the Channel</div>
+          <p class="channel-about-desc">${ch.desc || ''}</p>
+          ${tags ? `<div class="channel-tags">${tags}</div>` : ''}
+          <a href="${ch.url}?sub_confirmation=1" target="_blank" class="channel-sub-btn">Subscribe on YouTube</a>
+        </div>
       </div>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
 }
 
 function getVideoIdFromFeedItem(item) { return null; }
