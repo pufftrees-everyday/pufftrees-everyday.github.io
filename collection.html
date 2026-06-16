@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grimoire — Collection Manager</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --void: #0b0a0f;
+    --abyss: #111018;
+    --dusk: #1a1826;
+    --twilight: #252338;
+    --mist: #3a3658;
+    --rune: #6b5fa0;
+    --arcane: #9b87d4;
+    --shimmer: #c9bfee;
+    --parchment: #e8e0cc;
+    --gold: #c8a96e;
+    --ember: #c4614a;
+    --sage: #5a8a6a;
+    --border: rgba(155,135,212,0.18);
+    --border-strong: rgba(155,135,212,0.35);
+    --glow: 0 0 20px rgba(155,135,212,0.15);
+    --glow-strong: 0 0 30px rgba(155,135,212,0.3);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--void);
+    color: var(--parchment);
+    font-family: 'Crimson Pro', Georgia, serif;
+    font-size: 17px;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  header {
+    background: linear-gradient(180deg, #0d0b14 0%, var(--void) 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 60px; position: sticky; top: 0; z-index: 100;
+    backdrop-filter: blur(8px);
+  }
+  .logo { font-family: 'Cinzel', serif; font-size: 1.3rem; font-weight: 700; color: var(--gold); text-shadow: 0 0 20px rgba(200,169,110,0.4); }
+  .logo span { color: var(--arcane); font-weight: 400; }
+  .header-nav { display: flex; gap: 12px; align-items: center; }
+  .header-link { font-family: 'Cinzel', serif; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--rune); text-decoration: none; transition: color 0.2s; }
+  .header-link:hover, .header-link.active { color: var(--arcane); }
+
+  /* BUTTONS */
+  .btn { padding: 7px 16px; font-family: 'Cinzel', serif; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; border-radius: 3px; cursor: pointer; border: 1px solid transparent; transition: all 0.2s; }
+  .btn-primary { background: var(--rune); border-color: var(--arcane); color: #fff; }
+  .btn-primary:hover { background: var(--arcane); }
+  .btn-ghost { background: transparent; border-color: var(--border-strong); color: var(--rune); }
+  .btn-ghost:hover { border-color: var(--arcane); color: var(--arcane); }
+  .btn-want { background: rgba(196,97,74,0.15); border-color: rgba(196,97,74,0.4); color: var(--ember); }
+  .btn-want:hover, .btn-want.active { background: var(--ember); border-color: var(--ember); color: #fff; }
+  .btn-have { background: rgba(90,138,106,0.15); border-color: rgba(90,138,106,0.4); color: var(--sage); }
+  .btn-have:hover, .btn-have.active { background: var(--sage); border-color: var(--sage); color: #fff; }
+
+  /* PAGE */
+  .page { padding: 24px; }
+
+  /* COLLECTION HEADER BAR */
+  .collection-bar {
+    display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+    margin-bottom: 20px; padding: 14px 18px;
+    background: #13111e;
+    border: 3px solid #2a2640;
+    border-bottom: 5px solid #0b0a0f;
+    box-shadow: inset 3px 3px 0 rgba(255,255,255,0.04), inset -3px -3px 0 rgba(0,0,0,0.35);
+  }
+
+  .collection-title {
+    font-family: 'Cinzel', serif; font-size: 1rem; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold);
+    flex-shrink: 0;
+  }
+
+  .collection-stats { display: flex; gap: 10px; flex-wrap: wrap; }
+  .cstat { font-size: 0.82rem; background: rgba(155,135,212,0.06); border: 1px solid var(--border); border-radius: 3px; padding: 3px 10px; color: var(--shimmer); white-space: nowrap; }
+  .cstat b { color: var(--arcane); }
+  .cstat.have-stat b { color: var(--sage); }
+  .cstat.want-stat b { color: var(--ember); }
+
+  .collection-actions { display: flex; gap: 8px; margin-left: auto; flex-wrap: wrap; }
+
+  /* VIEW TOGGLE */
+  .view-toggle { display: flex; border: 1px solid var(--border); border-radius: 3px; overflow: hidden; }
+  .view-btn {
+    padding: 5px 14px; font-family: 'Cinzel', serif; font-size: 0.65rem; font-weight: 600;
+    letter-spacing: 0.1em; text-transform: uppercase; background: transparent;
+    color: var(--mist); border: none; cursor: pointer; transition: all 0.15s;
+    border-right: 1px solid var(--border);
+  }
+  .view-btn:last-child { border-right: none; }
+  .view-btn:hover { color: var(--arcane); background: rgba(155,135,212,0.06); }
+  .view-btn.active { background: var(--rune); color: #fff; }
+
+  /* STONEWORK FILTER */
+  .search-bar {
+    margin-bottom: 16px;
+    display: flex; flex-direction: column; gap: 0;
+  }
+  .search-row {
+    display: flex; gap: 10px; align-items: center;
+    background: #252338; border: 3px solid #2a2640;
+    border-bottom: 5px solid #0b0a0f;
+    box-shadow: inset 3px 3px 0 rgba(255,255,255,0.05), inset -3px -3px 0 rgba(0,0,0,0.4);
+    padding: 12px 16px;
+  }
+  .search-input-wrap { position: relative; flex: 1; }
+  .search-input-wrap svg { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; opacity: 0.35; fill: var(--arcane); pointer-events: none; }
+  input[type="text"] { width: 100%; background: #0b0a0f; border: 2px solid #2a2640; color: var(--parchment); font-family: 'Crimson Pro', serif; font-size: 1.05rem; padding: 7px 12px 7px 34px; outline: none; box-shadow: inset 2px 2px 4px rgba(0,0,0,0.5); border-radius: 0; transition: border-color 0.2s; }
+  input[type="text"]:focus { border-color: var(--rune); }
+  input[type="text"]::placeholder { color: #3a3658; font-style: italic; }
+  .clear-all-btn { font-family: 'Cinzel', serif; font-size: 0.65rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; background: #13111e; border: 2px solid #2a2640; color: var(--rune); padding: 7px 14px; cursor: pointer; box-shadow: inset 2px 2px 0 rgba(255,255,255,0.03), inset -2px -2px 0 rgba(0,0,0,0.4); transition: color 0.15s, border-color 0.15s; }
+  .clear-all-btn:hover { color: var(--ember); border-color: var(--ember); }
+
+  .filter-stones { display: flex; gap: 0; flex-wrap: nowrap; }
+  .filter-stone { flex: 1; background: #1a1826; padding: 12px 14px 16px; border: 3px solid #2a2640; border-right: none; border-top: none; position: relative; box-shadow: inset 3px 3px 0 rgba(255,255,255,0.04), inset -3px -3px 0 rgba(0,0,0,0.35); min-width: 100px; }
+  .filter-stone:last-child { border-right: 3px solid #2a2640; }
+  .filter-stone + .filter-stone::before { content: ''; position: absolute; left: -5px; top: 0; bottom: 0; width: 5px; background: #0b0a0f; z-index: 2; }
+  .stone-label { font-family: 'Cinzel', serif; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 2px solid #0b0a0f; box-shadow: 0 1px 0 rgba(255,255,255,0.04); display: flex; justify-content: space-between; align-items: center; }
+  .stone-clear { background: none; border: none; color: var(--rune); font-size: 0.7rem; cursor: pointer; font-family: 'Crimson Pro', serif; font-style: italic; transition: color 0.15s; }
+  .stone-clear:hover { color: var(--ember); }
+  .stone-options { display: flex; flex-direction: column; gap: 3px; }
+  .stone-option { display: flex; align-items: center; gap: 9px; font-family: 'Crimson Pro', serif; font-size: 1.1rem; color: #c9bfee; cursor: pointer; padding: 4px 5px; transition: color 0.15s, background 0.15s; border: none; background: none; text-align: left; width: 100%; }
+  .stone-option:hover { color: #fff; background: rgba(155,135,212,0.1); }
+  .stone-option.active { color: #fff; }
+  .rune-mark { width: 16px; height: 16px; flex-shrink: 0; border: 2px solid #3a3658; background: #0b0a0f; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; color: transparent; transition: background 0.15s, border-color 0.15s; }
+  .stone-option.active .rune-mark { background: var(--rune); border-color: var(--arcane); color: #fff; }
+  .stone-foundation { background: #13111e; border: 3px solid #2a2640; border-top: 5px solid #0b0a0f; padding: 9px 16px; min-height: 36px; }
+  .active-summary { font-size: 1rem; color: #9b87d4; font-style: italic; }
+  .active-summary span { color: var(--gold); }
+
+  /* ADVANCED TOGGLE */
+  .advanced-toggle { display: flex; align-items: center; justify-content: space-between; background: #0d0b14; border-top: 1px solid #2a2640; padding: 8px 16px; cursor: pointer; user-select: none; transition: background 0.15s; }
+  .advanced-toggle:hover { background: #13111e; }
+  .advanced-toggle-label { font-family: 'Cinzel', serif; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--rune); display: flex; align-items: center; gap: 7px; }
+  .adv-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--mist); transition: background 0.2s; }
+  .advanced-toggle.has-active .adv-dot { background: var(--arcane); }
+  .advanced-toggle-arrow { font-size: 0.6rem; color: var(--mist); transition: transform 0.2s; }
+  .advanced-toggle.open .advanced-toggle-arrow { transform: rotate(180deg); }
+  .advanced-panel { display: none; flex-direction: column; gap: 14px; background: #0a0910; border: 1px solid #2a2640; border-top: none; padding: 14px 16px; }
+  .advanced-panel.open { display: flex; }
+  .adv-section-title { font-family: 'Cinzel', serif; font-size: 0.62rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold); margin-bottom: 8px; padding-bottom: 5px; border-bottom: 1px solid #1a1728; display: flex; justify-content: space-between; align-items: center; }
+  .adv-clear { background: none; border: none; color: var(--rune); font-size: 0.68rem; cursor: pointer; font-family: 'Crimson Pro', serif; font-style: italic; padding: 0; transition: color 0.15s; }
+  .adv-clear:hover { color: var(--ember); }
+  .adv-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .adv-chip { padding: 3px 11px; font-family: 'Crimson Pro', serif; font-size: 0.92rem; border: 1px solid #2a2640; border-radius: 2px; background: #13111e; color: var(--shimmer); cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+  .adv-chip:hover { border-color: var(--arcane); color: #fff; }
+  .adv-chip.active { background: var(--rune); border-color: var(--arcane); color: #fff; }
+  .adv-range-row { display: flex; flex-wrap: wrap; gap: 16px; }
+  .adv-range { display: flex; align-items: center; gap: 6px; }
+  .adv-range label { font-family: 'Cinzel', serif; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--rune); white-space: nowrap; }
+  .adv-range input[type="number"] { width: 56px; background: #13111e; border: 1px solid #2a2640; color: var(--parchment); font-family: 'Crimson Pro', serif; font-size: 0.9rem; padding: 4px 7px; outline: none; -moz-appearance: textfield; }
+  .adv-range input[type="number"]::-webkit-outer-spin-button, .adv-range input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
+  .adv-range input[type="number"]:focus { border-color: var(--rune); }
+  .adv-range span { color: var(--mist); font-size: 0.85rem; }
+
+  /* RESULT COUNT */
+  .result-count { font-size: 0.82rem; color: var(--rune); font-style: italic; margin-bottom: 14px; }
+
+  /* CARD GRID */
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; }
+  .card-grid.sites-only { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+  .card-grid.sites-only .card-thumb { aspect-ratio: 4/3; display: flex; align-items: center; justify-content: center; }
+  .card-grid.sites-only .card-thumb img { position: absolute; width: 75%; aspect-ratio: 3/4; transform: rotate(90deg); object-fit: contain; }
+
+  .card-thumb {
+    position: relative; cursor: pointer; border-radius: 6px;
+    border: 2px solid var(--border); overflow: hidden;
+    background: var(--dusk); transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s;
+  }
+  .card-thumb:hover { transform: translateY(-2px); box-shadow: var(--glow-strong); }
+  .card-thumb img { width: 100%; aspect-ratio: 3/4; object-fit: cover; display: block; }
+
+  /* Flag states — border color */
+  .card-thumb.flag-have { border-color: var(--sage); box-shadow: 0 0 12px rgba(90,138,106,0.3); }
+  .card-thumb.flag-want { border-color: var(--ember); box-shadow: 0 0 12px rgba(196,97,74,0.3); }
+  .card-thumb.flag-have.flag-want { border-color: var(--gold); box-shadow: 0 0 12px rgba(200,169,110,0.3); }
+
+  /* Flag buttons overlay */
+  .card-flags {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    background: linear-gradient(0deg, rgba(11,10,15,0.95) 50%, transparent);
+    padding: 20px 6px 6px;
+    display: flex; gap: 4px;
+    opacity: 0; transition: opacity 0.15s;
+    justify-content: center;
+  }
+  .card-thumb:hover .card-flags { opacity: 1; }
+
+  .flag-btn {
+    padding: 4px 10px; font-family: 'Cinzel', serif; font-size: 0.6rem; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase; border-radius: 2px;
+    cursor: pointer; border: 1px solid; transition: all 0.15s;
+  }
+  .flag-btn.have-btn { background: rgba(90,138,106,0.2); border-color: var(--sage); color: var(--sage); }
+  .flag-btn.have-btn:hover, .flag-btn.have-btn.on { background: var(--sage); color: #fff; }
+  .flag-btn.want-btn { background: rgba(196,97,74,0.2); border-color: var(--ember); color: var(--ember); }
+  .flag-btn.want-btn:hover, .flag-btn.want-btn.on { background: var(--ember); color: #fff; }
+
+  /* Flag indicator badges */
+  .flag-badge {
+    position: absolute; top: 5px; right: 5px;
+    display: flex; flex-direction: column; gap: 2px;
+    pointer-events: none;
+  }
+  .badge { font-family: 'Cinzel', serif; font-size: 0.55rem; font-weight: 700; letter-spacing: 0.06em; padding: 1px 5px; border-radius: 2px; }
+  .badge-have { background: var(--sage); color: #fff; }
+  .badge-want { background: var(--ember); color: #fff; }
+
+  .card-thumb-name { padding: 5px 8px; font-size: 0.8rem; color: var(--shimmer); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .card-thumb-meta { padding: 0 8px 6px; font-size: 0.7rem; color: var(--rune); font-style: italic; }
+
+  /* STATUS */
+  .status { padding: 60px 24px; text-align: center; color: var(--mist); font-style: italic; }
+  .loading-rune { font-size: 2.5rem; display: block; margin-bottom: 16px; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:0.3} 50%{opacity:1} }
+
+  /* TOAST */
+  .toast { position: fixed; bottom: 24px; right: 24px; background: var(--dusk); border: 1px solid var(--border-strong); color: var(--shimmer); font-size: 0.9rem; padding: 10px 18px; border-radius: 6px; box-shadow: var(--glow); z-index: 999; opacity: 0; transform: translateY(8px); transition: opacity 0.2s, transform 0.2s; pointer-events: none; font-style: italic; }
+  .toast.show { opacity: 1; transform: translateY(0); }
+
+  @media (max-width: 700px) {
+    .filter-stones { flex-wrap: wrap; }
+    .collection-bar { flex-direction: column; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo"><a href="index.html" style="color:var(--gold);text-decoration:none;">Grimoire</a> <span>· <a href="https://sorcerytcg.com/" target="_blank" style="color:var(--arcane);text-decoration:none;font-weight:400;">Sorcery TCG</a></span></div>
+  <div class="header-nav">
+    <a href="https://drive.google.com/file/d/1sgQo0xf0N2teIR0zlyl91g9j6LVncZnr/view" target="_blank" class="header-link">Rulebook</a>
+    <a href="collection.html" class="header-link active">Collection</a>
+    <a href="https://play.sorcerytcg.com/" target="_blank" class="header-link">Play Network</a>
+    <a href="deckbuilder.html" class="header-link">Deck Builder</a>
+  </div>
+</header>
+
+<div class="page">
+
+  <!-- COLLECTION BAR -->
+  <div class="collection-bar">
+    <div class="collection-title">⧫ Collection</div>
+    <div class="collection-stats">
+      <div class="cstat"><b id="stat-total">0</b> cards</div>
+      <div class="cstat have-stat">Have: <b id="stat-have">0</b></div>
+      <div class="cstat want-stat">Want: <b id="stat-want">0</b></div>
+    </div>
+    <div class="view-toggle">
+      <button class="view-btn active" onclick="setView('all')">All</button>
+      <button class="view-btn" onclick="setView('have')">Have</button>
+      <button class="view-btn" onclick="setView('want')">Want</button>
+      <button class="view-btn" onclick="setView('missing')">Missing</button>
+    </div>
+    <div class="collection-actions">
+      <button class="btn btn-ghost" onclick="exportWantList()">⬇ Export Want List</button>
+      <button class="btn btn-ghost" onclick="exportHaveList()">⬇ Export Have List</button>
+      <button class="btn btn-ghost" onclick="clearCollection()">Clear All Flags</button>
+    </div>
+  </div>
+
+  <!-- SEARCH + FILTERS -->
+  <div class="search-bar">
+    <div class="search-row">
+      <div class="search-input-wrap">
+        <svg viewBox="0 0 20 20"><path d="M12.9 14.32a8 8 0 111.41-1.41l4.42 4.41-1.41 1.42-4.42-4.42zM8 14A6 6 0 108 2a6 6 0 000 12z"/></svg>
+        <input type="text" id="search-input" placeholder="Search cards…" autocomplete="off">
+      </div>
+      <button class="clear-all-btn" onclick="clearAllFilters()">✕ Clear</button>
+    </div>
+    <div class="filter-stones">
+      <div class="filter-stone">
+        <div class="stone-label">Type <button class="stone-clear" onclick="clearGroup('type')">clear</button></div>
+        <div class="stone-options">
+          <button class="stone-option" data-group="type" data-value="Avatar" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Avatar</button>
+          <button class="stone-option" data-group="type" data-value="Minion" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Minion</button>
+          <button class="stone-option" data-group="type" data-value="Magic" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Magic</button>
+          <button class="stone-option" data-group="type" data-value="Artifact" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Artifact</button>
+          <button class="stone-option" data-group="type" data-value="Aura" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Aura</button>
+          <button class="stone-option" data-group="type" data-value="Site" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Site</button>
+        </div>
+      </div>
+      <div class="filter-stone">
+        <div class="stone-label">Set <button class="stone-clear" onclick="clearGroup('set')">clear</button></div>
+        <div class="stone-options">
+          <button class="stone-option" data-group="set" data-value="Alpha" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Alpha</button>
+          <button class="stone-option" data-group="set" data-value="Beta" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Beta</button>
+          <button class="stone-option" data-group="set" data-value="Arthurian Legends" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Arthurian Legends</button>
+          <button class="stone-option" data-group="set" data-value="Gothic" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Gothic</button>
+          <button class="stone-option" data-group="set" data-value="Dragonlord" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Dragonlord</button>
+          <button class="stone-option" data-group="set" data-value="Promotional" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Promotional</button>
+        </div>
+      </div>
+      <div class="filter-stone">
+        <div class="stone-label">Rarity <button class="stone-clear" onclick="clearGroup('rarity')">clear</button></div>
+        <div class="stone-options">
+          <button class="stone-option" data-group="rarity" data-value="Ordinary" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Ordinary</button>
+          <button class="stone-option" data-group="rarity" data-value="Exceptional" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Exceptional</button>
+          <button class="stone-option" data-group="rarity" data-value="Elite" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Elite</button>
+          <button class="stone-option" data-group="rarity" data-value="Unique" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Unique</button>
+        </div>
+      </div>
+      <div class="filter-stone">
+        <div class="stone-label">Element <button class="stone-clear" onclick="clearGroup('element')">clear</button></div>
+        <div class="stone-options">
+          <button class="stone-option" data-group="element" data-value="Air" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Air</button>
+          <button class="stone-option" data-group="element" data-value="Earth" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Earth</button>
+          <button class="stone-option" data-group="element" data-value="Fire" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Fire</button>
+          <button class="stone-option" data-group="element" data-value="Water" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Water</button>
+        </div>
+      </div>
+    </div>
+    <div class="stone-foundation">
+      <div class="active-summary" id="active-summary"></div>
+    </div>
+  </div>
+
+  <!-- ADVANCED FILTERS -->
+  <div class="advanced-toggle" id="advanced-toggle" onclick="toggleAdvanced()">
+    <div class="advanced-toggle-label"><span class="adv-dot"></span>Advanced Filters</div>
+    <span class="advanced-toggle-arrow">▼</span>
+  </div>
+  <div class="advanced-panel" id="advanced-panel">
+    <div>
+      <div class="adv-section-title">Minion Subtype <button class="adv-clear" onclick="clearAdvGroup('minionSubtype')">clear</button></div>
+      <div class="adv-chips">
+        <button class="adv-chip" data-adv-group="minionSubtype" data-value="Angel" onclick="toggleAdvChip(this)">Angel</button>
+        <button class="adv-chip" data-adv-group="minionSubtype" data-value="Beast" onclick="toggleAdvChip(this)">Beast</button>
+        <button class="adv-chip" data-adv-group="minionSubtype" data-value="Demon" onclick="toggleAdvChip(this)">Demon</button>
+        <button class="adv-chip" data-adv-group="minionSubtype" data-value="Dragon" onclick="toggleAdvChip(this)">Dragon</button>
+        <button class="adv-chip" data-adv-group="minionSubtype" data-value="Dwarf" onclick="toggleAdvChip(this)">Dwarf</button>
+        <button class="adv-chip" data-adv-group="minionSubtype" data-value="Faerie" onclick="toggleAdvChip(this)">Faerie</button>
+        <button class="adv-chip" data-adv-group="minionSubtype" data-value="Giant" onclick="toggleAdvChip(this)">Giant</button>
+        <button class="adv-chip" data-adv-group="minionSubtype" data-value="Gnome" onclick="toggleAdvChip(this)">Gnome</button>
+        <button class="adv-chip" data-adv-group="minionSubtype" data-value="Goblin" onclick="toggleAdvChip(this)">Goblin</button>
+        <button class="adv-chip" data-adv-group="minionSubtype" data-value="Merfolk" onclick="toggleAdvChip(this)">Merfolk</button>
+        <button class="adv-chip" data-adv-group="minionSubtype" data-value="Monster" onclick="toggleAdvChip(this)">Monster</button>
+        <button class="adv-chip" data-adv-group="minionSubtype" data-value="Mortal" onclick="toggleAdvChip(this)">Mortal</button>
+        <button class="adv-chip" data-adv-group="minionSubtype" data-value="Ogre" onclick="toggleAdvChip(this)">Ogre</button>
+        <button class="adv-chip" data-adv-group="minionSubtype" data-value="Sphinx" onclick="toggleAdvChip(this)">Sphinx</button>
+        <button class="adv-chip" data-adv-group="minionSubtype" data-value="Spirit" onclick="toggleAdvChip(this)">Spirit</button>
+        <button class="adv-chip" data-adv-group="minionSubtype" data-value="Troll" onclick="toggleAdvChip(this)">Troll</button>
+        <button class="adv-chip" data-adv-group="minionSubtype" data-value="Undead" onclick="toggleAdvChip(this)">Undead</button>
+      </div>
+    </div>
+    <div>
+      <div class="adv-section-title">Artifact Subtype <button class="adv-clear" onclick="clearAdvGroup('artifactSubtype')">clear</button></div>
+      <div class="adv-chips">
+        <button class="adv-chip" data-adv-group="artifactSubtype" data-value="Armor" onclick="toggleAdvChip(this)">Armor</button>
+        <button class="adv-chip" data-adv-group="artifactSubtype" data-value="Automaton" onclick="toggleAdvChip(this)">Automaton</button>
+        <button class="adv-chip" data-adv-group="artifactSubtype" data-value="Device" onclick="toggleAdvChip(this)">Device</button>
+        <button class="adv-chip" data-adv-group="artifactSubtype" data-value="Document" onclick="toggleAdvChip(this)">Document</button>
+        <button class="adv-chip" data-adv-group="artifactSubtype" data-value="Instruments" onclick="toggleAdvChip(this)">Instruments</button>
+        <button class="adv-chip" data-adv-group="artifactSubtype" data-value="Monument" onclick="toggleAdvChip(this)">Monument</button>
+        <button class="adv-chip" data-adv-group="artifactSubtype" data-value="Potion" onclick="toggleAdvChip(this)">Potion</button>
+        <button class="adv-chip" data-adv-group="artifactSubtype" data-value="Relic" onclick="toggleAdvChip(this)">Relic</button>
+        <button class="adv-chip" data-adv-group="artifactSubtype" data-value="Weapon" onclick="toggleAdvChip(this)">Weapon</button>
+      </div>
+    </div>
+    <div>
+      <div class="adv-section-title">Site Subtype <button class="adv-clear" onclick="clearAdvGroup('siteSubtype')">clear</button></div>
+      <div class="adv-chips">
+        <button class="adv-chip" data-adv-group="siteSubtype" data-value="Desert" onclick="toggleAdvChip(this)">Desert</button>
+        <button class="adv-chip" data-adv-group="siteSubtype" data-value="River" onclick="toggleAdvChip(this)">River</button>
+        <button class="adv-chip" data-adv-group="siteSubtype" data-value="Tower" onclick="toggleAdvChip(this)">Tower</button>
+        <button class="adv-chip" data-adv-group="siteSubtype" data-value="Village" onclick="toggleAdvChip(this)">Village</button>
+      </div>
+    </div>
+    <div>
+      <div class="adv-section-title">Keyword <button class="adv-clear" onclick="clearAdvGroup('keyword')">clear</button></div>
+      <div class="adv-chips">
+        <button class="adv-chip" data-adv-group="keyword" data-value="Airborne" onclick="toggleAdvChip(this)">Airborne</button>
+        <button class="adv-chip" data-adv-group="keyword" data-value="Burrowing" onclick="toggleAdvChip(this)">Burrowing</button>
+        <button class="adv-chip" data-adv-group="keyword" data-value="Charge" onclick="toggleAdvChip(this)">Charge</button>
+        <button class="adv-chip" data-adv-group="keyword" data-value="Deathrite" onclick="toggleAdvChip(this)">Deathrite</button>
+        <button class="adv-chip" data-adv-group="keyword" data-value="Genesis" onclick="toggleAdvChip(this)">Genesis</button>
+        <button class="adv-chip" data-adv-group="keyword" data-value="Lethal" onclick="toggleAdvChip(this)">Lethal</button>
+        <button class="adv-chip" data-adv-group="keyword" data-value="Movement" onclick="toggleAdvChip(this)">Movement +X</button>
+        <button class="adv-chip" data-adv-group="keyword" data-value="Ranged" onclick="toggleAdvChip(this)">Ranged</button>
+        <button class="adv-chip" data-adv-group="keyword" data-value="Spellcaster" onclick="toggleAdvChip(this)">Spellcaster</button>
+        <button class="adv-chip" data-adv-group="keyword" data-value="Stealth" onclick="toggleAdvChip(this)">Stealth</button>
+        <button class="adv-chip" data-adv-group="keyword" data-value="Submerge" onclick="toggleAdvChip(this)">Submerge</button>
+        <button class="adv-chip" data-adv-group="keyword" data-value="Voidwalk" onclick="toggleAdvChip(this)">Voidwalk</button>
+        <button class="adv-chip" data-adv-group="keyword" data-value="Ward" onclick="toggleAdvChip(this)">Ward</button>
+      </div>
+    </div>
+    <div>
+      <div class="adv-section-title">Cost &amp; Power <button class="adv-clear" onclick="clearRanges()">clear</button></div>
+      <div class="adv-range-row">
+        <div class="adv-range">
+          <label>Cost</label>
+          <input type="number" id="cost-min" min="0" max="20" placeholder="Min" oninput="filterCards()">
+          <span>–</span>
+          <input type="number" id="cost-max" min="0" max="20" placeholder="Max" oninput="filterCards()">
+        </div>
+        <div class="adv-range">
+          <label>Power</label>
+          <input type="number" id="power-min" min="0" max="20" placeholder="Min" oninput="filterCards()">
+          <span>–</span>
+          <input type="number" id="power-max" min="0" max="20" placeholder="Max" oninput="filterCards()">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="result-count" class="result-count" style="margin-top:16px;"></div>
+  <div id="card-grid" class="card-grid">
+    <div class="status"><span class="loading-rune">⧫</span>Consulting the arcane archives…</div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── STATE ──
+let allCards = [];
+let currentCards = [];
+let visibleCount = 200;
+const PAGE_SIZE = 200;
+let currentView = 'all'; // all | have | want | missing
+
+const activeFilters = { type: new Set(), set: new Set(), rarity: new Set(), element: new Set() };
+const advFilters = { minionSubtype: new Set(), artifactSubtype: new Set(), siteSubtype: new Set(), keyword: new Set() };
+
+const IMAGE_BASE = 'https://pub-5999238092ad418ca60e7a9ad641cf57.r2.dev/';
+
+// ── COLLECTION STORAGE ──
+// collection[cardName] = { have: bool, want: bool }
+function getCollection() {
+  try { return JSON.parse(localStorage.getItem('grimoire_collection') || '{}'); } catch { return {}; }
+}
+function saveCollection(col) {
+  localStorage.setItem('grimoire_collection', JSON.stringify(col));
+}
+
+function toggleFlag(cardId, flag) {
+  const col = getCollection();
+  if (!col[cardId]) col[cardId] = { have: false, want: false };
+  col[cardId][flag] = !col[cardId][flag];
+  // Clean up empty entries
+  if (!col[cardId].have && !col[cardId].want) delete col[cardId];
+  saveCollection(col);
+  updateStats();
+  // Update this card's display without full re-render
+  const thumb = document.querySelector(`.card-thumb[data-id="${CSS.escape(cardId)}"]`);
+  if (thumb) updateCardThumbFlags(thumb, cardId, col[cardId]);
+  // If we're in a filtered view, re-filter
+  if (currentView !== 'all') filterCards();
+}
+
+function updateCardThumbFlags(thumb, cardId, entry) {
+  const have = entry?.have || false;
+  const want = entry?.want || false;
+  thumb.classList.toggle('flag-have', have);
+  thumb.classList.toggle('flag-want', want);
+  // Update badges
+  let badge = thumb.querySelector('.flag-badge');
+  if (!badge) { badge = document.createElement('div'); badge.className = 'flag-badge'; thumb.appendChild(badge); }
+  badge.innerHTML = (have ? '<span class="badge badge-have">Have</span>' : '') + (want ? '<span class="badge badge-want">Want</span>' : '');
+  // Update buttons
+  const haveBtn = thumb.querySelector('.have-btn');
+  const wantBtn = thumb.querySelector('.want-btn');
+  if (haveBtn) haveBtn.classList.toggle('on', have);
+  if (wantBtn) wantBtn.classList.toggle('on', want);
+}
+
+function updateStats() {
+  const col = getCollection();
+  const haveCount = Object.values(col).filter(v => v.have).length;
+  const wantCount = Object.values(col).filter(v => v.want).length;
+  document.getElementById('stat-total').textContent = allCards.length;
+  document.getElementById('stat-have').textContent = haveCount;
+  document.getElementById('stat-want').textContent = wantCount;
+}
+
+// ── LOAD CARDS ──
+async function loadCards() {
+  try {
+    const res = await fetch('cards.json');
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    const raw = Array.isArray(data) ? data : (data.data || data.cards || []);
+    allCards = raw.map(card => {
+      const g = card.guardian || {};
+      const firstSet = (card.sets || [])[0];
+      const firstVariant = firstSet
+        ? (firstSet.variants || []).find(v => v.finish === 'Standard' && v.product === 'Booster') || firstSet.variants[0]
+        : null;
+      return {
+        id: card.name, name: card.name,
+        type: g.type || '', rarity: g.rarity || '',
+        cost: g.cost, attack: g.attack,
+        rules_text: g.rulesText || '',
+        element: Array.isArray(card.elements) ? card.elements.join(', ') : (card.elements || ''),
+        subTypes: card.subTypes || '',
+        set: firstSet ? firstSet.name : '',
+        slug: firstVariant ? firstVariant.slug : null,
+      };
+    }).sort((a, b) => a.name.localeCompare(b.name));
+    updateStats();
+    filterCards();
+  } catch(e) {
+    document.getElementById('card-grid').innerHTML = `<div class="status"><span class="loading-rune" style="animation:none;opacity:0.5">✦</span>Could not load cards.json.<br><small>${e.message}</small></div>`;
+  }
+}
+
+function getImageUrl(card) {
+  if (card.slug) return `${IMAGE_BASE}${card.slug}.png`;
+  return `${IMAGE_BASE}${(card.name||'').toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'')}.png`;
+}
+
+// ── RENDER ──
+function renderCards(cards, append = false) {
+  const grid = document.getElementById('card-grid');
+  const sitesOnly = activeFilters.type.size === 1 && activeFilters.type.has('Site');
+  grid.classList.toggle('sites-only', sitesOnly);
+
+  if (!append) {
+    currentCards = cards;
+    visibleCount = PAGE_SIZE;
+    if (!cards.length) { grid.innerHTML = '<div class="status" style="padding:40px 0">No cards match your filters.</div>'; return; }
+    grid.innerHTML = '';
+  }
+
+  const col = getCollection();
+  const shown = currentCards.slice(append ? visibleCount - PAGE_SIZE : 0, visibleCount);
+  const html = shown.map(card => {
+    const entry = col[card.id] || {};
+    const have = entry.have || false;
+    const want = entry.want || false;
+    const flagClass = (have && want ? ' flag-have flag-want' : have ? ' flag-have' : want ? ' flag-want' : '');
+    return `<div class="card-thumb${flagClass}" data-id="${card.id}" onclick="void(0)">
+      <img src="${getImageUrl(card)}" alt="${card.name}" loading="lazy" onerror="this.style.opacity='0.2'">
+      <div class="flag-badge">
+        ${have ? '<span class="badge badge-have">Have</span>' : ''}
+        ${want ? '<span class="badge badge-want">Want</span>' : ''}
+      </div>
+      <div class="card-flags">
+        <button class="flag-btn have-btn${have ? ' on' : ''}" onclick="event.stopPropagation();toggleFlag('${card.id}','have')">✓ Have</button>
+        <button class="flag-btn want-btn${want ? ' on' : ''}" onclick="event.stopPropagation();toggleFlag('${card.id}','want')">♡ Want</button>
+      </div>
+      <div class="card-thumb-name">${card.name}</div>
+      <div class="card-thumb-meta">${[card.type, card.rarity, card.set].filter(Boolean).join(' · ')}</div>
+    </div>`;
+  }).join('');
+
+  if (append) { grid.insertAdjacentHTML('beforeend', html); }
+  else { grid.innerHTML = html; }
+  document.getElementById('result-count').textContent = `Showing ${Math.min(visibleCount, currentCards.length)} of ${currentCards.length} cards`;
+}
+
+// ── VIEW ──
+function setView(view) {
+  currentView = view;
+  document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  filterCards();
+}
+
+// ── FILTERS ──
+function toggleChip(btn) {
+  const { group, value } = btn.dataset;
+  if (activeFilters[group].has(value)) { activeFilters[group].delete(value); btn.classList.remove('active'); }
+  else { activeFilters[group].add(value); btn.classList.add('active'); }
+  filterCards(); updateSummary();
+}
+
+function toggleAdvChip(btn) {
+  const group = btn.dataset.advGroup;
+  const value = btn.dataset.value;
+  if (advFilters[group].has(value)) { advFilters[group].delete(value); btn.classList.remove('active'); }
+  else { advFilters[group].add(value); btn.classList.add('active'); }
+  updateAdvDot(); filterCards();
+}
+
+function clearGroup(group) {
+  activeFilters[group].clear();
+  document.querySelectorAll(`.stone-option[data-group="${group}"]`).forEach(b => b.classList.remove('active'));
+  filterCards(); updateSummary();
+}
+
+function clearAdvGroup(group) {
+  advFilters[group].clear();
+  document.querySelectorAll(`[data-adv-group="${group}"]`).forEach(b => b.classList.remove('active'));
+  updateAdvDot(); filterCards();
+}
+
+function clearRanges() {
+  ['cost-min','cost-max','power-min','power-max'].forEach(id => { const el = document.getElementById(id); if(el) el.value=''; });
+  filterCards();
+}
+
+function clearAllFilters() {
+  Object.keys(activeFilters).forEach(g => activeFilters[g].clear());
+  Object.keys(advFilters).forEach(g => advFilters[g].clear());
+  document.querySelectorAll('.stone-option.active, .adv-chip.active').forEach(c => c.classList.remove('active'));
+  document.getElementById('search-input').value = '';
+  clearRanges(); updateSummary(); updateAdvDot(); filterCards();
+}
+
+function toggleAdvanced() {
+  document.getElementById('advanced-toggle').classList.toggle('open');
+  document.getElementById('advanced-panel').classList.toggle('open');
+}
+
+function updateAdvDot() {
+  const has = Object.values(advFilters).some(s => s.size > 0);
+  document.getElementById('advanced-toggle').classList.toggle('has-active', has);
+}
+
+function updateSummary() {
+  const parts = [];
+  if (activeFilters.type.size) parts.push([...activeFilters.type].join(', '));
+  if (activeFilters.set.size) parts.push([...activeFilters.set].join(', '));
+  if (activeFilters.rarity.size) parts.push([...activeFilters.rarity].join(', '));
+  if (activeFilters.element.size) parts.push([...activeFilters.element].join(', '));
+  const el = document.getElementById('active-summary');
+  el.innerHTML = parts.length ? `Filtering by: <span>${parts.join(' · ')}</span>` : '';
+}
+
+function filterCards() {
+  const q = document.getElementById('search-input').value.toLowerCase();
+  const costMin = document.getElementById('cost-min')?.value !== '' ? parseInt(document.getElementById('cost-min').value) : null;
+  const costMax = document.getElementById('cost-max')?.value !== '' ? parseInt(document.getElementById('cost-max').value) : null;
+  const powMin = document.getElementById('power-min')?.value !== '' ? parseInt(document.getElementById('power-min').value) : null;
+  const powMax = document.getElementById('power-max')?.value !== '' ? parseInt(document.getElementById('power-max').value) : null;
+  const col = getCollection();
+
+  const filtered = allCards.filter(c => {
+    // View filter
+    if (currentView === 'have' && !col[c.id]?.have) return false;
+    if (currentView === 'want' && !col[c.id]?.want) return false;
+    if (currentView === 'missing' && col[c.id]?.have) return false;
+    // Search
+    if (q && !c.name.toLowerCase().includes(q)) return false;
+    // Basic filters
+    if (activeFilters.type.size && !activeFilters.type.has(c.type)) return false;
+    if (activeFilters.set.size && !activeFilters.set.has(c.set)) return false;
+    if (activeFilters.rarity.size && !activeFilters.rarity.has(c.rarity)) return false;
+    if (activeFilters.element.size && ![...activeFilters.element].some(el => (c.element||'').includes(el))) return false;
+    // Advanced filters
+    const sub = c.subTypes || '';
+    if (advFilters.minionSubtype.size && ![...advFilters.minionSubtype].some(s => sub.includes(s))) return false;
+    if (advFilters.artifactSubtype.size && ![...advFilters.artifactSubtype].some(s => sub.includes(s))) return false;
+    if (advFilters.siteSubtype.size && ![...advFilters.siteSubtype].some(s => sub.includes(s))) return false;
+    const rt = (c.rules_text || '').toLowerCase();
+    if (advFilters.keyword.size && ![...advFilters.keyword].every(kw => rt.includes(kw.toLowerCase()))) return false;
+    // Ranges
+    if (costMin !== null && (c.cost == null || c.cost < costMin)) return false;
+    if (costMax !== null && (c.cost == null || c.cost > costMax)) return false;
+    if (powMin !== null && (c.attack == null || c.attack < powMin)) return false;
+    if (powMax !== null && (c.attack == null || c.attack > powMax)) return false;
+    return true;
+  });
+  renderCards(filtered);
+}
+
+// ── EXPORTS ──
+function exportList(flag, filename, title) {
+  const col = getCollection();
+  const cards = allCards.filter(c => col[c.id]?.[flag]);
+  if (!cards.length) { toast(`No cards flagged as ${flag}`); return; }
+
+  // Group by set then type
+  const groups = {};
+  cards.forEach(c => {
+    const key = `${c.set || 'Unknown'} — ${c.type || 'Other'}`;
+    (groups[key] = groups[key] || []).push(c);
+  });
+
+  const lines = [`// ${title}`, `// Generated ${new Date().toLocaleDateString()}`, `// ${cards.length} cards`, ''];
+  Object.entries(groups).sort().forEach(([group, gcards]) => {
+    lines.push(`// ${group}`);
+    gcards.forEach(c => lines.push(`${c.name} (${c.rarity || 'Unknown'})`));
+    lines.push('');
+  });
+
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([lines.join('\n')], {type:'text/plain'}));
+  a.download = filename;
+  a.click();
+  toast(`Exported ${cards.length} cards`);
+}
+
+function exportWantList() { exportList('want', 'want_list.txt', 'Sorcery TCG — Want List'); }
+function exportHaveList() { exportList('have', 'have_list.txt', 'Sorcery TCG — Have List'); }
+
+function clearCollection() {
+  if (!confirm('Clear all Have and Want flags? This cannot be undone.')) return;
+  localStorage.removeItem('grimoire_collection');
+  updateStats();
+  filterCards();
+  toast('Collection cleared');
+}
+
+// ── TOAST ──
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('show');
+  clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('show'), 2400);
+}
+
+// ── INFINITE SCROLL ──
+window.addEventListener('scroll', () => {
+  if (visibleCount >= currentCards.length) return;
+  if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 400) {
+    visibleCount += PAGE_SIZE;
+    renderCards(currentCards, true);
+  }
+}, { passive: true });
+
+document.getElementById('search-input').addEventListener('input', filterCards);
+
+loadCards();
+</script>
+</body>
+</html>
