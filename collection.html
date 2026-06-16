@@ -447,7 +447,17 @@ const IMAGE_BASE = 'https://pub-5999238092ad418ca60e7a9ad641cf57.r2.dev/';
 // ── COLLECTION STORAGE ──
 // collection[cardName] = { have: number, want: number }
 function getCollection() {
-  try { return JSON.parse(localStorage.getItem('grimoire_collection') || '{}'); } catch { return {}; }
+  try {
+    const col = JSON.parse(localStorage.getItem('grimoire_collection') || '{}');
+    // Migrate old boolean values to numbers
+    let needsSave = false;
+    for (const key of Object.keys(col)) {
+      if (typeof col[key].have === 'boolean') { col[key].have = col[key].have ? 1 : 0; needsSave = true; }
+      if (typeof col[key].want === 'boolean') { col[key].want = col[key].want ? 1 : 0; needsSave = true; }
+    }
+    if (needsSave) localStorage.setItem('grimoire_collection', JSON.stringify(col));
+    return col;
+  } catch { return {}; }
 }
 function saveCollection(col) {
   localStorage.setItem('grimoire_collection', JSON.stringify(col));
