@@ -1,7 +1,7 @@
 // Grimoire Life Tracker — Service Worker
 // Caches the tracker so it works offline once loaded.
 
-const CACHE = 'grimoire-tracker-v1';
+const CACHE = 'grimoire-tracker-v2';
 const ASSETS = [
   'tracker.html',
   'manifest.json',
@@ -23,13 +23,24 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
-  // Cache-first for our assets, network fallback
+  const url = e.request.url;
+  // Network-first for the tracker page itself, so updates show when online
+  if (e.request.mode === 'navigate' || url.includes('tracker.html')) {
+    e.respondWith(
+      fetch(e.request).then(resp => {
+        const clone = resp.clone();
+        caches.open(CACHE).then(c => c.put(e.request, clone));
+        return resp;
+      }).catch(() => caches.match(e.request))
+    );
+    return;
+  }
+  // Cache-first for everything else (fonts, etc.)
   e.respondWith(
     caches.match(e.request).then(cached => {
       if (cached) return cached;
       return fetch(e.request).then(resp => {
-        // Cache successful GETs for fonts
-        if (e.request.method === 'GET' && resp.ok && e.request.url.includes('fonts')) {
+        if (e.request.method === 'GET' && resp.ok && url.includes('fonts')) {
           const clone = resp.clone();
           caches.open(CACHE).then(c => c.put(e.request, clone));
         }
