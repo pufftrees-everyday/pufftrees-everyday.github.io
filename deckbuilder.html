@@ -535,8 +535,6 @@ function filterCards() {
   renderCardGrid();
 }
 
-document.getElementById('search-input').addEventListener('input', filterCards);
-
 // ── RENDER CARD GRID ──
 function renderCardGrid(append = false) {
   const grid = document.getElementById('card-grid');
@@ -785,7 +783,6 @@ function renderDeckCard(section, key, card, qty) {
       <button class="del-btn" onclick="event.stopPropagation();removeCard('${section}','${key}')">✕</button>
     </div>
   </div>`;
-  </div>`;
 }
 
 // ── SAVE / LOAD ──
@@ -902,18 +899,19 @@ function toast(msg) {
   clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('show'), 2400);
 }
 
-document.addEventListener('keydown', e => { if (e.key==='Escape') { closeModal({}); closeImport({}); } });
-
 // ── INIT ──
-loadCards();
-
-document.querySelector('.card-list').addEventListener('scroll', function() {
-  if (visibleCount >= currentCards.length) return;
-  if (this.scrollTop + this.clientHeight >= this.scrollHeight - 200) {
-    visibleCount += PAGE_SIZE;
-    renderCardGrid(true);
-  }
-}, { passive: true });
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('search-input').addEventListener('input', filterCards);
+  document.addEventListener('keydown', e => { if (e.key==='Escape') { closeModal({}); closeImport({}); } });
+  document.querySelector('.card-list').addEventListener('scroll', function() {
+    if (visibleCount >= currentCards.length) return;
+    if (this.scrollTop + this.clientHeight >= this.scrollHeight - 200) {
+      visibleCount += PAGE_SIZE;
+      renderCardGrid(true);
+    }
+  }, { passive: true });
+  loadCards();
+});
 </script>
 </body>
 </html>
