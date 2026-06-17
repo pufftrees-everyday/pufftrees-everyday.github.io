@@ -355,12 +355,6 @@
     z-index: 20;
     position: relative;
   }
-  .center-bar::before, .center-bar::after {
-    content: '❖';
-    color: var(--gold);
-    opacity: 0.5;
-    font-size: 0.8rem;
-  }
   .center-btn {
     font-family: 'Cinzel', serif;
     font-size: 0.62rem;
@@ -382,7 +376,11 @@
     font-weight: 700;
     color: var(--gold);
     letter-spacing: 0.05em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
+  .center-logo img { width: 22px; height: 22px; border-radius: 4px; display: block; }
 
   /* SETTINGS MODAL */
   .modal-overlay {
@@ -630,7 +628,7 @@
   <div class="center-bar">
     <button class="center-btn" onclick="openSettings()">⚙</button>
     <button class="center-btn" onclick="openHistory()">≡ Log</button>
-    <div class="center-logo">Cursed Realm</div>
+    <div class="center-logo"><img src="icon-192.png" alt="">Cursed Realm</div>
     <button class="center-btn" onclick="confirmReset()">↻ Reset</button>
     <button class="center-btn exit-btn" onclick="exitTracker()" title="Exit">✕</button>
   </div>
