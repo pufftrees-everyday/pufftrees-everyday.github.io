@@ -210,40 +210,61 @@
   .viewmode-btn:not(.active):hover { background: #1a1728; color: var(--arcane); }
 
   /* LIST VIEW */
-  .card-grid.list-view { display: flex; flex-direction: column; gap: 4px; }
-  .card-grid.list-view.sites-only { grid-template-columns: none; }
+  .card-grid.list-view {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 4px 10px;
+  }
+  .card-grid.list-view.sites-only { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .card-row {
     display: grid;
     grid-template-columns: 1fr auto auto auto auto;
-    align-items: center; gap: 12px;
+    align-items: center; gap: 9px;
     background: #13111e; border: 1px solid var(--border);
     border-left: 3px solid var(--border-strong);
-    padding: 9px 14px; border-radius: 3px;
+    padding: 5px 10px; border-radius: 3px;
     transition: background 0.12s, border-color 0.12s;
+    min-width: 0;
   }
   .card-row:hover { background: #1a1728; }
   .card-row.flag-have { border-left-color: var(--sage); }
   .card-row.flag-want { border-left-color: var(--ember); }
   .card-row.flag-have.flag-want { border-left-color: var(--gold); }
-  .row-name { font-family: 'Crimson Pro', serif; font-size: 1.05rem; color: var(--parchment); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .row-meta { font-size: 0.78rem; color: var(--mist); white-space: nowrap; }
+  .row-name { font-family: 'Crimson Pro', serif; font-size: 0.95rem; color: var(--parchment); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+  .row-meta { font-size: 0.7rem; color: var(--mist); white-space: nowrap; }
   .row-meta.set { color: var(--shimmer); }
-  .row-rarity { font-family: 'Cinzel', serif; font-size: 0.62rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 2px 8px; border-radius: 10px; white-space: nowrap; }
+  .row-rarity { font-family: 'Cinzel', serif; font-size: 0.55rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 1px 6px; border-radius: 8px; white-space: nowrap; }
   .row-rarity.ordinary { background: rgba(140,140,150,0.12); color: #9a9aa5; }
   .row-rarity.exceptional { background: rgba(90,138,176,0.14); color: var(--water); }
   .row-rarity.elite { background: rgba(155,135,212,0.14); color: var(--arcane); }
   .row-rarity.unique { background: rgba(200,169,110,0.14); color: var(--gold); }
-  .row-price { font-size: 0.85rem; color: var(--gold); white-space: nowrap; min-width: 52px; text-align: right; }
-  .row-flags { display: flex; gap: 5px; }
+  .row-price { font-size: 0.78rem; color: var(--gold); white-space: nowrap; min-width: 46px; text-align: right; }
+
+  /* Inline Have/Want with +/- steppers */
+  .row-flags { display: flex; gap: 6px; align-items: center; }
+  .row-flag-group { display: flex; align-items: center; gap: 0; border: 1px solid var(--border); border-radius: 3px; overflow: hidden; }
   .row-flag-btn {
-    font-family: 'Cinzel', serif; font-size: 0.58rem; font-weight: 600; letter-spacing: 0.05em;
-    background: #0b0a0f; border: 1px solid var(--border); color: var(--rune);
-    padding: 4px 8px; border-radius: 3px; cursor: pointer; white-space: nowrap; transition: all 0.12s;
+    font-family: 'Cinzel', serif; font-size: 0.54rem; font-weight: 700; letter-spacing: 0.04em;
+    background: #0b0a0f; border: none; color: var(--rune);
+    padding: 3px 7px; cursor: pointer; white-space: nowrap; transition: all 0.12s;
   }
-  .row-flag-btn.have.on { background: rgba(90,138,106,0.2); border-color: var(--sage); color: var(--sage); }
-  .row-flag-btn.want.on { background: rgba(196,97,74,0.2); border-color: var(--ember); color: var(--ember); }
+  .row-flag-btn.have.on { background: rgba(90,138,106,0.2); color: var(--sage); }
+  .row-flag-btn.want.on { background: rgba(196,97,74,0.2); color: var(--ember); }
+  .row-qty-mini {
+    font-family: 'Cinzel', serif; font-size: 0.7rem; font-weight: 700;
+    background: #0b0a0f; border: none; border-left: 1px solid var(--border);
+    color: var(--rune); width: 18px; padding: 3px 0; cursor: pointer; line-height: 1;
+    transition: background 0.12s, color 0.12s;
+  }
+  .row-qty-mini:hover { background: #1a1728; color: var(--arcane); }
+  .row-flag-group.have-on .row-qty-mini { color: var(--sage); }
+  .row-flag-group.want-on .row-qty-mini { color: var(--ember); }
+
+  @media (max-width: 900px) {
+    .card-grid.list-view { grid-template-columns: 1fr; }
+  }
   @media (max-width: 640px) {
-    .card-row { grid-template-columns: 1fr auto; grid-template-areas: "name flags" "meta flags"; gap: 4px 12px; }
+    .card-row { grid-template-columns: 1fr auto; grid-template-areas: "name flags" "meta flags"; gap: 3px 10px; }
     .row-name { grid-area: name; }
     .row-set-wrap { grid-area: meta; display: flex; gap: 8px; align-items: center; }
     .row-rarity, .row-price { display: inline-block; }
@@ -604,8 +625,11 @@ function toggleFlag(cardId, flag) {
   if (!col[cardId].have && !col[cardId].want) delete col[cardId];
   saveCollection(col);
   updateStats();
-  const thumb = document.querySelector(`.card-thumb[data-id="${CSS.escape(cardId)}"]`);
-  if (thumb) updateCardThumbFlags(thumb, cardId, col[cardId]);
+  if (viewMode === 'list') { updateCardRow(cardId, col[cardId]); }
+  else {
+    const thumb = document.querySelector(`.card-thumb[data-id="${CSS.escape(cardId)}"]`);
+    if (thumb) updateCardThumbFlags(thumb, cardId, col[cardId]);
+  }
   if (currentView !== 'all') filterCards();
 }
 
@@ -616,9 +640,22 @@ function changeQty(cardId, flag, delta) {
   if (!col[cardId].have && !col[cardId].want) delete col[cardId];
   saveCollection(col);
   updateStats();
-  const thumb = document.querySelector(`.card-thumb[data-id="${CSS.escape(cardId)}"]`);
-  if (thumb) updateCardThumbFlags(thumb, cardId, col[cardId]);
+  if (viewMode === 'list') { updateCardRow(cardId, col[cardId]); }
+  else {
+    const thumb = document.querySelector(`.card-thumb[data-id="${CSS.escape(cardId)}"]`);
+    if (thumb) updateCardThumbFlags(thumb, cardId, col[cardId]);
+  }
   if (currentView !== 'all') filterCards();
+}
+
+// Re-render a single list row in place after have/want changes
+function updateCardRow(cardId, entry) {
+  const row = document.querySelector(`.card-row[data-id="${CSS.escape(cardId)}"]`);
+  if (!row) return;
+  const card = allCards.find(c => c.id === cardId);
+  if (!card) return;
+  const col = {}; col[cardId] = entry || { have: 0, want: 0 };
+  row.outerHTML = renderCardRow(card, col);
 }
 
 function updateCardThumbFlags(thumb, cardId, entry) {
@@ -791,8 +828,14 @@ function renderCardRow(card, col) {
     <span class="row-meta">${card.type || ''}</span>
     <span class="row-price">${priceHtml}</span>
     <div class="row-flags">
-      <button class="row-flag-btn have${have > 0 ? ' on' : ''}" onclick="event.stopPropagation();toggleFlag('${escId}','have')">Have${have > 1 ? ' ×'+have : ''}</button>
-      <button class="row-flag-btn want${want > 0 ? ' on' : ''}" onclick="event.stopPropagation();toggleFlag('${escId}','want')">Want${want > 1 ? ' ×'+want : ''}</button>
+      <div class="row-flag-group${have > 0 ? ' have-on' : ''}">
+        <button class="row-flag-btn have${have > 0 ? ' on' : ''}" onclick="event.stopPropagation();toggleFlag('${escId}','have')">Have${have > 0 ? ' '+have : ''}</button>
+        ${have > 0 ? `<button class="row-qty-mini" onclick="event.stopPropagation();changeQty('${escId}','have',-1)">−</button><button class="row-qty-mini" onclick="event.stopPropagation();changeQty('${escId}','have',1)">+</button>` : ''}
+      </div>
+      <div class="row-flag-group${want > 0 ? ' want-on' : ''}">
+        <button class="row-flag-btn want${want > 0 ? ' on' : ''}" onclick="event.stopPropagation();toggleFlag('${escId}','want')">Want${want > 0 ? ' '+want : ''}</button>
+        ${want > 0 ? `<button class="row-qty-mini" onclick="event.stopPropagation();changeQty('${escId}','want',-1)">−</button><button class="row-qty-mini" onclick="event.stopPropagation();changeQty('${escId}','want',1)">+</button>` : ''}
+      </div>
     </div>
   </div>`;
 }

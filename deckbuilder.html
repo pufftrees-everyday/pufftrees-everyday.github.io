@@ -222,29 +222,40 @@
   .viewmode-btn:not(.active):hover { background: #1a1728; color: var(--arcane); }
 
   /* LIST VIEW */
-  .card-list-grid.list-view { display: flex; flex-direction: column; gap: 4px; }
-  .card-list-grid.list-view.sites-only { grid-template-columns: none; }
+  .card-list-grid.list-view {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 4px 8px;
+  }
+  .card-list-grid.list-view.sites-only { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .db-card-row {
     display: grid; grid-template-columns: 1fr auto auto auto auto;
-    align-items: center; gap: 10px;
+    align-items: center; gap: 8px;
     background: #13111e; border: 1px solid var(--border);
     border-left: 3px solid var(--border-strong);
-    padding: 8px 12px; border-radius: 3px; cursor: pointer;
-    transition: background 0.12s;
+    padding: 5px 9px; border-radius: 3px; cursor: pointer;
+    transition: background 0.12s; min-width: 0;
   }
   .db-card-row:hover { background: #1a1728; }
-  .db-row-name { font-family: 'Crimson Pro', serif; font-size: 1rem; color: var(--parchment); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .db-row-meta { font-size: 0.74rem; color: var(--mist); white-space: nowrap; }
+  .db-row-name { font-family: 'Crimson Pro', serif; font-size: 0.92rem; color: var(--parchment); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+  .db-row-meta { font-size: 0.68rem; color: var(--mist); white-space: nowrap; }
   .db-row-meta.set { color: var(--shimmer); }
-  .db-row-rarity { font-family: 'Cinzel', serif; font-size: 0.58rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 2px 7px; border-radius: 10px; white-space: nowrap; }
+  .db-row-rarity { font-family: 'Cinzel', serif; font-size: 0.52rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 1px 6px; border-radius: 8px; white-space: nowrap; }
   .db-row-rarity.ordinary { background: rgba(140,140,150,0.12); color: #9a9aa5; }
   .db-row-rarity.exceptional { background: rgba(90,138,176,0.14); color: var(--water); }
   .db-row-rarity.elite { background: rgba(155,135,212,0.14); color: var(--arcane); }
   .db-row-rarity.unique { background: rgba(200,169,110,0.14); color: var(--gold); }
-  .db-row-add { font-family: 'Cinzel', serif; font-size: 0.62rem; font-weight: 700; background: var(--rune); border: 1px solid var(--arcane); color: #fff; padding: 4px 10px; border-radius: 3px; cursor: pointer; white-space: nowrap; }
+  .db-row-add { font-family: 'Cinzel', serif; font-size: 0.56rem; font-weight: 700; background: var(--rune); border: 1px solid var(--arcane); color: #fff; padding: 3px 8px; border-radius: 3px; cursor: pointer; white-space: nowrap; }
   .db-row-add:hover { background: var(--arcane); }
-  .db-row-indeck { font-size: 0.7rem; color: var(--gold); white-space: nowrap; min-width: 22px; text-align: center; }
+  .db-row-indeck { font-size: 0.66rem; color: var(--gold); white-space: nowrap; min-width: 18px; text-align: center; }
+  @media (max-width: 1100px) {
+    .card-list-grid.list-view { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 760px) {
+    .card-list-grid.list-view { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
   @media (max-width: 500px) {
+    .card-list-grid.list-view { grid-template-columns: 1fr; }
     .db-card-row { grid-template-columns: 1fr auto auto; }
     .db-row-meta:not(.set) { display: none; }
   }
@@ -398,6 +409,28 @@
 
   /* VISUAL CARD GRID IN DECK */
   .deck-card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+
+  /* DECK SIDE — LIST VIEW */
+  .deck-card-list { display: flex; flex-direction: column; gap: 3px; }
+  .sub-section-cards.list-mode { display: flex; flex-direction: column; gap: 3px; }
+  .deck-card-row {
+    display: grid; grid-template-columns: auto 1fr auto auto;
+    align-items: center; gap: 8px;
+    background: var(--dusk); border: 1px solid var(--border);
+    padding: 4px 9px; border-radius: 3px; cursor: pointer;
+    transition: background 0.12s; min-width: 0;
+  }
+  .deck-card-row:hover { background: #1a1728; }
+  .dr-qty { font-family: 'Cinzel', serif; font-size: 0.78rem; font-weight: 700; color: var(--gold); white-space: nowrap; }
+  .dr-name { font-family: 'Crimson Pro', serif; font-size: 0.92rem; color: var(--parchment); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+  .dr-controls { display: flex; align-items: center; gap: 3px; }
+  .dr-qty-btn, .dr-del-btn {
+    font-family: 'Cinzel', serif; font-size: 0.85rem; font-weight: 700; line-height: 1;
+    background: #0b0a0f; border: 1px solid var(--border); color: var(--rune);
+    width: 22px; height: 22px; border-radius: 3px; cursor: pointer; transition: all 0.12s;
+  }
+  .dr-qty-btn:hover { background: var(--rune); color: #fff; }
+  .dr-del-btn:hover { background: var(--ember); border-color: var(--ember); color: #fff; }
 
   .dvg-card {
     position: relative; border-radius: 4px;
@@ -1080,6 +1113,7 @@ function setViewMode(mode) {
   document.getElementById('vm-grid').classList.toggle('active', mode === 'grid');
   document.getElementById('vm-list').classList.toggle('active', mode === 'list');
   renderCardGrid();
+  renderDeck();
 }
 
 function getDeckCountForCard(id) {
@@ -1295,7 +1329,7 @@ function renderSection(title, section, entries, reqMsg, isOk, req, groups) {
           </div>
           <span class="sub-section-count">${grpQty}</span>
         </div>
-        <div class="sub-section-cards${isCollapsed ? ' hidden' : ''}" id="sub-cards-${subKey}">
+        <div class="sub-section-cards${isCollapsed ? ' hidden' : ''}${viewMode === 'list' ? ' list-mode' : ''}" id="sub-cards-${subKey}">
           ${cards}
         </div>`;
     }).join('');
@@ -1314,12 +1348,13 @@ function renderSection(title, section, entries, reqMsg, isOk, req, groups) {
       </div>
       <div class="deck-section-body">
         ${reqMsg && !isOk ? `<div class="violation">${reqMsg}</div>` : ''}
-        ${groups ? `<div style="display:flex;flex-direction:column;">${cardsHtml}</div>` : `<div class="deck-card-grid">${cardsHtml}</div>`}
+        ${groups ? `<div style="display:flex;flex-direction:column;">${cardsHtml}</div>` : `<div class="${viewMode === 'list' ? 'deck-card-list' : 'deck-card-grid'}">${cardsHtml}</div>`}
       </div>
     </div>`;
 }
 
 function renderDeckCard(section, key, card, qty) {
+  if (viewMode === 'list') return renderDeckCardRow(section, key, card, qty);
   const isSite = card.type === 'Site';
   return `<div class="dvg-card${isSite ? ' is-site' : ''}" onclick="openModal('${escId(card.id)}')">
     <img src="${getImageUrl(card)}" alt="${card.name}" loading="lazy" onerror="this.style.opacity='0.2'">
@@ -1328,6 +1363,21 @@ function renderDeckCard(section, key, card, qty) {
       ${section !== 'avatar' ? `<button class="qty-btn" onclick="event.stopPropagation();changeQty('${section}','${key}',-1)">−</button>
       <button class="qty-btn" onclick="event.stopPropagation();changeQty('${section}','${key}',1)">+</button>` : ''}
       <button class="del-btn" onclick="event.stopPropagation();removeCard('${section}','${key}')">✕</button>
+    </div>
+  </div>`;
+}
+
+function renderDeckCardRow(section, key, card, qty) {
+  const rarity = card.rarity || '';
+  const rarityClass = rarity.toLowerCase();
+  return `<div class="deck-card-row" onclick="openModal('${escId(card.id)}')">
+    <span class="dr-qty">${qty}×</span>
+    <span class="dr-name">${card.name}</span>
+    <span class="db-row-rarity ${rarityClass}">${rarity}</span>
+    <div class="dr-controls">
+      ${section !== 'avatar' ? `<button class="dr-qty-btn" onclick="event.stopPropagation();changeQty('${section}','${key}',-1)">−</button>
+      <button class="dr-qty-btn" onclick="event.stopPropagation();changeQty('${section}','${key}',1)">+</button>` : ''}
+      <button class="dr-del-btn" onclick="event.stopPropagation();removeCard('${section}','${key}')">✕</button>
     </div>
   </div>`;
 }
