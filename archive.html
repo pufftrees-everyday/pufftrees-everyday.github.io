@@ -86,18 +86,48 @@
 
   /* DECK GRID */
   .deck-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+  /* Archive filter menu */
+  .archive-filters { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 20px; margin-bottom: 22px; padding: 14px 16px; background: var(--abyss); border: 1px solid var(--border); border-radius: 8px; }
+  .arch-filter-group { display: flex; align-items: center; gap: 9px; }
+  .arch-filter-label { font-family: 'Cinzel', serif; font-size: 0.62rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--rune); white-space: nowrap; }
+  .arch-el-chips { display: flex; align-items: center; gap: 6px; }
+  .arch-el-chip { width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid #2a2640; border-radius: 4px; background: #13111e; cursor: pointer; transition: all 0.15s; padding: 0; }
+  .arch-el-chip img { width: 20px; height: 20px; object-fit: contain; filter: grayscale(0.5) opacity(0.65); transition: filter 0.15s; }
+  .arch-el-chip:hover { border-color: var(--arcane); }
+  .arch-el-chip:hover img { filter: none; }
+  .arch-el-chip.active { border-color: var(--arcane); background: rgba(155,135,212,0.16); }
+  .arch-el-chip.active img { filter: none; }
+  .arch-el-lock { font-family: 'Cinzel', serif; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.05em; padding: 0 11px; height: 34px; border: 1px solid #2a2640; border-radius: 4px; background: #13111e; color: var(--rune); cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+  .arch-el-lock:hover { border-color: var(--arcane); color: var(--arcane); }
+  .arch-el-lock.active { background: var(--gold); border-color: var(--gold); color: #1a1410; }
+  .arch-select { background: #0b0a0f; border: 1px solid var(--border-strong); color: var(--parchment); font-family: 'Crimson Pro', serif; font-size: 0.92rem; padding: 7px 10px; border-radius: 5px; outline: none; cursor: pointer; max-width: 180px; }
+  .arch-select:focus { border-color: var(--rune); }
+  .arch-clear-btn { font-family: 'Cinzel', serif; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 7px 14px; border: 1px solid rgba(196,97,74,0.4); border-radius: 5px; background: transparent; color: var(--ember); cursor: pointer; transition: all 0.15s; }
+  .arch-clear-btn:hover { background: rgba(196,97,74,0.12); }
+  .arch-result-count { font-family: 'Crimson Pro', serif; font-style: italic; font-size: 0.88rem; color: var(--mist); margin-left: auto; white-space: nowrap; }
   .deck-card {
     background: var(--dusk); border: 1px solid var(--border); border-radius: 8px;
-    padding: 18px; transition: border-color 0.15s, transform 0.15s;
-    display: flex; flex-direction: column; gap: 10px;
+    overflow: hidden; transition: border-color 0.15s, transform 0.15s;
+    display: flex; flex-direction: column;
   }
   .deck-card:hover { border-color: var(--border-strong); transform: translateY(-2px); }
-  .deck-card-name { font-family: 'Cinzel', serif; font-size: 1.15rem; font-weight: 700; color: var(--parchment); }
+  /* Avatar art banner (Sorcery card art sits in the upper portion of the card) */
+  .deck-card-avatar { width: 100%; height: 150px; overflow: hidden; background: #0b0a0f; position: relative; }
+  .deck-card-avatar img { width: 100%; height: auto; object-fit: cover; object-position: center 18%; display: block; }
+  .deck-card-avatar::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to bottom, transparent 55%, var(--dusk)); pointer-events: none; }
+  .deck-card-body { padding: 16px 18px 18px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+  .deck-card.has-avatar .deck-card-body { padding-top: 12px; }
+  .deck-card-name { font-family: 'Cinzel', serif; font-size: 1.15rem; font-weight: 700; color: var(--parchment); line-height: 1.25; }
   .deck-card-author { font-size: 0.85rem; color: var(--rune); }
   .deck-card-author b { color: var(--arcane); }
-  .deck-card-meta { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 2px; }
-  .deck-chip { font-family: 'Cinzel', serif; font-size: 0.6rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; background: rgba(155,135,212,0.1); border: 1px solid var(--border); color: var(--shimmer); padding: 3px 9px; border-radius: 12px; }
-  .deck-card-actions { display: flex; gap: 8px; margin-top: auto; padding-top: 8px; }
+  .deck-card-avatar-name { font-family: 'Crimson Pro', serif; font-style: italic; font-size: 0.85rem; color: var(--gold); }
+  /* Element balance bar */
+  .el-bar { display: flex; width: 100%; height: 10px; border-radius: 5px; overflow: hidden; margin-top: 4px; border: 1px solid rgba(0,0,0,0.3); }
+  .el-seg { height: 100%; }
+  .el-labels { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 2px; }
+  .el-label { display: inline-flex; align-items: center; gap: 5px; font-family: 'Crimson Pro', serif; font-size: 0.8rem; color: var(--shimmer); }
+  .el-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+  .deck-card-actions { display: flex; gap: 8px; margin-top: auto; padding-top: 10px; }
   .deck-card-actions .btn { flex: 1; text-align: center; }
 
   .status { text-align: center; color: var(--mist); font-style: italic; padding: 60px 20px; font-size: 1rem; }
@@ -183,9 +213,33 @@
     </div>
   </div>
 
-  <div style="margin-bottom:22px;">
+  <div style="margin-bottom:14px;">
     <input type="text" id="gallery-search" placeholder="Search decks by name, author, or avatar…" oninput="filterGallery()"
       style="width:100%;background:#0b0a0f;border:1px solid var(--border-strong);color:var(--parchment);font-family:'Crimson Pro',serif;font-size:1.05rem;padding:11px 16px;border-radius:6px;outline:none;">
+  </div>
+
+  <!-- ARCHIVE FILTERS -->
+  <div class="archive-filters">
+    <div class="arch-filter-group">
+      <span class="arch-filter-label">Element</span>
+      <div class="arch-el-chips">
+        <button class="arch-el-chip" data-el="Air" onclick="toggleArchiveElement('Air')" title="Air"><img src="wind.png" alt="Air"></button>
+        <button class="arch-el-chip" data-el="Earth" onclick="toggleArchiveElement('Earth')" title="Earth"><img src="earth.png" alt="Earth"></button>
+        <button class="arch-el-chip" data-el="Fire" onclick="toggleArchiveElement('Fire')" title="Fire"><img src="fire.png" alt="Fire"></button>
+        <button class="arch-el-chip" data-el="Water" onclick="toggleArchiveElement('Water')" title="Water"><img src="water.png" alt="Water"></button>
+        <button class="arch-el-lock" id="arch-el-lock" onclick="toggleArchiveElementLock()" title="Element Lock: only show decks whose elements are all within your selection">🔒 Lock</button>
+      </div>
+    </div>
+    <div class="arch-filter-group">
+      <span class="arch-filter-label">Avatar</span>
+      <select id="filter-avatar" class="arch-select" onchange="applyArchiveFilters()"><option value="">All Avatars</option></select>
+    </div>
+    <div class="arch-filter-group">
+      <span class="arch-filter-label">Creator</span>
+      <select id="filter-creator" class="arch-select" onchange="applyArchiveFilters()"><option value="">All Creators</option></select>
+    </div>
+    <button class="arch-clear-btn" onclick="clearArchiveFilters()">Clear</button>
+    <span class="arch-result-count" id="archive-result-count"></span>
   </div>
 
   <div id="gallery-content">
@@ -386,6 +440,76 @@ function profileMenuOutside(e) {
 // ── GALLERY ──
 let galleryDecks = [];   // cached public decks
 let galleryAuthors = {}; // id → username
+let cardElementMap = {}; // lowercased card name → ['fire','water',...]
+let cardSlugMap = {};    // lowercased card name → image slug
+const IMAGE_BASE = 'https://pub-5999238092ad418ca60e7a9ad641cf57.r2.dev/';
+const ELEMENT_LIST = ['Air','Earth','Fire','Water'];
+const ELEMENT_COLORS = { air: '#8cb4d2', earth: '#a08246', fire: '#c4614a', water: '#5a96b0' };
+const archiveElementFilter = new Set(); // selected elements
+let archiveElementLock = false;
+
+// Load cards.json once to map card names → elements + image slug
+async function loadCardElements() {
+  try {
+    const res = await fetch('cards.json');
+    const cards = await res.json();
+    const emap = {}, smap = {};
+    cards.forEach(c => {
+      const key = (c.name || '').toLowerCase();
+      const els = Array.isArray(c.elements) ? c.elements : (c.elements ? String(c.elements).split(',') : []);
+      emap[key] = els.map(e => String(e).trim().toLowerCase()).filter(Boolean);
+      // Find an image slug from the card's set variants
+      let slug = c.slug || null;
+      if (!slug && c.sets && c.sets[0] && c.sets[0].variants && c.sets[0].variants.length) {
+        const v = c.sets[0].variants.find(v => v.finish === 'Standard' && v.product === 'Booster') || c.sets[0].variants[0];
+        slug = v ? v.slug : null;
+      }
+      smap[key] = slug;
+    });
+    cardElementMap = emap;
+    cardSlugMap = smap;
+  } catch (e) { console.warn('Could not load card data', e); cardElementMap = {}; cardSlugMap = {}; }
+}
+
+// Compute the full set of elements a deck uses (union across all its cards)
+function deckElements(deckData) {
+  const els = new Set();
+  ['a','t','s'].forEach(sec => {
+    (deckData[sec] || []).forEach(([name]) => {
+      const ce = cardElementMap[(name || '').toLowerCase()];
+      if (ce) ce.forEach(e => els.add(e));
+    });
+  });
+  return [...els];
+}
+
+// Compute element percentages weighted by card quantity (for the color bar)
+function deckElementBreakdown(deckData) {
+  const counts = { air: 0, earth: 0, fire: 0, water: 0 };
+  let total = 0;
+  ['a','t','s'].forEach(sec => {
+    (deckData[sec] || []).forEach(([name, qty]) => {
+      const q = qty || 1;
+      const ce = cardElementMap[(name || '').toLowerCase()];
+      if (ce && ce.length) {
+        ce.forEach(e => { if (counts[e] != null) { counts[e] += q; total += q; } });
+      }
+    });
+  });
+  if (total === 0) return [];
+  return Object.entries(counts)
+    .filter(([, v]) => v > 0)
+    .map(([el, v]) => ({ el, pct: (v / total) * 100 }))
+    .sort((a, b) => b.pct - a.pct);
+}
+
+// Avatar image URL from the deck's avatar card name
+function avatarImageUrl(deckData) {
+  const name = avatarName(deckData);
+  if (!name) return null;
+  const slug = cardSlugMap[name.toLowerCase()];
+  return slug ? `${IMAGE_BASE}${slug}.png` : null;
+}
 
 async function loadGallery() {
   const container = document.getElementById('gallery-content');
@@ -419,7 +543,9 @@ async function loadGallery() {
     }
 
     galleryDecks = decks;
-    renderGallery(galleryDecks);
+    await loadCardElements();
+    populateArchiveFilters();
+    applyArchiveFilters();
   } catch (e) {
     console.warn(e);
     container.innerHTML = `<div class="status">Could not load the Archive.<br><small>${e.message || ''}</small></div>`;
@@ -435,16 +561,90 @@ function renderGallery(decks) {
   container.innerHTML = `<div class="deck-gallery">${decks.map(d => renderDeckCard(d, galleryAuthors)).join('')}</div>`;
 }
 
-function filterGallery() {
-  const q = document.getElementById('gallery-search').value.trim().toLowerCase();
-  if (!q) { renderGallery(galleryDecks); return; }
+function populateArchiveFilters() {
+  // Avatars present across decks
+  const avatars = new Set();
+  galleryDecks.forEach(d => { const av = avatarName(d.deck_data || {}); if (av) avatars.add(av); });
+  const avSel = document.getElementById('filter-avatar');
+  if (avSel) {
+    avSel.innerHTML = '<option value="">All Avatars</option>' +
+      [...avatars].sort().map(a => `<option value="${escapeHtml(a)}">${escapeHtml(a)}</option>`).join('');
+  }
+  // Creators present
+  const creators = new Set();
+  galleryDecks.forEach(d => { const c = galleryAuthors[d.owner_id]; if (c) creators.add(c); });
+  const crSel = document.getElementById('filter-creator');
+  if (crSel) {
+    crSel.innerHTML = '<option value="">All Creators</option>' +
+      [...creators].sort((a,b) => a.localeCompare(b)).map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+  }
+}
+
+function toggleArchiveElement(el) {
+  const v = el.toLowerCase();
+  if (archiveElementFilter.has(v)) archiveElementFilter.delete(v);
+  else archiveElementFilter.add(v);
+  document.querySelectorAll('.arch-el-chip').forEach(b => {
+    b.classList.toggle('active', archiveElementFilter.has(b.dataset.el.toLowerCase()));
+  });
+  applyArchiveFilters();
+}
+
+function toggleArchiveElementLock() {
+  archiveElementLock = !archiveElementLock;
+  const btn = document.getElementById('arch-el-lock');
+  if (btn) btn.classList.toggle('active', archiveElementLock);
+  applyArchiveFilters();
+}
+
+function applyArchiveFilters() {
+  const q = (document.getElementById('gallery-search').value || '').trim().toLowerCase();
+  const avatarF = (document.getElementById('filter-avatar')?.value || '').toLowerCase();
+  const creatorF = (document.getElementById('filter-creator')?.value || '').toLowerCase();
+  const sel = [...archiveElementFilter];
+
   const filtered = galleryDecks.filter(d => {
     const name = (d.name || '').toLowerCase();
     const author = (galleryAuthors[d.owner_id] || '').toLowerCase();
     const av = (avatarName(d.deck_data || {}) || '').toLowerCase();
-    return name.includes(q) || author.includes(q) || av.includes(q);
+
+    // Text search
+    if (q && !(name.includes(q) || author.includes(q) || av.includes(q))) return false;
+    // Avatar dropdown
+    if (avatarF && av !== avatarF) return false;
+    // Creator dropdown
+    if (creatorF && author !== creatorF) return false;
+
+    // Element filter (only if we have card element data)
+    const haveElementData = Object.keys(cardElementMap).length > 0;
+    if (haveElementData && archiveElementLock) {
+      const els = deckElements(d.deck_data || {});
+      if (sel.length === 0) { if (els.length > 0) return false; }      // lock + none → colorless only
+      else if (!els.every(e => sel.includes(e))) return false;         // subset: every deck element within selection
+    } else if (haveElementData && sel.length) {
+      const els = deckElements(d.deck_data || {});
+      if (!sel.some(e => els.includes(e))) return false;               // OR: deck uses at least one selected element
+    }
+    return true;
   });
+
   renderGallery(filtered);
+  const rc = document.getElementById('archive-result-count');
+  if (rc) rc.textContent = `${filtered.length} of ${galleryDecks.length} decks`;
+}
+
+// Backwards-compat: search box still calls filterGallery
+function filterGallery() { applyArchiveFilters(); }
+
+function clearArchiveFilters() {
+  document.getElementById('gallery-search').value = '';
+  const avSel = document.getElementById('filter-avatar'); if (avSel) avSel.value = '';
+  const crSel = document.getElementById('filter-creator'); if (crSel) crSel.value = '';
+  archiveElementFilter.clear();
+  archiveElementLock = false;
+  document.querySelectorAll('.arch-el-chip').forEach(b => b.classList.remove('active'));
+  const lock = document.getElementById('arch-el-lock'); if (lock) lock.classList.remove('active');
+  applyArchiveFilters();
 }
 
 function deckCounts(deckData) {
@@ -462,20 +662,38 @@ function avatarName(deckData) {
 
 function renderDeckCard(d, authors) {
   const author = d.owner_id ? (authors[d.owner_id] || 'Unknown') : 'Anonymous';
-  const counts = deckCounts(d.deck_data || {});
   const av = avatarName(d.deck_data || {});
+  const avImg = avatarImageUrl(d.deck_data || {});
   const isOwner = currentUser && currentUser.id === d.owner_id;
-  return `<div class="deck-card">
-    <div class="deck-card-name">${escapeHtml(d.name || 'Untitled Deck')}</div>
-    <div class="deck-card-author">by <b>${escapeHtml(author)}</b></div>
-    <div class="deck-card-meta">
-      ${av ? `<span class="deck-chip">${escapeHtml(av)}</span>` : ''}
-      <span class="deck-chip">${counts.atlas} Atlas</span>
-      <span class="deck-chip">${counts.spellbook} Spellbook</span>
-    </div>
-    <div class="deck-card-actions">
-      <button class="btn btn-primary" onclick="openDeck('${d.short_code}')">Open</button>
-      ${isOwner ? `<button class="btn btn-ghost" onclick="unpublishDeck('${d.id}')">Unpublish</button>` : ''}
+
+  // Element balance color bar
+  const breakdown = deckElementBreakdown(d.deck_data || {});
+  let barHtml = '';
+  if (breakdown.length) {
+    const segs = breakdown.map(b =>
+      `<div class="el-seg" style="width:${b.pct.toFixed(1)}%;background:${ELEMENT_COLORS[b.el]};" title="${b.el.charAt(0).toUpperCase()+b.el.slice(1)} ${Math.round(b.pct)}%"></div>`
+    ).join('');
+    const labels = breakdown.map(b =>
+      `<span class="el-label"><span class="el-dot" style="background:${ELEMENT_COLORS[b.el]};"></span>${Math.round(b.pct)}%</span>`
+    ).join('');
+    barHtml = `<div class="el-bar">${segs}</div><div class="el-labels">${labels}</div>`;
+  }
+
+  const avatarBlock = avImg
+    ? `<div class="deck-card-avatar"><img src="${avImg}" alt="${escapeHtml(av || '')}" loading="lazy" onerror="this.parentElement.style.display='none'"></div>`
+    : '';
+
+  return `<div class="deck-card${avImg ? ' has-avatar' : ''}">
+    ${avatarBlock}
+    <div class="deck-card-body">
+      <div class="deck-card-name">${escapeHtml(d.name || 'Untitled Deck')}</div>
+      <div class="deck-card-author">by <b>${escapeHtml(author)}</b></div>
+      ${av ? `<div class="deck-card-avatar-name">${escapeHtml(av)}</div>` : ''}
+      ${barHtml}
+      <div class="deck-card-actions">
+        <button class="btn btn-primary" onclick="openDeck('${d.short_code}')">Open</button>
+        ${isOwner ? `<button class="btn btn-ghost" onclick="unpublishDeck('${d.id}')">Unpublish</button>` : ''}
+      </div>
     </div>
   </div>`;
 }
