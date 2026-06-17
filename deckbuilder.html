@@ -864,7 +864,7 @@
         <a href="collection.html" class="header-link nav-collapsible">Collection</a>
     <button class="btn btn-ghost nav-collapsible" onclick="window.location.href='index.html'">My Decks</button>
     <button class="btn btn-primary nav-collapsible" onclick="window.location.href='deckbuilder.html'">New Deck</button>
-    <a href="gallery.html" class="header-link nav-collapsible">The Archive</a>
+    <a href="archive.html" class="header-link nav-collapsible">The Archive</a>
   </div>
   <div class="header-nav nav-collapsible" id="auth-bar"></div>
     <div class="header-nav nav-collapsible">
@@ -887,7 +887,7 @@
   <a href="collection.html" class="header-link">Collection</a>
   <a href="index.html" class="header-link">My Decks</a>
   <a href="deckbuilder.html" class="header-link">New Deck</a>
-  <a href="gallery.html" class="header-link">The Archive</a>
+  <a href="archive.html" class="header-link">The Archive</a>
   <div class="mobile-nav-divider"></div>
   <a href="videos.html" class="header-link">Videos</a>
   <a href="tracker.html" class="header-link">Life Tracker</a>
@@ -1112,7 +1112,7 @@
         <div class="ro-actions">
           <button class="btn btn-ghost" onclick="openDeckStats()">Stats</button>
           <button class="btn btn-primary" id="ro-copy-btn" onclick="copyViewedDeck()">Copy to My Decks</button>
-          <button class="btn btn-ghost" onclick="window.location.href='gallery.html'">← The Archive</button>
+          <button class="btn btn-ghost" onclick="window.location.href='archive.html'">← The Archive</button>
         </div>
       </div>
       <div class="deck-stats" id="ro-stats"></div>
@@ -2332,7 +2332,7 @@ function renderVisibilityBar() {
     bar.innerHTML = `<div class="vis-bar">
       <div class="vis-status public"><span class="vis-dot"></span>Public</div>
       <button class="vis-toggle-btn" onclick="setDeckVisibility(false)">Make Private</button>
-      <span class="vis-hint">This deck is live in the <a href="gallery.html" style="color:var(--arcane);">The Archive</a> for everyone to find.</span>
+      <span class="vis-hint">This deck is live in the <a href="archive.html" style="color:var(--arcane);">The Archive</a> for everyone to find.</span>
     </div>`;
   } else {
     bar.innerHTML = `<div class="vis-bar">
@@ -2678,7 +2678,7 @@ async function publishCurrentDeck() {
     toast('Published to the Archive!');
     renderVisibilityBar();
     const sec = document.getElementById('publish-section');
-    if (sec) sec.innerHTML = `<div style="font-size:0.9rem;color:var(--sage);font-style:italic;">✓ Published! View it in the <a href="gallery.html" style="color:var(--arcane);text-decoration:underline;">The Archive</a>.</div>`;
+    if (sec) sec.innerHTML = `<div style="font-size:0.9rem;color:var(--sage);font-style:italic;">✓ Published! View it in the <a href="archive.html" style="color:var(--arcane);text-decoration:underline;">The Archive</a>.</div>`;
   } catch (e) {
     toast('Could not publish: ' + (e.message || ''));
     if (btn) { btn.disabled = false; btn.style.opacity = '1'; btn.textContent = 'Publish to Archive'; }
@@ -2726,7 +2726,7 @@ async function submitAuth() {
       if (!displayName) { showAuthMsg('Please choose a display name.', 'error'); btn.disabled=false; btn.style.opacity='1'; return; }
       const { error } = await supa.auth.signUp({
         email, password,
-        options: { data: { display_name: displayName }, emailRedirectTo: window.location.origin + '/gallery.html' }
+        options: { data: { display_name: displayName }, emailRedirectTo: window.location.origin + '/archive.html' }
       });
       if (error) throw error;
       showAuthMsg('Account created! Check your email to confirm, then sign in.', 'success');

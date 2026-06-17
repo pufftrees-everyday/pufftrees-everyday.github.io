@@ -110,7 +110,7 @@
         if (!displayName) { CR._showMsg('Please choose a display name.', 'error'); btn.disabled = false; btn.style.opacity = '1'; return; }
         const { error } = await supa.auth.signUp({
           email, password,
-          options: { data: { display_name: displayName }, emailRedirectTo: window.location.origin + '/gallery.html' }
+          options: { data: { display_name: displayName }, emailRedirectTo: window.location.origin + '/archive.html' }
         });
         if (error) throw error;
         CR._showMsg('Account created! Check your email to confirm, then sign in.', 'success');
