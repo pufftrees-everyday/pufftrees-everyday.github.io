@@ -9,6 +9,8 @@
 <meta name="apple-mobile-web-app-title" content="Cursed Realm">
 <link rel="manifest" href="manifest.json">
 <title>Cursed Realm — Life Tracker</title>
+<link rel="icon" type="image/png" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cinzel+Decorative:wght@700;900&family=Crimson+Pro:wght@300;400;600&display=swap" rel="stylesheet">
 <style>
@@ -550,6 +552,26 @@
     text-transform: uppercase; color: var(--mist); background: none; border: none;
     cursor: pointer; text-decoration: underline; padding: 4px;
   }
+
+  /* History log */
+  .history-list { max-height: 50vh; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; text-align: left; }
+  .history-empty { color: var(--mist); font-style: italic; text-align: center; padding: 20px 0; font-size: 0.9rem; }
+  .history-entry {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 9px 12px; border-radius: 4px;
+    background: rgba(11,10,15,0.5); border: 1px solid var(--border);
+    font-size: 0.95rem;
+  }
+  .history-player { font-family: 'Cinzel', serif; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; min-width: 64px; }
+  .history-player.p1 { color: var(--ember); }
+  .history-player.p2 { color: var(--water); }
+  .history-change { font-family: 'Cinzel', serif; font-weight: 700; }
+  .history-change.dmg { color: var(--ember); }
+  .history-change.heal { color: var(--sage); }
+  .history-result { color: var(--mist); font-size: 0.85rem; }
+
+  .exit-btn { color: var(--ember) !important; border-color: rgba(196,97,74,0.4) !important; }
+  .exit-btn:active { background: var(--ember) !important; color: #fff !important; }
 </style>
 </head>
 <body>
@@ -606,9 +628,11 @@
 
   <!-- CENTER BAR -->
   <div class="center-bar">
-    <button class="center-btn" onclick="openSettings()">⚙ Settings</button>
+    <button class="center-btn" onclick="openSettings()">⚙</button>
+    <button class="center-btn" onclick="openHistory()">≡ Log</button>
     <div class="center-logo">Cursed Realm</div>
     <button class="center-btn" onclick="confirmReset()">↻ Reset</button>
+    <button class="center-btn exit-btn" onclick="exitTracker()" title="Exit">✕</button>
   </div>
 
   <!-- PLAYER 1 (BOTTOM) -->
@@ -671,9 +695,22 @@
   </div>
 </div>
 
+<!-- HISTORY LOG MODAL -->
+<div class="modal-overlay" id="history-modal">
+  <div class="modal" style="max-width:380px;">
+    <h2>≡ Life Log</h2>
+    <div id="history-list" class="history-list"></div>
+    <div class="modal-btns" style="margin-top:16px;">
+      <button class="modal-btn ghost" onclick="clearHistory()">Clear Log</button>
+      <button class="modal-btn primary" onclick="closeHistory()">Close</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ── STATE ──
 let startLife = 20;
+let lifeHistory = []; // { player, from, to, delta, time } — declared early for save/load
 let state = {
   1: { life: 20, air: 0, earth: 0, fire: 0, water: 0, mana: 0, deathsDoor: false },
   2: { life: 20, air: 0, earth: 0, fire: 0, water: 0, mana: 0, deathsDoor: false },
@@ -686,24 +723,48 @@ function loadState() {
     if (saved) {
       state = saved.state || state;
       startLife = saved.startLife || 20;
+      if (Array.isArray(saved.lifeHistory)) lifeHistory = saved.lifeHistory;
     }
   } catch(e) {}
 }
 function saveState() {
-  localStorage.setItem('grimoire_tracker', JSON.stringify({ state, startLife }));
+  localStorage.setItem('grimoire_tracker', JSON.stringify({ state, startLife, lifeHistory }));
 }
 
 // ── LIFE ──
 // Track running deltas per player for the "total" floater
 const lifeRun = { 1: { sum: 0, timer: null, totalEl: null }, 2: { sum: 0, timer: null, totalEl: null } };
 
+// History log — only records a change once it's been stable for 1s
+const histPending = {
+  1: { startLife: null, timer: null },
+  2: { startLife: null, timer: null },
+};
+
 function changeLife(player, delta) {
   if (state[player].deathsDoor) return; // locked at death's door
+  // Capture the life value before this burst of changes started
+  const hp = histPending[player];
+  if (hp.startLife === null) hp.startLife = state[player].life;
   state[player].life += delta;
   updatePlayer(player);
   saveState();
   haptic();
   showFloater(player, delta);
+
+  // Debounce: log only after 1s of no further changes
+  clearTimeout(hp.timer);
+  hp.timer = setTimeout(() => {
+    const from = hp.startLife;
+    const to = state[player].life;
+    hp.startLife = null;
+    if (from !== to) {
+      lifeHistory.unshift({ player, from, to, delta: to - from, time: Date.now() });
+      if (lifeHistory.length > 100) lifeHistory.pop();
+      saveState();
+      if (document.getElementById('history-modal').classList.contains('open')) renderHistory();
+    }
+  }, 1000);
 }
 
 function showFloater(player, delta) {
@@ -828,10 +889,51 @@ function doReset() {
     1: { life: startLife, air: 0, earth: 0, fire: 0, water: 0, mana: 0, deathsDoor: false },
     2: { life: startLife, air: 0, earth: 0, fire: 0, water: 0, mana: 0, deathsDoor: false },
   };
+  // Fresh game — clear the life log and any pending entries
+  lifeHistory = [];
+  histPending[1].startLife = null; clearTimeout(histPending[1].timer);
+  histPending[2].startLife = null; clearTimeout(histPending[2].timer);
   updateAll();
   saveState();
   closeReset();
   haptic();
+}
+
+// ── HISTORY LOG ──
+function openHistory() {
+  renderHistory();
+  document.getElementById('history-modal').classList.add('open');
+}
+function closeHistory() { document.getElementById('history-modal').classList.remove('open'); }
+function clearHistory() {
+  lifeHistory = [];
+  saveState();
+  renderHistory();
+  haptic();
+}
+function renderHistory() {
+  const list = document.getElementById('history-list');
+  if (!lifeHistory.length) {
+    list.innerHTML = '<div class="history-empty">No life changes logged yet.<br>Changes appear here once they settle.</div>';
+    return;
+  }
+  list.innerHTML = lifeHistory.map(h => {
+    const isDmg = h.delta < 0;
+    return `<div class="history-entry">
+      <span class="history-player p${h.player}">P${h.player}</span>
+      <span class="history-change ${isDmg ? 'dmg' : 'heal'}">${h.delta > 0 ? '+' : ''}${h.delta}</span>
+      <span class="history-result">${h.from} → ${h.to}</span>
+    </div>`;
+  }).join('');
+}
+
+// ── EXIT (desktop convenience) ──
+function exitTracker() {
+  // Try to close the tab/window; if blocked, go to the homepage
+  window.open('', '_self');
+  window.close();
+  // Fallback if the browser refuses to close the tab
+  setTimeout(() => { window.location.href = 'index.html'; }, 150);
 }
 
 // ── KEEP SCREEN AWAKE ──
@@ -924,11 +1026,12 @@ function rollDice() {
       document.getElementById('dice-total-' + p).innerHTML =
         `${totals[p]}<span class="total-label">Total</span>`;
     });
-    declareWinner(totals);
     diceRolling = false;
+    // Re-enable button first; declareWinner will override if there's a winner
     btn.disabled = false;
     btn.style.opacity = '1';
     btn.textContent = '⚄ Roll Again';
+    declareWinner(totals);
     haptic();
   }, 800);
 }
@@ -936,30 +1039,30 @@ function rollDice() {
 function declareWinner(totals) {
   const halves = { 1: document.querySelector('.dice-half:not(.top)'), 2: document.querySelector('.dice-half.top') };
   if (totals[1] === totals[2]) {
+    // Tie — keep the roll button up, prompt to roll again
     [1, 2].forEach(p => {
       const w = document.getElementById('dice-winner-' + p);
       w.textContent = 'Tie — roll again!';
       w.classList.add('show');
     });
+    const btn = document.getElementById('dice-roll-btn');
+    btn.textContent = '⚄ Roll Again';
     return;
   }
   const winner = totals[1] > totals[2] ? 1 : 2;
-  const loser = winner === 1 ? 2 : 1;
   halves[winner].classList.add('is-winner');
   const wEl = document.getElementById('dice-winner-' + winner);
   wEl.textContent = 'Goes First';
   wEl.classList.add('show');
-  // Add a "start game" button under the winner banner via the center
+  // Winner decided — start a fresh game and proceed automatically
   const btn = document.getElementById('dice-roll-btn');
-  // Insert a Begin button if not present
-  if (!document.getElementById('dice-begin-btn')) {
-    const begin = document.createElement('button');
-    begin.id = 'dice-begin-btn';
-    begin.className = 'dice-btn';
-    begin.textContent = '⚔ Begin Game';
-    begin.onclick = dismissDice;
-    btn.parentNode.insertBefore(begin, btn.nextSibling);
-  }
+  btn.textContent = 'Starting…';
+  btn.disabled = true;
+  btn.style.opacity = '0.5';
+  setTimeout(() => {
+    doReset();        // 20 life each, 0 thresholds & mana
+    dismissDice();
+  }, 1600);
 }
 
 function rand6() { return Math.floor(Math.random() * 6) + 1; }
