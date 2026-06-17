@@ -1712,7 +1712,7 @@ function renderAuthBar() {
   const bar = document.getElementById('auth-bar');
   if (!bar) return;
   if (currentUser) {
-    bar.innerHTML = `<span class="header-link" style="color:var(--gold);text-transform:none;">⚜ ${currentUser.username}</span>
+    bar.innerHTML = `<span class="header-link" style="color:var(--gold);text-transform:none;letter-spacing:0.04em;">${currentUser.username}</span>
       <a href="gallery.html" class="header-link">Gallery</a>
       <a class="header-link" onclick="logout()" style="cursor:pointer;">Sign Out</a>`;
   } else {

@@ -278,7 +278,7 @@ function renderAuthBar() {
   const bar = document.getElementById('auth-bar');
   const mob = document.getElementById('mobile-auth');
   if (currentUser) {
-    bar.innerHTML = `<span class="auth-user">⚜ <b>${currentUser.username}</b></span>
+    bar.innerHTML = `<span class="auth-user"><b>${currentUser.username}</b></span>
       <button class="btn btn-ghost" onclick="logout()">Sign Out</button>`;
     mob.innerHTML = `<a class="header-link" style="color:var(--gold)">${currentUser.username}</a>
       <a class="header-link" onclick="logout()">Sign Out</a>`;
