@@ -562,6 +562,29 @@
   .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(11,10,15,0.85); z-index: 200; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
   .modal-overlay.open { display: flex; }
 
+  /* AVATAR PICKER */
+  .avatar-picker { display: none; position: fixed; inset: 0; z-index: 350; background: rgba(11,10,15,0.94); backdrop-filter: blur(6px); flex-direction: column; }
+  .avatar-picker.open { display: flex; }
+  .ap-header { text-align: center; padding: 28px 20px 14px; flex-shrink: 0; }
+  .ap-title { font-family: 'Cinzel Decorative', serif; font-size: 1.8rem; color: var(--gold); margin-bottom: 6px; }
+  .ap-sub { color: var(--shimmer); font-size: 1rem; font-style: italic; }
+  .ap-search-row { display: flex; gap: 10px; justify-content: center; align-items: center; padding: 0 20px 14px; flex-shrink: 0; flex-wrap: wrap; }
+  .ap-search { width: 100%; max-width: 420px; background: #0b0a0f; border: 1px solid var(--border-strong); color: var(--parchment); font-family: 'Crimson Pro', serif; font-size: 1rem; padding: 10px 14px; border-radius: 6px; outline: none; }
+  .ap-search:focus { border-color: var(--arcane); }
+  .ap-skip { font-family: 'Cinzel', serif; font-size: 0.68rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; background: transparent; border: 1px solid var(--border-strong); color: var(--rune); padding: 9px 16px; border-radius: 6px; cursor: pointer; white-space: nowrap; }
+  .ap-skip:hover { border-color: var(--arcane); color: var(--arcane); }
+  .ap-grid { flex: 1; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 14px; padding: 8px 28px 32px; align-content: start; max-width: 1200px; margin: 0 auto; width: 100%; }
+  .ap-card { background: var(--dusk); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; cursor: pointer; transition: border-color 0.15s, transform 0.15s; display: flex; flex-direction: column; }
+  .ap-card:hover { border-color: var(--gold); transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.4); }
+  .ap-card img { width: 100%; aspect-ratio: 3/4; object-fit: cover; display: block; background: #0b0a0f; }
+  .ap-card-info { padding: 9px 10px; }
+  .ap-card-name { font-family: 'Cinzel', serif; font-size: 0.8rem; font-weight: 600; color: var(--parchment); line-height: 1.2; }
+  .ap-card-el { font-size: 0.72rem; color: var(--rune); margin-top: 3px; }
+  @media (max-width: 600px) {
+    .ap-grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; padding: 8px 14px 24px; }
+    .ap-title { font-size: 1.4rem; }
+  }
+
   .modal {
     background: var(--dusk); border: 1px solid var(--border-strong);
     border-radius: 8px; box-shadow: 0 0 60px rgba(155,135,212,0.2);
@@ -712,6 +735,19 @@
   <span class="guest-banner-icon">⚠</span>
   <span class="guest-banner-text">Decks you build are only saved in this browser and could be lost if you clear your data or switch devices. <a onclick="openAuth('signup')">Create a free account</a> to save them to the cloud and publish to the gallery.</span>
   <button class="guest-banner-close" onclick="dismissGuestBanner()" title="Dismiss">✕</button>
+</div>
+
+<!-- AVATAR PICKER (shown when starting a new deck) -->
+<div class="avatar-picker" id="avatar-picker">
+  <div class="ap-header">
+    <div class="ap-title">Choose Your Avatar</div>
+    <div class="ap-sub">Your Avatar sets your elemental identity — pick one to begin your deck.</div>
+  </div>
+  <div class="ap-search-row">
+    <input type="text" class="ap-search" id="ap-search" placeholder="Search avatars…" oninput="filterAvatarPicker()" autocomplete="off">
+    <button class="ap-skip" onclick="skipAvatarPicker()">Skip for now</button>
+  </div>
+  <div class="ap-grid" id="ap-grid"></div>
 </div>
 
 <div class="app">
@@ -1059,7 +1095,11 @@ async function loadCards() {
     const deckId = params.get('deck');
     if (sharedCode) await loadSharedDeck(sharedCode);
     else if (deckId) loadDeck(deckId);
-    else renderDeck();
+    else {
+      renderDeck();
+      // Fresh New Deck → prompt for an avatar first
+      openAvatarPicker();
+    }
   } catch(e) {
     document.getElementById('card-grid').innerHTML = `<div class="status">Could not load cards.json.<br><small>${e.message}</small></div>`;
   }
@@ -1324,6 +1364,73 @@ function closeModal(e) {
 }
 
 // ── DECK LOGIC ──
+// ── AVATAR PICKER ──
+let avatarList = []; // cached list of avatar cards
+
+function openAvatarPicker() {
+  const picker = document.getElementById('avatar-picker');
+  if (!picker) return;
+  // Don't prompt if the deck already has an avatar (e.g. user navigated back)
+  if (Object.keys(deck.avatar).length > 0) return;
+
+  // Build the avatar list once
+  if (!avatarList.length) {
+    avatarList = allCards.filter(c => c.type === 'Avatar')
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }
+  renderAvatarPicker(avatarList);
+  document.getElementById('ap-search').value = '';
+  picker.classList.add('open');
+  setTimeout(() => document.getElementById('ap-search').focus(), 100);
+}
+
+function closeAvatarPicker() {
+  const picker = document.getElementById('avatar-picker');
+  if (picker) picker.classList.remove('open');
+}
+
+function skipAvatarPicker() {
+  closeAvatarPicker();
+  toast('You can pick an Avatar anytime from the card explorer');
+}
+
+function renderAvatarPicker(list) {
+  const grid = document.getElementById('ap-grid');
+  if (!grid) return;
+  if (!list.length) { grid.innerHTML = '<div class="status" style="grid-column:1/-1">No avatars found.</div>'; return; }
+  grid.innerHTML = list.map(card => {
+    const el = card.element || '';
+    return `<div class="ap-card" onclick="pickAvatar('${escId(card.id)}')">
+      <img src="${getImageUrl(card)}" alt="${card.name}" loading="lazy" onerror="this.style.opacity='0.25'">
+      <div class="ap-card-info">
+        <div class="ap-card-name">${card.name}</div>
+        ${el ? `<div class="ap-card-el">${el}</div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function filterAvatarPicker() {
+  const q = document.getElementById('ap-search').value.trim().toLowerCase();
+  if (!q) { renderAvatarPicker(avatarList); return; }
+  const filtered = avatarList.filter(c =>
+    c.name.toLowerCase().includes(q) || (c.element || '').toLowerCase().includes(q)
+  );
+  renderAvatarPicker(filtered);
+}
+
+function pickAvatar(id) {
+  const card = allCards.find(c => c.id === id || c.name === id);
+  if (!card) return;
+  // Clear any existing avatar, then set this one
+  deck.avatar = {};
+  deck.avatar[String(card.id)] = { card, qty: 1 };
+  closeAvatarPicker();
+  renderDeck();
+  renderCardGrid();
+  toast(`${card.name} set as your Avatar!`);
+}
+
 function getDeckSection(card) {
   if (card.type === 'Avatar') return 'avatar';
   if (card.type === 'Site') return 'atlas';
@@ -1447,7 +1554,11 @@ function renderSection(title, section, entries, reqMsg, isOk, req, groups) {
 
   let cardsHtml = '';
   if (!entries.length) {
-    cardsHtml = `<div class="deck-empty-msg">No ${title.toLowerCase()} cards yet.</div>`;
+    if (section === 'avatar') {
+      cardsHtml = `<div class="deck-empty-msg">No Avatar yet. <a onclick="openAvatarPicker()" style="color:var(--gold);cursor:pointer;text-decoration:underline;">Choose your Avatar</a> to define your deck's identity.</div>`;
+    } else {
+      cardsHtml = `<div class="deck-empty-msg">No ${title.toLowerCase()} cards yet.</div>`;
+    }
   } else if (groups) {
     const typeOrder = ['Avatar','Site','Minion','Magic','Artifact','Aura','Other'];
     const types = [...new Set([...typeOrder.filter(t=>groups[t]),...Object.keys(groups).filter(t=>!typeOrder.includes(t))])];
@@ -2236,7 +2347,7 @@ function setupDivider() {
 
 document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('search-input').addEventListener('input', filterCards);
-  document.addEventListener('keydown', e => { if (e.key==='Escape') { closeModal({}); closeImport({}); } });
+  document.addEventListener('keydown', e => { if (e.key==='Escape') { closeModal({}); closeImport({}); closeAvatarPicker(); } });
   setupDivider();
   document.querySelector('.card-list').addEventListener('scroll', function() {
     if (visibleCount >= currentCards.length) return;
