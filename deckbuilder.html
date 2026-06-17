@@ -285,7 +285,7 @@
   }
   .card-list-grid.list-view.sites-only { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .db-card-row {
-    display: grid; grid-template-columns: 1fr auto auto auto auto;
+    display: grid; grid-template-columns: auto 1fr auto auto auto auto auto;
     align-items: center; gap: 8px;
     background: #13111e; border: 1px solid var(--border);
     border-left: 3px solid var(--border-strong);
@@ -296,6 +296,15 @@
   .db-row-name { font-family: 'Crimson Pro', serif; font-size: 0.92rem; color: var(--parchment); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
   .db-row-meta { font-size: 0.68rem; color: var(--mist); white-space: nowrap; }
   .db-row-meta.set { color: var(--shimmer); }
+  /* Mana cost pip (shared style) */
+  .cr-mana {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 19px; height: 19px; border-radius: 50%;
+    font-family: 'Cinzel', serif; font-size: 0.68rem; font-weight: 700;
+    color: var(--gold); background: radial-gradient(circle at 38% 32%, #2a2536, #15121d);
+    border: 1px solid var(--gold); flex-shrink: 0; line-height: 1;
+  }
+  .cr-mana.empty { visibility: hidden; }
 
   /* Set badges (lettered, color-coded) */
   .set-badge {
@@ -325,10 +334,13 @@
   @media (max-width: 760px) {
     .card-list-grid.list-view { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   }
-  @media (max-width: 500px) {
+  /* Shed lower-priority columns as the row gets tight (type → set) */
+  @media (max-width: 620px) {
+    .db-card-row .db-type { display: none; }
+  }
+  @media (max-width: 460px) {
     .card-list-grid.list-view { grid-template-columns: 1fr; }
-    .db-card-row { grid-template-columns: 1fr auto auto; }
-    .db-row-meta:not(.set) { display: none; }
+    .db-card-row .db-set { display: none; }
   }
 
   /* Site-only rotation mode */
@@ -1355,14 +1367,20 @@ function renderDbCardRow(card) {
   const inDeck = getDeckCountForCard(card.id);
   const rarity = card.rarity || '';
   const rarityClass = rarity.toLowerCase();
+  const cost = (card.cost != null && card.cost !== '') ? card.cost : '';
   return `<div class="db-card-row" data-card-id="${escId(card.id)}" onclick="openModal('${escId(card.id)}')">
+    <span class="cr-mana${cost===''?' empty':''}">${cost}</span>
     <div class="db-row-name">${card.name}</div>
-    <span class="db-row-meta set">${setBadge(card.set)}</span>
-    <span class="db-row-rarity ${rarityClass}">${rarity}</span>
-    <span class="db-row-meta">${card.type || ''}</span>
+    <span class="db-row-meta set db-set">${setBadge(card.set)}</span>
+    <span class="db-row-rarity ${rarityClass}">${rarityAbbr(rarity)}</span>
+    <span class="db-row-meta db-type">${card.type || ''}</span>
     <span class="db-row-indeck">${inDeck > 0 ? '×'+inDeck : ''}</span>
     <button class="db-row-add" onclick="event.stopPropagation();quickAddToDeck('${escId(card.id)}')">+ Add</button>
   </div>`;
+}
+
+function rarityAbbr(r) {
+  return { 'Unique':'Uni', 'Elite':'Eli', 'Exceptional':'Exc', 'Ordinary':'Ord' }[r] || r;
 }
 
 function quickAddToDeck(id) {

@@ -520,7 +520,7 @@
   .card-grid.sites-only .card-thumb img { position: absolute; width: 75%; aspect-ratio: 3/4; transform: rotate(90deg); object-fit: contain; }
 
   /* VIEW MODE TOGGLE (grid/text) */
-  .viewmode-toggle { display: inline-flex; border: 2px solid #2a2640; border-radius: 4px; overflow: hidden; margin-left: auto; flex-shrink: 0; }
+  .viewmode-toggle { display: inline-flex; border: 2px solid #2a2640; border-radius: 4px; overflow: hidden; flex-shrink: 0; }
   .viewmode-btn { font-size: 1rem; line-height: 1; background: #13111e; border: none; color: var(--rune); padding: 5px 11px; cursor: pointer; transition: all 0.15s; }
   .viewmode-btn.active { background: var(--rune); color: #fff; }
   .viewmode-btn:not(.active):hover { background: #1a1728; color: var(--arcane); }
@@ -529,7 +529,7 @@
   .card-grid.list-view { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 10px; }
   .card-grid.list-view.sites-only { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .card-row {
-    display: grid; grid-template-columns: 1fr auto auto auto;
+    display: grid; grid-template-columns: auto 1fr auto auto auto;
     align-items: center; gap: 10px;
     background: var(--dusk); border: 1px solid var(--border);
     border-left: 3px solid var(--border-strong);
@@ -544,7 +544,19 @@
   .cr-rarity.exceptional { background: rgba(90,138,176,0.14); color: #6f9ec4; }
   .cr-rarity.elite { background: rgba(155,135,212,0.14); color: var(--arcane); }
   .cr-rarity.unique { background: rgba(200,169,110,0.14); color: var(--gold); }
+  /* Mana cost pip */
+  .cr-mana {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 19px; height: 19px; border-radius: 50%;
+    font-family: 'Cinzel', serif; font-size: 0.68rem; font-weight: 700;
+    color: var(--gold); background: radial-gradient(circle at 38% 32%, #2a2536, #15121d);
+    border: 1px solid var(--gold); flex-shrink: 0; line-height: 1;
+  }
+  .cr-mana.empty { visibility: hidden; }
+  /* Responsive column dropping: when single-column (narrow), shed type then set */
   @media (max-width: 760px) { .card-grid.list-view { grid-template-columns: 1fr; } }
+  @media (max-width: 520px) { .card-row .cr-type { display: none; } }
+  @media (max-width: 400px) { .card-row .cr-set { display: none; } }
 
   /* Set badges */
   .set-badge { display: inline-flex; align-items: center; justify-content: center; font-family: 'Cinzel', serif; font-weight: 700; font-size: 0.6rem; letter-spacing: 0.02em; min-width: 20px; height: 18px; padding: 0 5px; border-radius: 9px; border: 1px solid; white-space: nowrap; line-height: 1; }
@@ -863,7 +875,7 @@
 let allCards = [];
 let currentCards = [];
 let visibleCount = 200;
-let viewMode = localStorage.getItem('grimoire_view_mode') || 'grid'; // grid | list
+let viewMode = sessionStorage.getItem('cr_explorer_view') || 'grid'; // grid | list — resets to grid each new visit
 let deck = {};
 let currentModalCard = null;
 let activeDeckId = null;
@@ -948,12 +960,18 @@ function renderCardThumb(card) {
 
 function renderCardRow(card) {
   const rarity = card.rarity || '';
+  const cost = (card.cost != null && card.cost !== '') ? card.cost : '';
   return `<div class="card-row" onclick="openModal('${escId(card.id)}')">
+      <span class="cr-mana${cost===''?' empty':''}">${cost}</span>
       <div class="cr-name">${card.name}</div>
-      <span class="cr-meta">${setBadge(card.set)}</span>
-      <span class="cr-rarity ${rarity.toLowerCase()}">${rarity}</span>
-      <span class="cr-meta">${card.type || ''}</span>
+      <span class="cr-meta cr-set">${setBadge(card.set)}</span>
+      <span class="cr-rarity ${rarity.toLowerCase()}">${rarityAbbr(rarity)}</span>
+      <span class="cr-meta cr-type">${card.type || ''}</span>
     </div>`;
+}
+
+function rarityAbbr(r) {
+  return { 'Unique':'Uni', 'Elite':'Eli', 'Exceptional':'Exc', 'Ordinary':'Ord' }[r] || r;
 }
 
 function setBadge(setName) {
@@ -970,7 +988,7 @@ function setBadge(setName) {
 
 function setViewMode(mode) {
   viewMode = mode;
-  localStorage.setItem('grimoire_view_mode', mode);
+  sessionStorage.setItem('cr_explorer_view', mode);
   document.getElementById('vm-grid').classList.toggle('active', mode === 'grid');
   document.getElementById('vm-list').classList.toggle('active', mode === 'list');
   filterCards();

@@ -247,7 +247,7 @@
   .card-grid.list-view.sites-only { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .card-row {
     display: grid;
-    grid-template-columns: 1fr auto auto auto auto;
+    grid-template-columns: auto 1fr auto auto auto auto auto;
     align-items: center; gap: 9px;
     background: #13111e; border: 1px solid var(--border);
     border-left: 3px solid var(--border-strong);
@@ -262,6 +262,15 @@
   .row-name { font-family: 'Crimson Pro', serif; font-size: 0.95rem; color: var(--parchment); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
   .row-meta { font-size: 0.7rem; color: var(--mist); white-space: nowrap; }
   .row-meta.set { color: var(--shimmer); }
+  /* Mana cost pip (shared style) */
+  .cr-mana {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 19px; height: 19px; border-radius: 50%;
+    font-family: 'Cinzel', serif; font-size: 0.68rem; font-weight: 700;
+    color: var(--gold); background: radial-gradient(circle at 38% 32%, #2a2536, #15121d);
+    border: 1px solid var(--gold); flex-shrink: 0; line-height: 1;
+  }
+  .cr-mana.empty { visibility: hidden; }
 
   /* Set badges (lettered, color-coded) */
   .set-badge {
@@ -307,12 +316,12 @@
   @media (max-width: 900px) {
     .card-grid.list-view { grid-template-columns: 1fr; }
   }
-  @media (max-width: 640px) {
-    .card-row { grid-template-columns: 1fr auto; grid-template-areas: "name flags" "meta flags"; gap: 3px 10px; }
-    .row-name { grid-area: name; }
-    .row-set-wrap { grid-area: meta; display: flex; gap: 8px; align-items: center; }
-    .row-rarity, .row-price { display: inline-block; }
-    .row-flags { grid-area: flags; }
+  /* Shed lower-priority columns as rows get tight: type → set */
+  @media (max-width: 620px) {
+    .card-row .col-type { display: none; }
+  }
+  @media (max-width: 480px) {
+    .card-row .col-set { display: none; }
   }
 
   .card-thumb {
@@ -913,13 +922,15 @@ function renderCardRow(card, col) {
   const priceHtml = price?.market != null ? `$${price.market.toFixed(2)}` : '';
   const rarity = card.rarity || '';
   const rarityClass = rarity.toLowerCase();
+  const cost = (card.cost != null && card.cost !== '') ? card.cost : '';
   const escId = card.id.replace(/'/g, "\\'");
   return `<div class="card-row${flagClass}" data-id="${card.id}">
+    <span class="cr-mana${cost===''?' empty':''}">${cost}</span>
     <div class="row-name">${card.name}</div>
-    <div class="row-set-wrap"><span class="row-meta set">${setBadge(card.set)}</span></div>
-    <span class="row-rarity ${rarityClass}">${rarity}</span>
-    <span class="row-meta">${card.type || ''}</span>
-    <span class="row-price">${priceHtml}</span>
+    <div class="row-set-wrap col-set"><span class="row-meta set">${setBadge(card.set)}</span></div>
+    <span class="row-rarity ${rarityClass}">${rarityAbbr(rarity)}</span>
+    <span class="row-meta col-type">${card.type || ''}</span>
+    <span class="row-price col-price">${priceHtml}</span>
     <div class="row-flags">
       <div class="row-flag-group${have > 0 ? ' have-on' : ''}">
         <button class="row-flag-btn have${have > 0 ? ' on' : ''}" onclick="event.stopPropagation();toggleFlag('${escId}','have')">Have${have > 0 ? ' '+have : ''}</button>
@@ -931,6 +942,10 @@ function renderCardRow(card, col) {
       </div>
     </div>
   </div>`;
+}
+
+function rarityAbbr(r) {
+  return { 'Unique':'Uni', 'Elite':'Eli', 'Exceptional':'Exc', 'Ordinary':'Ord' }[r] || r;
 }
 
 // ── VIEW MODE (grid/list) ──
