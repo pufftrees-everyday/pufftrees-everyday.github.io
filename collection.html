@@ -231,6 +231,12 @@
 
   /* VIEW MODE TOGGLE (grid/list) */
   .viewmode-toggle { display: flex; gap: 0; border: 2px solid #2a2640; border-radius: 4px; overflow: hidden; flex-shrink: 0; }
+  .finish-toggle { display: flex; gap: 0; border: 2px solid #2a2640; border-radius: 4px; overflow: hidden; flex-shrink: 0; }
+  .finish-btn { font-family: 'Cinzel', serif; font-size: 0.62rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; background: #13111e; border: none; color: var(--rune); padding: 6px 12px; cursor: pointer; transition: all 0.15s; }
+  .finish-btn:not(.active):hover { background: #1a1728; color: var(--arcane); }
+  .finish-btn.active { background: var(--rune); color: #fff; }
+  #finish-foil.active { background: linear-gradient(135deg, var(--gold), #b8924e); color: #1a1410; }
+  body.foil-mode .card-grid { box-shadow: inset 0 0 0 1px rgba(200,169,110,0.15); border-radius: 6px; }
   .viewmode-btn {
     font-size: 1rem; line-height: 1; background: #13111e; border: none;
     color: var(--rune); padding: 6px 11px; cursor: pointer; transition: all 0.15s;
@@ -482,6 +488,10 @@
       <button class="viewmode-btn active" id="vm-grid" onclick="setViewMode('grid')" title="Grid view" aria-label="Grid view">⊞</button>
       <button class="viewmode-btn" id="vm-list" onclick="setViewMode('list')" title="List view" aria-label="List view">☰</button>
     </div>
+    <div class="finish-toggle">
+      <button class="finish-btn active" id="finish-standard" onclick="setFinish('standard')">Standard</button>
+      <button class="finish-btn" id="finish-foil" onclick="setFinish('foil')">Foil</button>
+    </div>
     <div class="collection-actions">
       <button class="btn btn-ghost" onclick="exportWantList()">⬇ Export Want List</button>
       <button class="btn btn-ghost" onclick="exportHaveList()">⬇ Export Have List</button>
@@ -703,12 +713,21 @@ function saveCollection(col) {
   }
 }
 
+// Map a logical flag ('have'/'want') to the storage field for the current finish
+function finishField(flag) {
+  return finishMode === 'foil' ? (flag === 'have' ? 'haveFoil' : 'wantFoil') : flag;
+}
+// True if an entry has no quantities at all (standard or foil) → safe to delete
+function entryEmpty(e) {
+  return !e.have && !e.want && !e.haveFoil && !e.wantFoil;
+}
+
 function toggleFlag(cardId, flag) {
   const col = getCollection();
   if (!col[cardId]) col[cardId] = { have: 0, want: 0 };
-  // Toggle: if 0 set to 1, if >0 set to 0
-  col[cardId][flag] = col[cardId][flag] > 0 ? 0 : 1;
-  if (!col[cardId].have && !col[cardId].want) delete col[cardId];
+  const field = finishField(flag);
+  col[cardId][field] = col[cardId][field] > 0 ? 0 : 1;
+  if (entryEmpty(col[cardId])) delete col[cardId];
   saveCollection(col);
   updateStats();
   if (viewMode === 'list') { updateCardRow(cardId, col[cardId]); }
@@ -722,8 +741,9 @@ function toggleFlag(cardId, flag) {
 function changeQty(cardId, flag, delta) {
   const col = getCollection();
   if (!col[cardId]) col[cardId] = { have: 0, want: 0 };
-  col[cardId][flag] = Math.max(0, (col[cardId][flag] || 0) + delta);
-  if (!col[cardId].have && !col[cardId].want) delete col[cardId];
+  const field = finishField(flag);
+  col[cardId][field] = Math.max(0, (col[cardId][field] || 0) + delta);
+  if (entryEmpty(col[cardId])) delete col[cardId];
   saveCollection(col);
   updateStats();
   if (viewMode === 'list') { updateCardRow(cardId, col[cardId]); }
@@ -745,8 +765,8 @@ function updateCardRow(cardId, entry) {
 }
 
 function updateCardThumbFlags(thumb, cardId, entry) {
-  const have = entry?.have || 0;
-  const want = entry?.want || 0;
+  const have = (finishMode === 'foil' ? entry?.haveFoil : entry?.have) || 0;
+  const want = (finishMode === 'foil' ? entry?.wantFoil : entry?.want) || 0;
   thumb.classList.toggle('flag-have', have > 0);
   thumb.classList.toggle('flag-want', want > 0);
   let badge = thumb.querySelector('.flag-badge');
@@ -767,23 +787,61 @@ function updateCardThumbFlags(thumb, cardId, entry) {
 
 function updateStats() {
   const col = getCollection();
-  const haveEntries = Object.entries(col).filter(([,v]) => v.have > 0);
-  const wantEntries = Object.entries(col).filter(([,v]) => v.want > 0);
-  const haveQty = haveEntries.reduce((s, [,v]) => s + v.have, 0);
-  const wantQty = wantEntries.reduce((s, [,v]) => s + v.want, 0);
-  const haveValue = haveEntries.reduce((sum, [name, v]) => sum + (prices[name]?.market || 0) * v.have, 0);
-  const wantValue = wantEntries.reduce((sum, [name, v]) => sum + (prices[name]?.market || 0) * v.want, 0);
+  const entries = Object.entries(col);
+  // Standard totals
+  let stdHaveQty = 0, stdWantQty = 0, stdHaveVal = 0, stdWantVal = 0;
+  // Foil totals
+  let foilHaveQty = 0, foilWantQty = 0, foilHaveVal = 0, foilWantVal = 0;
+  for (const [name, v] of entries) {
+    const sp = prices[name]?.market || 0;
+    const fp = foilPrices[name]?.market || 0;
+    stdHaveQty += v.have || 0;
+    stdWantQty += v.want || 0;
+    stdHaveVal += sp * (v.have || 0);
+    stdWantVal += sp * (v.want || 0);
+    foilHaveQty += v.haveFoil || 0;
+    foilWantQty += v.wantFoil || 0;
+    foilHaveVal += fp * (v.haveFoil || 0);
+    foilWantVal += fp * (v.wantFoil || 0);
+  }
+
   document.getElementById('stat-total').textContent = allCards.length;
-  document.getElementById('stat-have').textContent = haveQty;
-  document.getElementById('stat-want').textContent = wantQty;
+
+  // Show the current finish's have/want in the main pills
+  const isFoil = finishMode === 'foil';
+  document.getElementById('stat-have').textContent = isFoil ? foilHaveQty : stdHaveQty;
+  document.getElementById('stat-want').textContent = isFoil ? foilWantQty : stdWantQty;
+  const haveVal = isFoil ? foilHaveVal : stdHaveVal;
+  const wantVal = isFoil ? foilWantVal : stdWantVal;
   const haveValEl = document.getElementById('stat-have-value');
   const wantValEl = document.getElementById('stat-want-value');
-  if (haveValEl) haveValEl.textContent = haveValue > 0 ? ` ($${haveValue.toFixed(2)})` : '';
-  if (wantValEl) wantValEl.textContent = wantValue > 0 ? ` ($${wantValue.toFixed(2)})` : '';
+  if (haveValEl) haveValEl.textContent = haveVal > 0 ? ` ($${haveVal.toFixed(2)})` : '';
+  if (wantValEl) wantValEl.textContent = wantVal > 0 ? ` ($${wantVal.toFixed(2)})` : '';
+
+  // Combined value summary (both finishes) in a dedicated pill
+  let totalEl = document.getElementById('stat-total-value');
+  if (!totalEl) {
+    totalEl = document.createElement('div');
+    totalEl.className = 'cstat';
+    totalEl.id = 'stat-total-value';
+    totalEl.style.cssText = 'color:var(--gold);';
+    const statsBar = document.querySelector('.collection-stats');
+    if (statsBar) statsBar.appendChild(totalEl);
+  }
+  const totalHaveVal = stdHaveVal + foilHaveVal;
+  if (totalEl) {
+    totalEl.innerHTML = totalHaveVal > 0
+      ? `Collection value: <b style="color:var(--gold)">$${totalHaveVal.toFixed(2)}</b>` +
+        (foilHaveVal > 0 ? ` <span style="color:var(--mist);font-size:0.74rem;">(std $${stdHaveVal.toFixed(2)} · foil $${foilHaveVal.toFixed(2)})</span>` : '')
+      : '';
+    totalEl.style.display = totalHaveVal > 0 ? '' : 'none';
+  }
 }
 
 // ── LOAD CARDS ──
 let prices = {};
+let foilPrices = {};
+let finishMode = 'standard'; // 'standard' | 'foil'
 let priceSource = null;
 let priceDate = null;
 
@@ -796,9 +854,9 @@ async function loadCards() {
     allCards = raw.map(card => {
       const g = card.guardian || {};
       const firstSet = (card.sets || [])[0];
-      const firstVariant = firstSet
-        ? (firstSet.variants || []).find(v => v.finish === 'Standard' && v.product === 'Booster') || firstSet.variants[0]
-        : null;
+      const variants = firstSet ? (firstSet.variants || []) : [];
+      const firstVariant = variants.find(v => v.finish === 'Standard' && v.product === 'Booster') || variants[0];
+      const foilVariant = variants.find(v => v.finish === 'Foil') || variants.find(v => (v.finish||'').toLowerCase().includes('foil'));
       return {
         id: card.name, name: card.name,
         type: g.type || '', rarity: g.rarity || '',
@@ -808,6 +866,7 @@ async function loadCards() {
         subTypes: card.subTypes || '',
         set: firstSet ? firstSet.name : '',
         slug: firstVariant ? firstVariant.slug : null,
+        foilSlug: foilVariant ? foilVariant.slug : null,
       };
     }).sort((a, b) => a.name.localeCompare(b.name));
 
@@ -817,6 +876,7 @@ async function loadCards() {
       if (pres.ok) {
         const pdata = await pres.json();
         prices = pdata.prices || {};
+        foilPrices = pdata.foils || {};
         priceSource = pdata.source || 'JustTCG';
         priceDate = pdata.generated ? new Date(pdata.generated).toLocaleDateString() : null;
         if (priceDate) {
@@ -881,16 +941,17 @@ function renderCards(cards, append = false) {
 
 function renderCardThumb(card, col) {
   const entry = col[card.id] || {};
-  const have = entry.have || 0;
-  const want = entry.want || 0;
+  const have = (finishMode === 'foil' ? entry.haveFoil : entry.have) || 0;
+  const want = (finishMode === 'foil' ? entry.wantFoil : entry.want) || 0;
   const flagClass = (have > 0 && want > 0 ? ' flag-have flag-want' : have > 0 ? ' flag-have' : want > 0 ? ' flag-want' : '');
-  const price = prices[card.name];
+  const price = (finishMode === 'foil' ? foilPrices[card.name] : prices[card.name]);
   const priceHtml = price?.market != null
     ? `<div class="card-price"><span class="price-market">$${price.market.toFixed(2)}</span></div>`
     : '';
   const escId = card.id.replace(/'/g, "\\'");
+  const imgUrl = (finishMode === 'foil' && card.foilSlug) ? `${IMAGE_BASE}${card.foilSlug}.png` : getImageUrl(card);
   return `<div class="card-thumb${flagClass}" data-id="${card.id}" onclick="void(0)">
-    <img src="${getImageUrl(card)}" alt="${card.name}" loading="lazy" onerror="this.style.opacity='0.2'">
+    <img src="${imgUrl}" alt="${card.name}" loading="lazy" onerror="this.style.opacity='0.2'">
     <div class="flag-badge">
       ${have > 0 ? `<span class="badge badge-have">Have${have > 1 ? ' ×'+have : ''}</span>` : ''}
       ${want > 0 ? `<span class="badge badge-want">Want${want > 1 ? ' ×'+want : ''}</span>` : ''}
@@ -915,10 +976,10 @@ function renderCardThumb(card, col) {
 
 function renderCardRow(card, col) {
   const entry = col[card.id] || {};
-  const have = entry.have || 0;
-  const want = entry.want || 0;
+  const have = (finishMode === 'foil' ? entry.haveFoil : entry.have) || 0;
+  const want = (finishMode === 'foil' ? entry.wantFoil : entry.want) || 0;
   const flagClass = (have > 0 && want > 0 ? ' flag-have flag-want' : have > 0 ? ' flag-have' : want > 0 ? ' flag-want' : '');
-  const price = prices[card.name];
+  const price = (finishMode === 'foil' ? foilPrices[card.name] : prices[card.name]);
   const priceHtml = price?.market != null ? `$${price.market.toFixed(2)}` : '';
   const rarity = card.rarity || '';
   const rarityClass = rarity.toLowerCase();
@@ -954,6 +1015,16 @@ function setViewMode(mode) {
   localStorage.setItem('grimoire_view_mode', mode);
   document.getElementById('vm-grid').classList.toggle('active', mode === 'grid');
   document.getElementById('vm-list').classList.toggle('active', mode === 'list');
+  filterCards();
+}
+
+// ── FINISH MODE (standard/foil) ──
+function setFinish(mode) {
+  finishMode = mode;
+  document.getElementById('finish-standard').classList.toggle('active', mode === 'standard');
+  document.getElementById('finish-foil').classList.toggle('active', mode === 'foil');
+  document.body.classList.toggle('foil-mode', mode === 'foil');
+  updateStats();
   filterCards();
 }
 
@@ -1044,11 +1115,13 @@ function filterCards() {
   const powMax = document.getElementById('power-max')?.value !== '' ? parseInt(document.getElementById('power-max').value) : null;
   const col = getCollection();
 
+  const hf = finishMode === 'foil' ? 'haveFoil' : 'have';
+  const wf = finishMode === 'foil' ? 'wantFoil' : 'want';
   const filtered = allCards.filter(c => {
-    // View filter
-    if (currentView === 'have' && !(col[c.id]?.have > 0)) return false;
-    if (currentView === 'want' && !(col[c.id]?.want > 0)) return false;
-    if (currentView === 'missing' && col[c.id]?.have > 0) return false;
+    // View filter (respects current finish)
+    if (currentView === 'have' && !(col[c.id]?.[hf] > 0)) return false;
+    if (currentView === 'want' && !(col[c.id]?.[wf] > 0)) return false;
+    if (currentView === 'missing' && col[c.id]?.[hf] > 0) return false;
     // Search
     if (q && !c.name.toLowerCase().includes(q)) return false;
     // Basic filters
