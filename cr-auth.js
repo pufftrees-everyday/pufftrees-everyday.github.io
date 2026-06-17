@@ -23,11 +23,13 @@
     if (!supa) { CR.user = null; return null; }
     const { data } = await supa.auth.getUser();
     if (data && data.user) {
-      let username = data.user.email;
+      let username = null;
       try {
         const { data: prof } = await supa.from('profiles').select('username').eq('id', data.user.id).single();
         if (prof && prof.username) username = prof.username;
       } catch (e) {}
+      // Fall back to the display_name from signup metadata, never the email
+      if (!username) username = (data.user.user_metadata && data.user.user_metadata.display_name) || 'Account';
       CR.user = { id: data.user.id, email: data.user.email, username };
     } else {
       CR.user = null;

@@ -267,11 +267,12 @@ async function refreshUser() {
   const { data } = await supa.auth.getUser();
   if (data && data.user) {
     // fetch profile username
-    let username = data.user.email;
+    let username = null;
     try {
       const { data: prof } = await supa.from('profiles').select('username').eq('id', data.user.id).single();
       if (prof && prof.username) username = prof.username;
     } catch(e) {}
+    if (!username) username = (data.user.user_metadata && data.user.user_metadata.display_name) || 'Account';
     currentUser = { id: data.user.id, email: data.user.email, username };
   } else {
     currentUser = null;

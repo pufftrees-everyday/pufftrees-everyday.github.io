@@ -1436,6 +1436,11 @@ function getSavedDecks() { try { return JSON.parse(localStorage.getItem('grimoir
 
 async function saveDeck() {
   const name = document.getElementById('deck-name-input').value.trim() || 'Unnamed Deck';
+  const total = getDeckCounts().total;
+  if (total === 0) { toast('Add some cards before saving'); return; }
+
+  // Make sure we have the latest session before deciding cloud vs local
+  if (supa && !currentUser) { try { await refreshUser(); } catch(e) {} }
 
   // Logged in → save to cloud as an owned, saved deck
   if (supa && currentUser) {
@@ -1443,29 +1448,28 @@ async function saveDeck() {
       const payload = buildDeckPayload();
       let code = activeDeckCode;
       if (code) {
-        // Update existing cloud deck
         const { error } = await supa.from('decks')
           .update({ name, deck_data: payload, is_saved: true, updated_at: new Date().toISOString() })
           .eq('short_code', code).eq('owner_id', currentUser.id);
         if (error) throw error;
       } else {
-        // Create a new cloud deck with a fresh short code
+        let saved = false;
         for (let attempt = 0; attempt < 5; attempt++) {
           code = genShortCode();
           const { error } = await supa.from('decks').insert({
             short_code: code, name, deck_data: payload,
             owner_id: currentUser.id, is_saved: true, is_public: false
           });
-          if (!error) { activeDeckCode = code; break; }
+          if (!error) { activeDeckCode = code; saved = true; break; }
           if (error.code !== '23505') throw error;
-          code = null;
         }
-        if (!code) throw new Error('Could not generate code');
+        if (!saved) throw new Error('Could not generate a unique code');
       }
       toast(`"${name}" saved to your account`);
       return;
     } catch (e) {
-      console.warn('Cloud save failed, falling back to local', e);
+      console.error('Cloud save failed', e);
+      toast('Cloud save failed — saved locally instead');
       // fall through to local save
     }
   }
@@ -1476,7 +1480,7 @@ async function saveDeck() {
   activeDeckId = id;
   saved[id] = { name, deck: JSON.parse(JSON.stringify(deck)), savedAt: new Date().toISOString() };
   localStorage.setItem('grimoire_decks', JSON.stringify(saved));
-  toast(`"${name}" saved!`);
+  toast(currentUser ? `"${name}" saved locally` : `"${name}" saved!`);
 }
 
 function loadDeck(id) {
@@ -1735,11 +1739,12 @@ async function refreshUser() {
   if (!supa) return;
   const { data } = await supa.auth.getUser();
   if (data && data.user) {
-    let username = data.user.email;
+    let username = null;
     try {
       const { data: prof } = await supa.from('profiles').select('username').eq('id', data.user.id).single();
       if (prof && prof.username) username = prof.username;
     } catch(e) {}
+    if (!username) username = (data.user.user_metadata && data.user.user_metadata.display_name) || 'Account';
     currentUser = { id: data.user.id, email: data.user.email, username };
   } else { currentUser = null; }
   renderAuthBar();
@@ -1810,6 +1815,10 @@ function applyDeckPayload(payload) {
   place(payload.s, 'spellbook');
   if (matched === 0) { toast('Shared deck had no matching cards'); return false; }
   deck = newDeck;
+  // A loaded shared deck is someone else's (or a fresh copy) — saving should
+  // create the current user's OWN deck, never overwrite the original.
+  activeDeckCode = null;
+  activeDeckId = null;
   document.getElementById('deck-name-input').value = payload.n || 'Shared Deck';
   renderDeck();
   renderCardGrid();
@@ -1860,6 +1869,8 @@ async function loadSharedDeck(code) {
 // ── CLEAR ──
 function clearDeck() {
   deck = { avatar: {}, atlas: {}, spellbook: {} };
+  activeDeckCode = null;
+  activeDeckId = null;
   renderDeck();
   renderCardGrid();
   toast('Deck cleared');
@@ -1897,6 +1908,8 @@ function runImport() {
   }
   if (matched === 0) { toast('No cards matched — check format'); return; }
   deck = newDeck;
+  activeDeckCode = null; // imported deck is brand new and unsaved → next Save creates a fresh owned deck
+  activeDeckId = null;
   renderDeck();
   renderCardGrid();
   closeImport();
