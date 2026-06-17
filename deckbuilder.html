@@ -1746,6 +1746,113 @@ function groupByType(entries) {
 }
 
 // ── DECK STATS ──
+// Element colors shared by the charts
+const ELEMENT_COLORS = { air: '#8cb4d2', earth: '#a08246', fire: '#c4614a', water: '#5a96b0', none: '#6b5fa0' };
+
+// Determine a card's dominant element from its thresholds (for coloring)
+function dominantElement(card) {
+  if (!card.thresholds) return 'none';
+  let best = 'none', bestV = 0;
+  for (const [k, v] of Object.entries(card.thresholds)) {
+    if (v > bestV) { bestV = v; best = k.toLowerCase(); }
+  }
+  return ELEMENT_COLORS[best] ? best : 'none';
+}
+
+// Total threshold pips a card requires
+function totalThreshold(card) {
+  if (!card.thresholds) return 0;
+  return Object.values(card.thresholds).reduce((s, v) => s + (v || 0), 0);
+}
+
+// SVG scatter plot: X = mana cost, Y = total threshold, dot color = dominant element
+function buildScatter(cards) {
+  const W = 480, H = 300, padL = 38, padB = 34, padT = 14, padR = 14;
+  const pts = [];
+  let maxCost = 1, maxThr = 1;
+  cards.forEach(({card, qty}) => {
+    if (card.cost == null || card.cost === '') return;
+    const x = Number(card.cost), y = totalThreshold(card);
+    maxCost = Math.max(maxCost, x); maxThr = Math.max(maxThr, y);
+    pts.push({ x, y, qty, el: dominantElement(card), name: card.name });
+  });
+  if (!pts.length) return '<div class="stats-sub" style="margin:0">No costed cards to plot.</div>';
+  maxCost = Math.max(maxCost, 4); maxThr = Math.max(maxThr, 3);
+
+  const plotW = W - padL - padR, plotH = H - padT - padB;
+  const sx = v => padL + (v / maxCost) * plotW;
+  const sy = v => padT + plotH - (v / maxThr) * plotH;
+
+  // Jitter overlapping points slightly so duplicates at same x,y don't fully hide
+  const seen = {};
+  const dots = pts.map(p => {
+    const k = p.x + ',' + p.y;
+    const n = seen[k] = (seen[k] || 0) + 1;
+    const angle = n * 2.3, rad = (n - 1) * 3.2;
+    const cx = sx(p.x) + Math.cos(angle) * rad;
+    const cy = sy(p.y) + Math.sin(angle) * rad;
+    const r = 4 + Math.min(p.qty - 1, 3) * 1.6;
+    return `<circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="${r}" fill="${ELEMENT_COLORS[p.el]}" fill-opacity="0.78" stroke="#0b0a0f" stroke-width="0.5"><title>${p.name} — cost ${p.x}, ${p.y} threshold${p.qty>1?' ×'+p.qty:''}</title></circle>`;
+  }).join('');
+
+  // Axis gridlines + labels
+  let gridX = '';
+  for (let c = 0; c <= maxCost; c++) {
+    const x = sx(c);
+    gridX += `<line x1="${x}" y1="${padT}" x2="${x}" y2="${padT+plotH}" stroke="#2a2640" stroke-width="0.5"/>
+      <text x="${x}" y="${H-padB+16}" fill="#6b6580" font-size="10" text-anchor="middle">${c}</text>`;
+  }
+  let gridY = '';
+  for (let t = 0; t <= maxThr; t++) {
+    const y = sy(t);
+    gridY += `<line x1="${padL}" y1="${y}" x2="${padL+plotW}" y2="${y}" stroke="#2a2640" stroke-width="0.5"/>
+      <text x="${padL-7}" y="${y+3}" fill="#6b6580" font-size="10" text-anchor="end">${t}</text>`;
+  }
+
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;">
+    ${gridX}${gridY}
+    <text x="${padL+plotW/2}" y="${H-2}" fill="#9a93b5" font-size="11" text-anchor="middle">Mana Cost →</text>
+    <text x="12" y="${padT+plotH/2}" fill="#9a93b5" font-size="11" text-anchor="middle" transform="rotate(-90 12 ${padT+plotH/2})">Threshold →</text>
+    ${dots}
+  </svg>`;
+}
+
+// SVG donut: share of total threshold demand by element
+function buildDonut(cards) {
+  const totals = { air:0, earth:0, fire:0, water:0 };
+  cards.forEach(({card, qty}) => {
+    if (!card.thresholds) return;
+    for (const [k,v] of Object.entries(card.thresholds)) {
+      const kk = k.toLowerCase();
+      if (totals[kk] != null) totals[kk] += (v||0) * qty;
+    }
+  });
+  const grand = Object.values(totals).reduce((s,v)=>s+v,0);
+  if (!grand) return '<div class="stats-sub" style="margin:0">No threshold requirements to chart.</div>';
+
+  const cx = 70, cy = 70, rOuter = 60, rInner = 36;
+  let angle = -Math.PI / 2; // start at top
+  const segs = [];
+  const legend = [];
+  for (const [el, val] of Object.entries(totals)) {
+    if (!val) continue;
+    const frac = val / grand;
+    const a2 = angle + frac * Math.PI * 2;
+    const large = frac > 0.5 ? 1 : 0;
+    const x1 = cx + rOuter*Math.cos(angle), y1 = cy + rOuter*Math.sin(angle);
+    const x2 = cx + rOuter*Math.cos(a2),   y2 = cy + rOuter*Math.sin(a2);
+    const xi2 = cx + rInner*Math.cos(a2),  yi2 = cy + rInner*Math.sin(a2);
+    const xi1 = cx + rInner*Math.cos(angle), yi1 = cy + rInner*Math.sin(angle);
+    segs.push(`<path d="M${x1.toFixed(1)} ${y1.toFixed(1)} A${rOuter} ${rOuter} 0 ${large} 1 ${x2.toFixed(1)} ${y2.toFixed(1)} L${xi2.toFixed(1)} ${yi2.toFixed(1)} A${rInner} ${rInner} 0 ${large} 0 ${xi1.toFixed(1)} ${yi1.toFixed(1)} Z" fill="${ELEMENT_COLORS[el]}"><title>${el}: ${val} pips (${Math.round(frac*100)}%)</title></path>`);
+    legend.push(`<div class="thr-summary-item"><span style="display:inline-block;width:12px;height:12px;border-radius:2px;background:${ELEMENT_COLORS[el]}"></span> ${el.charAt(0).toUpperCase()+el.slice(1)} <b>${Math.round(frac*100)}%</b></div>`);
+    angle = a2;
+  }
+  return `<div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap;">
+    <svg viewBox="0 0 140 140" style="width:140px;height:140px;flex-shrink:0;">${segs.join('')}</svg>
+    <div style="display:flex;flex-direction:column;gap:8px;">${legend.join('')}</div>
+  </div>`;
+}
+
 function openDeckStats() {
   const body = document.getElementById('stats-body');
   const all = [...Object.values(deck.avatar), ...Object.values(deck.atlas), ...Object.values(deck.spellbook)];
@@ -1836,6 +1943,15 @@ function openDeckStats() {
         <div class="stat-box"><div class="stat-box-val">${spellCount}</div><div class="stat-box-label">Spellbook</div></div>
         <div class="stat-box"><div class="stat-box-val">${avgCost}</div><div class="stat-box-label">Avg. Cost</div></div>
       </div>
+    </div>
+    <div class="stats-group">
+      <div class="stats-group-title">Cost × Threshold Map</div>
+      ${buildScatter(all)}
+      <div class="stats-sub" style="margin-top:6px;font-size:0.78rem;">Each dot is a card — position shows its cost vs. total threshold, color shows its main element, size shows copies.</div>
+    </div>
+    <div class="stats-group">
+      <div class="stats-group-title">Elemental Identity</div>
+      ${buildDonut(all)}
     </div>
     <div class="stats-group">
       <div class="stats-group-title">Mana Curve (Spellbook)</div>
@@ -2155,6 +2271,21 @@ async function shareDeck() {
   if (supa) {
     try {
       const payload = buildDeckPayload();
+
+      // If this deck is already saved with a code we own, reuse it (no duplicate row)
+      if (currentUser && activeDeckCode) {
+        const { error: upErr } = await supa.from('decks')
+          .update({ name: payload.n, deck_data: payload, updated_at: new Date().toISOString() })
+          .eq('short_code', activeDeckCode).eq('owner_id', currentUser.id);
+        if (!upErr) {
+          textEl.value = `${base}?d=${activeDeckCode}`;
+          lastSharedCode = activeDeckCode;
+          updatePublishSection();
+          return;
+        }
+        // if update failed (e.g. not actually owned), fall through to creating a new one
+      }
+
       // Try a few times in case of a code collision
       for (let attempt = 0; attempt < 5; attempt++) {
         const code = genShortCode();
@@ -2165,11 +2296,12 @@ async function shareDeck() {
           is_public: false
         };
         // Stamp ownership if logged in (lets them manage/publish it later)
-        if (currentUser) row.owner_id = currentUser.id;
+        if (currentUser) { row.owner_id = currentUser.id; row.is_saved = true; }
         const { error } = await supa.from('decks').insert(row);
         if (!error) {
           textEl.value = `${base}?d=${code}`;
           lastSharedCode = code;
+          if (currentUser) activeDeckCode = code; // remember so future shares reuse it
           updatePublishSection();
           return;
         }

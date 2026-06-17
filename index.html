@@ -174,6 +174,8 @@
   .deck-tile-meta { font-size: 0.78rem; color: var(--rune); font-style: italic; }
   .deck-tile-del { position: absolute; top: 8px; right: 8px; background: none; border: none; color: var(--mist); cursor: pointer; font-size: 0.85rem; padding: 2px 5px; transition: color 0.15s; }
   .deck-tile-del:hover { color: var(--ember); }
+  .deck-tile-link { position: absolute; top: 8px; right: 30px; background: none; border: none; color: var(--mist); cursor: pointer; font-size: 0.82rem; padding: 2px 5px; transition: color 0.15s; }
+  .deck-tile-link:hover { color: var(--gold); }
 
   .new-deck-tile {
     background: transparent;
@@ -1253,6 +1255,7 @@ async function renderMyDecks() {
       const pub = d.is_public ? '<span style="color:var(--sage);font-size:0.7rem;"> · Public</span>' : '';
       return `<div class="deck-tile" onclick="window.location.href='deckbuilder.html?d=${d.short_code}'">
         <button class="deck-tile-del" onclick="event.stopPropagation();deleteCloudDeck('${d.short_code}')">✕</button>
+        <button class="deck-tile-link" onclick="event.stopPropagation();copyDeckLink('${d.short_code}')" title="Copy share link">🔗</button>
         <div class="deck-tile-name">${escHtml(d.name)}</div>
         <div class="deck-tile-meta">${qty} cards${date?' · '+date:''}${pub}</div>
       </div>`;
@@ -1285,6 +1288,14 @@ async function deleteCloudDeck(shortCode) {
     toast('Deck deleted');
     renderMyDecks();
   } catch(e) { toast('Could not delete'); }
+}
+
+function copyDeckLink(shortCode) {
+  const url = `${window.location.origin}/deckbuilder.html?d=${shortCode}`;
+  navigator.clipboard.writeText(url).then(
+    () => toast('Deck link copied!'),
+    () => { window.prompt('Copy this deck link:', url); }
+  );
 }
 
 function saveDeck() {
