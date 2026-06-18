@@ -85,6 +85,7 @@
   /* PLAYER ZONE */
   .player {
     flex: 1;
+    min-height: 0;
     position: relative;
     display: flex;
     flex-direction: column;
@@ -145,6 +146,7 @@
   /* LIFE SECTION */
   .life-section {
     flex: 1;
+    min-height: 0;
     width: 100%;
     display: flex;
     align-items: center;
@@ -449,6 +451,50 @@
     gap: 8px;
   }
   .center-logo img { width: 22px; height: 22px; border-radius: 4px; display: block; }
+
+  /* ============================================================
+     RESPONSIVE: shorter viewports (phones, esp. iPhone with Safari
+     chrome) don't have room for full-size resource bars + numbers,
+     which made content overflow and collide with the center bar.
+     Scale things down progressively by available height so the life
+     numbers always clear the center bar.
+     ============================================================ */
+  @media (max-height: 820px) {
+    .resource-bar { height: 140px; }
+    .resource-icon img { width: 36px; height: 36px; }
+    .resource-icon svg { width: 32px; height: 32px; }
+    .resource-value { font-size: 1.85rem; }
+    .life-number { font-size: 4.2rem; }
+  }
+  @media (max-height: 720px) {
+    .center-bar { height: 44px; gap: 12px; }
+    .center-logo { font-size: 0.75rem; }
+    .center-logo img { width: 18px; height: 18px; }
+    .resource-bar { height: 120px; }
+    .resource-icon img { width: 30px; height: 30px; }
+    .resource-icon svg { width: 28px; height: 28px; }
+    .resource-icon .el-name { font-size: 0.52rem; }
+    .resource-value { font-size: 1.6rem; }
+    .life-number { font-size: 3.6rem; }
+    .life-label { font-size: 0.58rem; }
+  }
+  @media (max-height: 640px) {
+    .center-bar { height: 40px; gap: 8px; }
+    .center-btn { padding: 5px 9px; font-size: 0.56rem; }
+    .quick-die-btn { width: 32px; height: 32px; }
+    .resource-bar { height: 104px; }
+    .resource-icon img { width: 26px; height: 26px; }
+    .resource-icon svg { width: 24px; height: 24px; }
+    .resource-value { font-size: 1.4rem; }
+    .res-arrow { font-size: 0.85rem; padding: 2px 0; }
+    .life-number { font-size: 3rem; }
+  }
+  /* Very narrow widths: tighten the center bar so buttons don't wrap */
+  @media (max-width: 400px) {
+    .center-bar { gap: 8px; }
+    .center-btn { padding: 5px 8px; font-size: 0.55rem; letter-spacing: 0.08em; }
+    .center-logo { font-size: 0.7rem; }
+  }
 
   /* SETTINGS MODAL */
   .modal-overlay {
