@@ -162,7 +162,7 @@
         </div>
         <a href="collection.html" class="cr-pm-item">My Vault</a>
         <a href="collection.html" class="cr-pm-item">My Trades</a>
-        <a href="index.html#my-decks-section" class="cr-pm-item">My Decks</a>
+        <a href="index.html?decks=1" class="cr-pm-item">My Decks</a>
         <div class="cr-pm-divider"></div>
         <button class="cr-pm-item cr-pm-signout" onclick="CR.logout()">Sign Out</button>`;
       document.body.appendChild(menu);
