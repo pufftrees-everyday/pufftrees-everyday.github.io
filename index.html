@@ -161,6 +161,32 @@
   #my-decks-section { margin-bottom: 32px; display: none; }
 
   .decks-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; }
+  /* Archive-style My Decks cards */
+  .decks-grid:has(.md-deck-card) { grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 16px; }
+  .md-deck-card { position: relative; background: var(--dusk); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; display: flex; flex-direction: column; transition: border-color 0.15s, transform 0.15s; }
+  .md-deck-card:hover { border-color: var(--border-strong); transform: translateY(-2px); }
+  .md-deck-avatar { width: 100%; height: 150px; overflow: hidden; background: #0b0a0f; position: relative; }
+  .md-deck-avatar img { width: 100%; height: auto; object-fit: cover; object-position: center 20%; display: block; }
+  .md-deck-avatar::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to bottom, transparent 58%, var(--dusk)); pointer-events: none; }
+  .md-deck-del { position: absolute; top: 8px; right: 8px; z-index: 3; width: 26px; height: 26px; border-radius: 50%; border: none; background: rgba(11,10,15,0.7); color: var(--ember); font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.15s; }
+  .md-deck-card:hover .md-deck-del { opacity: 1; }
+  .md-deck-body { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 7px; flex: 1; }
+  .md-deck-name { font-family: 'Cinzel', serif; font-size: 1.08rem; font-weight: 700; color: var(--parchment); line-height: 1.25; }
+  .md-deck-meta { font-size: 0.82rem; color: var(--rune); }
+  .md-deck-avatar-name { font-family: 'Crimson Pro', serif; font-style: italic; font-size: 0.84rem; color: var(--gold); }
+  .md-deck-actions { display: flex; gap: 8px; align-items: center; margin-top: 4px; }
+  .md-deck-actions .btn { flex: 1; text-align: center; padding: 7px 10px; font-size: 0.82rem; }
+  .md-deck-link { background: none; border: 1px solid var(--border-strong); border-radius: 5px; color: var(--arcane); cursor: pointer; padding: 6px 9px; font-size: 0.9rem; flex: 0 0 auto; }
+  .md-deck-link:hover { background: rgba(155,135,212,0.12); }
+  .md-el-section { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+  .md-el-bar { display: flex; width: 100%; height: 9px; border-radius: 5px; overflow: hidden; border: 1px solid rgba(0,0,0,0.3); }
+  .md-el-seg { height: 100%; }
+  .md-el-labels { display: flex; flex-wrap: wrap; gap: 8px 12px; margin-top: 7px; }
+  .md-el-label { display: inline-flex; align-items: center; gap: 5px; font-family: 'Crimson Pro', serif; font-size: 0.78rem; color: var(--shimmer); }
+  .md-el-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+  .md-new-deck-card { border: 2px dashed var(--border-strong); border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; min-height: 180px; cursor: pointer; color: var(--arcane); font-family: 'Cinzel', serif; font-size: 0.95rem; letter-spacing: 0.05em; transition: all 0.15s; }
+  .md-new-deck-card:hover { border-color: var(--arcane); background: rgba(155,135,212,0.06); color: var(--shimmer); }
+  .md-new-plus { font-size: 2.2rem; line-height: 1; }
 
   .deck-tile {
     background: var(--dusk);
@@ -690,6 +716,7 @@
   <div id="my-decks-section" style="display:none;margin-bottom:32px;">
     <div class="section-title">My Decks</div>
     <div class="decks-grid" id="decks-grid"></div>
+    <div id="my-decks-more" style="text-align:center;margin-top:18px;display:none;"></div>
   </div>
 
 
@@ -1300,7 +1327,15 @@ function runImport() {}
 // MY DECKS
 function toggleMyDecks() {
   const s = document.getElementById('my-decks-section');
-  s.style.display = s.style.display === 'none' ? 'block' : 'none';
+  const wasHidden = s.style.display === 'none' || !s.style.display;
+  if (wasHidden) {
+    s.style.display = 'block';
+    renderMyDecks();
+    s.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } else {
+    // Already open → scroll to it (don't hide, since the user clicked it expecting their decks)
+    s.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
 }
 
 function toggleMobileNav() {
@@ -1311,27 +1346,99 @@ function getSavedDecks() { try { return JSON.parse(localStorage.getItem('grimoir
 
 let cloudDecks = []; // populated when logged in
 
+// ── MY DECKS: Archive-style helpers ──
+const MD_ELEMENT_COLORS = { air: '#8cb4d2', earth: '#a08246', fire: '#c4614a', water: '#5a96b0' };
+let mdElementMap = null, mdSlugMap = null;
+let myDecksExpanded = false;
+const MY_DECKS_PREVIEW = 10;
+
+function buildCardMaps() {
+  if (mdElementMap && mdSlugMap) return;
+  mdElementMap = {}; mdSlugMap = {};
+  allCards.forEach(c => {
+    const key = (c.name || '').toLowerCase();
+    mdElementMap[key] = (c.element || '').split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+    mdSlugMap[key] = c.slug || null;
+  });
+}
+function mdAvatarName(dd) { return (dd.a && dd.a.length) ? dd.a[0][0] : null; }
+function mdAvatarImg(dd) {
+  const n = mdAvatarName(dd); if (!n) return null;
+  const slug = mdSlugMap[n.toLowerCase()];
+  return slug ? `${IMAGE_BASE}${slug}.png` : null;
+}
+function mdElementBreakdown(dd) {
+  const counts = { air: 0, earth: 0, fire: 0, water: 0 }; let total = 0;
+  ['a','t','s'].forEach(sec => (dd[sec] || []).forEach(([name, qty]) => {
+    const q = qty || 1; const ce = mdElementMap[(name || '').toLowerCase()];
+    if (ce && ce.length) ce.forEach(e => { if (counts[e] != null) { counts[e] += q; total += q; } });
+  }));
+  if (!total) return [];
+  return Object.entries(counts).filter(([,v]) => v > 0)
+    .map(([el,v]) => ({ el, pct: v / total * 100 })).sort((a,b) => b.pct - a.pct);
+}
+
+function renderDeckCardGraphic(d) {
+  buildCardMaps();
+  const dd = d.deck_data || {};
+  const qty = ['a','t','s'].reduce((s,k)=>s+(dd[k]||[]).reduce((a,[,q])=>a+(q||0),0),0);
+  const date = d.updated_at ? new Date(d.updated_at).toLocaleDateString() : '';
+  const av = mdAvatarName(dd);
+  const avImg = mdAvatarImg(dd);
+  const pub = d.is_public;
+  const breakdown = mdElementBreakdown(dd);
+  let bar = '';
+  if (breakdown.length) {
+    const segs = breakdown.map(b => `<div class="md-el-seg" style="width:${b.pct.toFixed(1)}%;background:${MD_ELEMENT_COLORS[b.el]};"></div>`).join('');
+    const labels = breakdown.map(b => `<span class="md-el-label"><span class="md-el-dot" style="background:${MD_ELEMENT_COLORS[b.el]};"></span>${b.el.charAt(0).toUpperCase()+b.el.slice(1)} ${Math.round(b.pct)}%</span>`).join('');
+    bar = `<div class="md-el-section"><div class="md-el-bar">${segs}</div><div class="md-el-labels">${labels}</div></div>`;
+  }
+  const avatarBlock = avImg
+    ? `<div class="md-deck-avatar"><img src="${avImg}" alt="${escHtml(av||'')}" loading="lazy" onerror="this.parentElement.style.display='none'"></div>` : '';
+  return `<div class="md-deck-card${avImg ? ' has-avatar' : ''}">
+    <button class="md-deck-del" onclick="event.stopPropagation();deleteCloudDeck('${d.short_code}')" title="Delete">✕</button>
+    ${avatarBlock}
+    <div class="md-deck-body">
+      <div class="md-deck-name">${escHtml(d.name)}</div>
+      <div class="md-deck-meta">${qty} cards${date?' · '+date:''}${pub?' · <span style="color:var(--sage)">Public</span>':''}</div>
+      ${av ? `<div class="md-deck-avatar-name">${escHtml(av)}</div>` : ''}
+      <div class="md-deck-actions">
+        <button class="btn btn-primary" onclick="window.location.href='deckbuilder.html?d=${d.short_code}'">Edit</button>
+        <button class="btn btn-ghost" onclick="window.location.href='deckbuilder.html?d=${d.short_code}&view=1'">View</button>
+        <button class="md-deck-link" onclick="event.stopPropagation();copyDeckLink('${d.short_code}')" title="Copy share link">🔗</button>
+      </div>
+      ${bar}
+    </div>
+  </div>`;
+}
+
 async function renderMyDecks() {
   const grid = document.getElementById('decks-grid');
 
-  // If logged in, show cloud decks; otherwise local
+  // If logged in, show cloud decks as Archive-style graphic cards
   if (window.CR && CR.user) {
     cloudDecks = await CR.fetchCloudDecks();
-    grid.innerHTML = cloudDecks.map(d => {
-      const qty = ['a','t','s'].reduce((s,k)=>s+(d.deck_data[k]||[]).reduce((a,[,q])=>a+(q||0),0),0);
-      const date = d.updated_at ? new Date(d.updated_at).toLocaleDateString() : '';
-      const pub = d.is_public ? '<span style="color:var(--sage);font-size:0.7rem;"> · Public</span>' : '';
-      return `<div class="deck-tile" onclick="window.location.href='deckbuilder.html?d=${d.short_code}'">
-        <button class="deck-tile-del" onclick="event.stopPropagation();deleteCloudDeck('${d.short_code}')">✕</button>
-        <button class="deck-tile-link" onclick="event.stopPropagation();copyDeckLink('${d.short_code}')" title="Copy share link">🔗</button>
-        <div class="deck-tile-name">${escHtml(d.name)}</div>
-        <div class="deck-tile-meta">${qty} cards${date?' · '+date:''}${pub}</div>
-      </div>`;
-    }).join('') + `<div class="new-deck-tile" onclick="window.location.href='deckbuilder.html'">New Deck</div>`;
+    // Most recent first
+    cloudDecks.sort((a,b) => new Date(b.updated_at||0) - new Date(a.updated_at||0));
+    const total = cloudDecks.length;
+    const shown = myDecksExpanded ? cloudDecks : cloudDecks.slice(0, MY_DECKS_PREVIEW);
+    let html = shown.map(renderDeckCardGraphic).join('');
+    html += `<div class="md-new-deck-card" onclick="window.location.href='deckbuilder.html'"><div class="md-new-plus">+</div><div>New Deck</div></div>`;
+    grid.innerHTML = html;
+    // Show-all / collapse control
+    const moreWrap = document.getElementById('my-decks-more');
+    if (moreWrap) {
+      if (total > MY_DECKS_PREVIEW) {
+        moreWrap.style.display = '';
+        moreWrap.innerHTML = myDecksExpanded
+          ? `<button class="btn btn-ghost" onclick="toggleMyDecksExpand()">Show less</button>`
+          : `<button class="btn btn-ghost" onclick="toggleMyDecksExpand()">Show all ${total} decks…</button>`;
+      } else { moreWrap.style.display = 'none'; moreWrap.innerHTML = ''; }
+    }
     return;
   }
 
-  // Guest → localStorage
+  // Guest → localStorage (simple tiles)
   const saved = getSavedDecks();
   const keys = Object.keys(saved);
   grid.innerHTML = keys.map(id => {
@@ -1344,6 +1451,13 @@ async function renderMyDecks() {
       <div class="deck-tile-meta">${qty} cards${date?' · '+date:''}</div>
     </div>`;
   }).join('') + `<div class="new-deck-tile" onclick="window.location.href='deckbuilder.html'">New Deck</div>`;
+  const moreWrap = document.getElementById('my-decks-more');
+  if (moreWrap) { moreWrap.style.display = 'none'; moreWrap.innerHTML = ''; }
+}
+
+function toggleMyDecksExpand() {
+  myDecksExpanded = !myDecksExpanded;
+  renderMyDecks();
 }
 
 function escHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}

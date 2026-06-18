@@ -1118,8 +1118,9 @@
         </div>
         <div class="ro-actions">
           <button class="btn btn-ghost" onclick="openDeckStats()">Stats</button>
+          <button class="btn btn-primary" id="ro-edit-btn" style="display:none;" onclick="editViewedDeck()">✎ Edit this deck</button>
           <button class="btn btn-primary" id="ro-copy-btn" onclick="copyViewedDeck()">Copy to My Decks</button>
-          <button class="btn btn-ghost" onclick="window.location.href='archive.html'">← The Archive</button>
+          <button class="btn btn-ghost" id="ro-back-btn" onclick="window.location.href='archive.html'">← The Archive</button>
         </div>
       </div>
       <div class="deck-stats" id="ro-stats"></div>
@@ -1355,7 +1356,8 @@ async function loadCards() {
     const params = new URLSearchParams(window.location.search);
     const sharedCode = params.get('d');
     const deckId = params.get('deck');
-    if (sharedCode) await loadSharedDeck(sharedCode);
+    const forceView = params.get('view') === '1';
+    if (sharedCode) await loadSharedDeck(sharedCode, forceView);
     else if (deckId) loadDeck(deckId);
     else {
       renderDeck();
@@ -2918,7 +2920,7 @@ function applyDeckPayload(payload) {
 }
 
 // Load a shared deck — detects short code (Supabase) vs legacy long base64 blob
-async function loadSharedDeck(code) {
+async function loadSharedDeck(code, forceView) {
   // Short codes are exactly 5 chars of [a-z0-9]; long links are much longer base64
   const isShortCode = /^[a-z0-9]{5}$/.test(code);
 
@@ -2937,12 +2939,18 @@ async function loadSharedDeck(code) {
         if (!ok) return false;
 
         const isOwner = currentUser && data.owner_id === currentUser.id;
-        if (isOwner) {
+        if (isOwner && !forceView) {
           // Owner → editable, claim it so Save updates it
           activeDeckCode = code;
           activeDeckPublic = !!data.is_public;
           renderVisibilityBar();
           exitReadOnly();
+        } else if (isOwner && forceView) {
+          // Owner chose "View" → read-only preview of their own deck.
+          // Still claim the code so the "Edit" button can switch to editing.
+          activeDeckCode = code;
+          activeDeckPublic = !!data.is_public;
+          enterReadOnly('', code);
         } else {
           // Not the owner → read-only viewing mode
           // Look up the author's display name
@@ -2982,7 +2990,7 @@ async function loadSharedDeck(code) {
 }
 
 // ── READ-ONLY VIEWING MODE ──
-function enterReadOnly(author) {
+function enterReadOnly(author, ownerCode) {
   readOnly = true;
   viewDeckAuthor = author;
   document.body.classList.add('viewing-deck');
@@ -2993,10 +3001,31 @@ function enterReadOnly(author) {
     : 'Shared Deck';
   document.getElementById('ro-name').textContent = name;
   document.getElementById('ro-author').innerHTML = author ? `by <b>${author}</b>` : '';
+  // Owner viewing their own deck → show Edit, hide Copy, back to My Decks
+  const isOwnerView = !!ownerCode;
+  const editBtn = document.getElementById('ro-edit-btn');
+  const copyBtn = document.getElementById('ro-copy-btn');
+  const backBtn = document.getElementById('ro-back-btn');
+  if (editBtn) editBtn.style.display = isOwnerView ? '' : 'none';
+  if (copyBtn) copyBtn.style.display = isOwnerView ? 'none' : '';
+  if (backBtn) {
+    backBtn.textContent = isOwnerView ? '← My Decks' : '← The Archive';
+    backBtn.setAttribute('onclick', isOwnerView ? "window.location.href='index.html#my-decks-section'" : "window.location.href='archive.html'");
+  }
   // Hide the avatar picker if it tried to open
   closeAvatarPicker();
   syncDeckViewToggle();
   renderDeck();
+}
+
+// Owner clicked "Edit this deck" from their own read-only view
+function editViewedDeck() {
+  exitReadOnly();
+  renderVisibilityBar();
+  renderDeck();
+  renderCardGrid();
+  toast('Editing — changes save to this deck.');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function exitReadOnly() {
