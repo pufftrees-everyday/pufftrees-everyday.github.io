@@ -71,6 +71,8 @@
     z-index: 100;
     backdrop-filter: blur(8px);
   }
+  .header-main { min-width: 0; flex-wrap: wrap; }
+  #auth-bar { flex-shrink: 0; }
 
   .logo { font-family: 'Cinzel', serif; font-size: 1.3rem; font-weight: 700; letter-spacing: 0.08em; color: var(--gold); text-shadow: 0 0 20px rgba(200,169,110,0.4); }
   .logo span { color: var(--arcane); font-weight: 400; }
@@ -652,11 +654,8 @@
     <button class="btn btn-ghost nav-collapsible" onclick="toggleMyDecks()">My Decks</button>
     <button class="btn btn-primary nav-collapsible" onclick="window.location.href='deckbuilder.html'">New Deck</button>
     <a href="archive.html" class="header-link nav-collapsible">The Archive</a>
-  </div>
-  <div class="header-nav nav-collapsible" id="auth-bar"></div>
-    <div class="header-nav nav-collapsible">
     <div class="more-menu">
-      <button class="more-trigger header-link" onclick="toggleMoreMenu(event)">More <span style="font-size:0.6rem;">▾</span></button>
+      <button class="more-trigger header-link nav-collapsible" onclick="toggleMoreMenu(event)">More <span style="font-size:0.6rem;">▾</span></button>
       <div class="more-dropdown" id="more-dropdown">
         <a href="videos.html" class="more-item">Videos</a>
         <a href="tracker.html" class="more-item">Life Tracker</a>
@@ -667,6 +666,8 @@
       </div>
     </div>
   </div>
+  <div class="header-nav nav-collapsible" id="auth-bar"></div>
+
   <button class="hamburger" onclick="toggleMobileNav()" aria-label="Menu">☰</button>
 </header>
 

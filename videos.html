@@ -45,6 +45,8 @@
 
   /* HEADER */
   header { background: linear-gradient(180deg, #0d0b14 0%, var(--void) 100%); border-bottom: 1px solid var(--border); padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 60px; position: sticky; top: 0; z-index: 100; backdrop-filter: blur(8px); }
+  .header-main { min-width: 0; flex-wrap: wrap; }
+  #auth-bar { flex-shrink: 0; }
   .logo { font-family: 'Cinzel', serif; font-size: 1.3rem; font-weight: 700; color: var(--gold); text-shadow: 0 0 20px rgba(200,169,110,0.4); }
   .header-left { display: flex; align-items: center; gap: 16px; }
   .header-right { display: flex; gap: 12px; align-items: center; }
@@ -174,10 +176,8 @@
     <button class="btn btn-ghost nav-collapsible" onclick="window.location.href='index.html'">My Decks</button>
     <button class="btn btn-primary nav-collapsible" onclick="window.location.href='deckbuilder.html'">New Deck</button>
     <a href="archive.html" class="header-link nav-collapsible">The Archive</a>
-  </div>
-    <div class="header-nav nav-collapsible">
     <div class="more-menu">
-      <button class="more-trigger header-link" onclick="toggleMoreMenu(event)">More <span style="font-size:0.6rem;">▾</span></button>
+      <button class="more-trigger header-link nav-collapsible" onclick="toggleMoreMenu(event)">More <span style="font-size:0.6rem;">▾</span></button>
       <div class="more-dropdown" id="more-dropdown">
         <a href="videos.html" class="more-item">Videos</a>
         <a href="tracker.html" class="more-item">Life Tracker</a>
@@ -188,6 +188,7 @@
       </div>
     </div>
   </div>
+
   <button class="hamburger" onclick="toggleMobileNav()" aria-label="Menu">☰</button>
 </header>
 
