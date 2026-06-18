@@ -106,7 +106,7 @@
   .guest-banner-text { font-size: 0.88rem; color: var(--parchment); line-height: 1.35; flex: 1; }
   .guest-banner-text a { color: var(--gold); cursor: pointer; text-decoration: underline; font-weight: 600; }
   .guest-banner-text a:hover { color: var(--shimmer); }
-  .guest-banner-close { background: none; border: none; color: var(--mist); font-size: 1.1rem; cursor: pointer; flex-shrink: 0; padding: 0 4px; }
+  .guest-banner-close { background: none; border: none; color:var(--rune); font-size: 1.1rem; cursor: pointer; flex-shrink: 0; padding: 0 4px; }
   .guest-banner-close:hover { color: var(--ember); }
   @media (max-width: 760px) {
     .guest-banner { height: auto; }
@@ -171,7 +171,7 @@
   }
   .filter-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--mist); transition: background 0.2s; }
   .filter-toggle-bar.has-active .filter-dot { background: var(--arcane); }
-  .filter-toggle-bar .advanced-toggle-arrow { font-size: 0.6rem; color: var(--mist); transition: transform 0.2s; }
+  .filter-toggle-bar .advanced-toggle-arrow { font-size: 0.6rem; color:var(--rune); transition: transform 0.2s; }
   .filter-toggle-bar.open .advanced-toggle-arrow { transform: rotate(180deg); }
 
   .filter-panel {
@@ -231,7 +231,7 @@
   .element-lock-btn:hover { border-color: var(--arcane); color: var(--arcane); }
   .element-lock-btn.active { background: var(--gold); border-color: var(--gold); color: #1a1410; }
 
-  .result-count { font-size: 0.75rem; color: var(--mist); font-style: italic; padding: 2px 0; }
+  .result-count { font-size: 0.75rem; color:var(--rune); font-style: italic; padding: 2px 0; }
 
   /* ADVANCED TOGGLE */
   .advanced-toggle {
@@ -248,7 +248,7 @@
   }
   .adv-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--mist); transition: background 0.2s; }
   .advanced-toggle.has-active .adv-dot { background: var(--arcane); }
-  .advanced-toggle-arrow { font-size: 0.6rem; color: var(--mist); transition: transform 0.2s; }
+  .advanced-toggle-arrow { font-size: 0.6rem; color:var(--rune); transition: transform 0.2s; }
   .advanced-toggle.open .advanced-toggle-arrow { transform: rotate(180deg); }
 
   /* ADVANCED PANEL */
@@ -298,7 +298,7 @@
   .adv-range input[type="number"]::-webkit-outer-spin-button,
   .adv-range input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
   .adv-range input[type="number"]:focus { border-color: var(--rune); }
-  .adv-range span { color: var(--mist); font-size: 0.8rem; }
+  .adv-range span { color:var(--rune); font-size: 0.8rem; }
 
   /* CARD LIST */
   .card-list { flex: 1; overflow-y: auto; padding: 8px; }
@@ -334,7 +334,7 @@
   }
   .db-card-row:hover { background: #1a1728; }
   .db-row-name { font-family: 'Crimson Pro', serif; font-size: 0.92rem; color: var(--parchment); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
-  .db-row-meta { font-size: 0.68rem; color: var(--mist); white-space: nowrap; }
+  .db-row-meta { font-size: 0.68rem; color:var(--rune); white-space: nowrap; }
   .db-row-meta.set { color: var(--shimmer); }
   /* Mana cost pip (shared style) */
   .cr-mana {
@@ -359,7 +359,7 @@
   .set-gothic { color: #b49ce0; background: rgba(155,135,212,0.16); border-color: rgba(155,135,212,0.55); }
   .set-dragon { color: #e0907c; background: rgba(196,97,74,0.16); border-color: rgba(196,97,74,0.55); }
   .set-promo  { color: #88b4d8; background: rgba(120,160,200,0.15); border-color: rgba(120,160,200,0.55); }
-  .set-other  { color: var(--mist); background: rgba(120,110,150,0.12); border-color: rgba(120,110,150,0.4); }
+  .set-other  { color:var(--rune); background: rgba(120,110,150,0.12); border-color: rgba(120,110,150,0.4); }
   .db-row-rarity { font-family: 'Cinzel', serif; font-size: 0.52rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 1px 6px; border-radius: 8px; white-space: nowrap; }
   .db-row-rarity.ordinary { background: rgba(140,140,150,0.12); color: #9a9aa5; }
   .db-row-rarity.exceptional { background: rgba(90,138,176,0.14); color: var(--water); }
@@ -457,7 +457,7 @@
     padding: 3px 0 5px; letter-spacing: 0.04em; flex: 1; outline: none;
   }
   #deck-name-input:focus { border-bottom-color: var(--gold); }
-  #deck-name-input::placeholder { color: var(--mist); font-style: italic; font-family: 'Crimson Pro', serif; font-size: 0.95rem; font-weight: 400; letter-spacing: 0; }
+  #deck-name-input::placeholder { color:var(--rune); font-style: italic; font-family: 'Crimson Pro', serif; font-size: 0.95rem; font-weight: 400; letter-spacing: 0; }
 
   .deck-actions { display: flex; gap: 6px; flex-wrap: wrap; }
 
@@ -486,7 +486,7 @@
   }
   .vis-toggle-btn:hover { border-color: var(--arcane); color: var(--arcane); }
   .vis-toggle-btn.make-public:hover { border-color: var(--sage); color: #7ab88a; }
-  .vis-hint { font-size: 0.78rem; color: var(--mist); font-style: italic; width: 100%; }
+  .vis-hint { font-size: 0.78rem; color:var(--rune); font-style: italic; width: 100%; }
 
   /* DECK SECTIONS */
   .deck-body { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
@@ -508,7 +508,7 @@
   .deck-section-header:hover { color: var(--gold-bright, #e8c87a); }
 
   .deck-section-header-left { display: flex; align-items: center; gap: 8px; }
-  .deck-section-arrow { font-size: 0.6rem; color: var(--mist); transition: transform 0.2s; }
+  .deck-section-arrow { font-size: 0.6rem; color:var(--rune); transition: transform 0.2s; }
   .deck-section.collapsed .deck-section-arrow { transform: rotate(-90deg); }
 
   .deck-section-body { padding: 10px 0 14px; }
@@ -540,7 +540,7 @@
   }
   .sub-section-header:hover { color: var(--gold-bright, #e8c87a); }
   .sub-section-header-left { display: flex; align-items: center; gap: 6px; }
-  .sub-section-arrow { font-size: 0.55rem; color: var(--mist); transition: transform 0.2s; }
+  .sub-section-arrow { font-size: 0.55rem; color:var(--rune); transition: transform 0.2s; }
   .sub-section-arrow.collapsed { transform: rotate(-90deg); }
   .sub-section-count { font-family: 'Crimson Pro', serif; font-style: normal; letter-spacing: 0; font-size: 0.85rem; color: var(--arcane); font-weight: 400; }
 
@@ -655,7 +655,7 @@
   /* violation label */
   .violation { font-size: 0.72rem; color: var(--ember); font-style: italic; padding: 2px 0 6px; }
 
-  .deck-empty-msg { color: var(--mist); font-style: italic; font-size: 0.9rem; padding: 16px 0; }
+  .deck-empty-msg { color:var(--rune); font-style: italic; font-size: 0.9rem; padding: 16px 0; }
 
   /* MODAL */
   .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(11,10,15,0.85); z-index: 200; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
@@ -665,7 +665,7 @@
   .cr-profile-menu.open { opacity: 1; transform: translateY(0); pointer-events: auto; }
   .cr-pm-header { padding: 8px 12px 10px; border-bottom: 1px solid var(--border); margin-bottom: 5px; }
   .cr-pm-name { font-family: 'Cinzel', serif; color: var(--gold); font-size: 0.95rem; font-weight: 700; }
-  .cr-pm-email { font-size: 0.72rem; color: var(--mist); margin-top: 2px; word-break: break-all; }
+  .cr-pm-email { font-size: 0.72rem; color:var(--rune); margin-top: 2px; word-break: break-all; }
   .cr-pm-item { display: block; width: 100%; text-align: left; background: none; border: none; cursor: pointer; font-family: 'Crimson Pro', serif; font-size: 0.95rem; color: var(--parchment); padding: 9px 12px; border-radius: 5px; text-decoration: none; transition: background 0.12s, color 0.12s; }
   .cr-pm-item:hover { background: rgba(155,135,212,0.12); color: var(--shimmer); }
   .cr-pm-divider { height: 1px; background: var(--border); margin: 5px 8px; }
@@ -793,7 +793,7 @@
   .add-feedback.ok { color: #7ab88a; }
   .add-feedback.warn { color: var(--ember); }
 
-  .modal-close { position: absolute; top: 10px; right: 14px; background: none; border: none; color: var(--mist); font-size: 1.4rem; cursor: pointer; transition: color 0.15s; }
+  .modal-close { position: absolute; top: 10px; right: 14px; background: none; border: none; color:var(--rune); font-size: 1.4rem; cursor: pointer; transition: color 0.15s; }
   .modal-close:hover { color: var(--parchment); }
 
   /* IMPORT MODAL */
@@ -875,8 +875,8 @@
     <div class="logo"><a href="index.html" style="color:var(--gold);text-decoration:none;font-family:'Cinzel Decorative',serif;font-weight:700;letter-spacing:0.04em;display:flex;align-items:center;gap:9px;"><img src="icon-192.png" alt="" style="width:30px;height:30px;border-radius:6px;display:block;">Cursed Realm</a></div>
         <a href="collection.html" class="header-link nav-collapsible">My Vault</a>
     <button class="btn btn-ghost nav-collapsible" onclick="window.location.href='decks.html'">My Workshop</button>
-    <button class="btn btn-primary nav-collapsible" onclick="window.location.href='deckbuilder.html'">New Deck</button>
     <a href="archive.html" class="header-link nav-collapsible">The Archive</a>
+    <button class="btn btn-primary nav-collapsible" onclick="window.location.href='deckbuilder.html'">New Deck</button>
     <div class="more-menu">
       <button class="more-trigger header-link nav-collapsible" onclick="toggleMoreMenu(event)">More <span style="font-size:0.6rem;">▾</span></button>
       <div class="more-dropdown" id="more-dropdown">
@@ -897,8 +897,8 @@
 <div class="mobile-nav" id="mobile-nav">
   <a href="collection.html" class="header-link">My Vault</a>
   <a href="decks.html" class="header-link">My Workshop</a>
-  <a href="deckbuilder.html" class="header-link">New Deck</a>
   <a href="archive.html" class="header-link">The Archive</a>
+  <a href="deckbuilder.html" class="header-link">New Deck</a>
   <div class="mobile-nav-divider"></div>
   <a href="videos.html" class="header-link">Videos</a>
   <a href="tracker.html" class="header-link">Life Tracker</a>
@@ -1280,7 +1280,7 @@
       <input type="password" id="auth-password" placeholder="••••••••" style="width:100%;background:#0b0a0f;border:1px solid var(--border-strong);color:var(--parchment);font-family:'Crimson Pro',serif;font-size:1rem;padding:9px 12px;border-radius:4px;outline:none;">
     </div>
     <button class="btn btn-primary" id="auth-submit" style="width:100%;padding:11px;" onclick="submitAuth()">Sign In</button>
-    <div id="auth-toggle-text" style="text-align:center;margin-top:14px;font-size:0.88rem;color:var(--mist);">
+    <div id="auth-toggle-text" style="text-align:center;margin-top:14px;font-size:0.88rem;color:var(--rune);">
       New here? <a onclick="setAuthMode('signup')" style="color:var(--arcane);cursor:pointer;text-decoration:underline;">Create an account</a>
     </div>
     <button class="modal-close" onclick="closeAuth()">✕</button>
@@ -2638,18 +2638,18 @@ function updatePublishSection() {
   const sec = document.getElementById('publish-section');
   if (!sec) return;
   if (!supa || !lastSharedCode) {
-    sec.innerHTML = `<div style="font-size:0.85rem;color:var(--mist);font-style:italic;">Want to publish to the public Archive? <a onclick="openAuth('login')" style="color:var(--arcane);cursor:pointer;text-decoration:underline;">Sign in</a> first.</div>`;
+    sec.innerHTML = `<div style="font-size:0.85rem;color:var(--rune);font-style:italic;">Want to publish to the public Archive? <a onclick="openAuth('login')" style="color:var(--arcane);cursor:pointer;text-decoration:underline;">Sign in</a> first.</div>`;
     if (currentUser) sec.innerHTML = '';
     return;
   }
   if (!currentUser) {
-    sec.innerHTML = `<div style="font-size:0.85rem;color:var(--mist);">
+    sec.innerHTML = `<div style="font-size:0.85rem;color:var(--rune);">
       <b style="color:var(--shimmer);font-family:'Cinzel',serif;font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;">Publish to Archive</b><br>
       <span style="font-style:italic;">Sign in to publish this deck for everyone to browse.</span><br>
       <button class="btn btn-ghost" style="margin-top:8px;" onclick="openAuth('login')">Sign In to Publish</button>
     </div>`;
   } else {
-    sec.innerHTML = `<div style="font-size:0.85rem;color:var(--mist);">
+    sec.innerHTML = `<div style="font-size:0.85rem;color:var(--rune);">
       <b style="color:var(--shimmer);font-family:'Cinzel',serif;font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;">Publish to Archive</b><br>
       <span style="font-style:italic;">Make this deck public so others can find it in the Archive.</span><br>
       <button class="btn btn-primary" id="publish-btn" style="margin-top:8px;" onclick="publishCurrentDeck()">Publish to Archive</button>

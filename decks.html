@@ -67,7 +67,7 @@
   .gallery-head { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; margin-bottom: 24px; }
   .gallery-title { font-family: 'Cinzel Decorative', serif; font-size: 1.8rem; color: var(--gold); display: flex; align-items: center; gap: 12px; }
   .gallery-title img { width: 34px; height: 34px; border-radius: 7px; }
-  .gallery-sub { color: var(--parchment); font-style: italic; font-size: 1.02rem; line-height: 1.6; margin-top: 8px; max-width: 680px; }
+  .gallery-sub { color: var(--parchment); font-size: 1.02rem; line-height: 1.6; margin-top: 8px; max-width: 680px; }
 
   /* AUTH BAR */
   .auth-bar { display: flex; align-items: center; gap: 10px; }
@@ -75,7 +75,7 @@
   .cr-profile-menu.open { opacity: 1; transform: translateY(0); pointer-events: auto; }
   .cr-pm-header { padding: 8px 12px 10px; border-bottom: 1px solid var(--border); margin-bottom: 5px; }
   .cr-pm-name { font-family: 'Cinzel', serif; color: var(--gold); font-size: 0.95rem; font-weight: 700; }
-  .cr-pm-email { font-size: 0.72rem; color: var(--mist); margin-top: 2px; word-break: break-all; }
+  .cr-pm-email { font-size: 0.72rem; color:var(--rune); margin-top: 2px; word-break: break-all; }
   .cr-pm-item { display: block; width: 100%; text-align: left; background: none; border: none; cursor: pointer; font-family: 'Crimson Pro', serif; font-size: 0.95rem; color: var(--parchment); padding: 9px 12px; border-radius: 5px; text-decoration: none; transition: background 0.12s, color 0.12s; }
   .cr-pm-item:hover { background: rgba(155,135,212,0.12); color: var(--shimmer); }
   .cr-pm-divider { height: 1px; background: var(--border); margin: 5px 8px; }
@@ -102,7 +102,7 @@
   .arch-el-lock.active { background: var(--gold); border-color: var(--gold); color: #1a1410; }
   .arch-input { background: #0b0a0f; border: 1px solid var(--border-strong); color: var(--parchment); font-family: 'Crimson Pro', serif; font-size: 0.92rem; padding: 7px 11px; border-radius: 5px; outline: none; width: 150px; }
   .arch-input:focus { border-color: var(--rune); }
-  .arch-input::placeholder { color: var(--mist); font-style: italic; }
+  .arch-input::placeholder { color:var(--rune); font-style: italic; }
   .arch-input-wrap { display: flex; align-items: center; gap: 6px; }
   .arch-browse-btn { font-family: 'Cinzel', serif; font-size: 0.58rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 7px 11px; border: 1px solid var(--border-strong); border-radius: 5px; background: transparent; color: var(--arcane); cursor: pointer; transition: all 0.15s; white-space: nowrap; }
   .arch-browse-btn:hover { border-color: var(--arcane); background: rgba(155,135,212,0.12); color: var(--shimmer); }
@@ -117,12 +117,12 @@
   .avatar-pick:hover { border-color: var(--arcane); transform: translateY(-2px); }
   .avatar-pick-img { width: 100%; aspect-ratio: 3/4; border-radius: 5px; overflow: hidden; background: #0b0a0f; }
   .avatar-pick-img img { width: 100%; height: 100%; object-fit: cover; object-position: center 15%; display: block; }
-  .avatar-pick-noimg { display: flex; align-items: center; justify-content: center; color: var(--mist); font-size: 1.6rem; }
+  .avatar-pick-noimg { display: flex; align-items: center; justify-content: center; color:var(--rune); font-size: 1.6rem; }
   .avatar-pick-name { font-family: 'Cinzel', serif; font-size: 0.7rem; font-weight: 600; color: var(--parchment); line-height: 1.2; }
   .avatar-pick-count { font-family: 'Crimson Pro', serif; font-size: 0.7rem; font-style: italic; color: var(--rune); }
   .arch-clear-btn { font-family: 'Cinzel', serif; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 7px 14px; border: 1px solid rgba(196,97,74,0.4); border-radius: 5px; background: transparent; color: var(--ember); cursor: pointer; transition: all 0.15s; }
   .arch-clear-btn:hover { background: rgba(196,97,74,0.12); }
-  .arch-result-count { font-family: 'Crimson Pro', serif; font-style: italic; font-size: 0.88rem; color: var(--mist); margin-left: auto; white-space: nowrap; }
+  .arch-result-count { font-family: 'Crimson Pro', serif; font-style: italic; font-size: 0.88rem; color:var(--rune); margin-left: auto; white-space: nowrap; }
   .deck-card {
     background: var(--dusk); border: 1px solid var(--border); border-radius: 8px;
     overflow: hidden; transition: border-color 0.15s, transform 0.15s;
@@ -167,28 +167,28 @@
   .el-label { display: inline-flex; align-items: center; gap: 5px; font-family: 'Crimson Pro', serif; font-size: 0.82rem; color: var(--shimmer); }
   .el-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
 
-  .status { text-align: center; color: var(--mist); font-style: italic; padding: 60px 20px; font-size: 1rem; }
+  .status { text-align: center; color:var(--rune); font-style: italic; padding: 60px 20px; font-size: 1rem; }
   .empty-cta { text-align: center; padding: 50px 20px; }
-  .empty-cta p { color: var(--mist); font-style: italic; margin-bottom: 16px; }
+  .empty-cta p { color:var(--rune); font-style: italic; margin-bottom: 16px; }
 
   /* MODAL (auth) */
   .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(11,10,15,0.85); z-index: 300; align-items: center; justify-content: center; backdrop-filter: blur(4px); padding: 20px; }
   .modal-overlay.open { display: flex; }
   .auth-modal { background: var(--dusk); border: 1px solid var(--border-strong); border-radius: 10px; padding: 28px; width: 100%; max-width: 380px; position: relative; }
   .auth-modal h2 { font-family: 'Cinzel Decorative', serif; color: var(--gold); font-size: 1.4rem; margin-bottom: 6px; }
-  .auth-modal p { color: var(--mist); font-size: 0.9rem; margin-bottom: 18px; }
+  .auth-modal p { color:var(--rune); font-size: 0.9rem; margin-bottom: 18px; }
   .auth-field { margin-bottom: 14px; }
   .auth-field label { display: block; font-family: 'Cinzel', serif; font-size: 0.62rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--rune); margin-bottom: 6px; }
   .auth-field input { width: 100%; background: #0b0a0f; border: 1px solid var(--border-strong); color: var(--parchment); font-family: 'Crimson Pro', serif; font-size: 1rem; padding: 9px 12px; border-radius: 4px; outline: none; }
   .auth-field input:focus { border-color: var(--arcane); }
   .auth-modal .btn { width: 100%; padding: 11px; margin-top: 4px; }
-  .auth-toggle { text-align: center; margin-top: 16px; font-size: 0.88rem; color: var(--mist); }
+  .auth-toggle { text-align: center; margin-top: 16px; font-size: 0.88rem; color:var(--rune); }
   .auth-toggle a { color: var(--arcane); cursor: pointer; text-decoration: underline; }
   .auth-msg { font-size: 0.85rem; padding: 10px; border-radius: 4px; margin-bottom: 14px; display: none; }
   .auth-msg.show { display: block; }
   .auth-msg.error { background: rgba(196,97,74,0.12); border: 1px solid var(--ember); color: var(--ember); }
   .auth-msg.success { background: rgba(90,138,106,0.12); border: 1px solid var(--sage); color: var(--sage); }
-  .modal-close { position: absolute; top: 14px; right: 16px; background: none; border: none; color: var(--mist); font-size: 1.3rem; cursor: pointer; }
+  .modal-close { position: absolute; top: 14px; right: 16px; background: none; border: none; color:var(--rune); font-size: 1.3rem; cursor: pointer; }
   .modal-close:hover { color: var(--ember); }
 
   .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--dusk); border: 1px solid var(--border-strong); color: var(--parchment); padding: 12px 22px; border-radius: 6px; font-size: 0.95rem; opacity: 0; transition: all 0.3s; z-index: 400; }
@@ -212,8 +212,8 @@
     <div class="logo"><a href="index.html" style="color:var(--gold);text-decoration:none;font-family:'Cinzel Decorative',serif;font-weight:700;letter-spacing:0.04em;display:flex;align-items:center;gap:9px;"><img src="icon-192.png" alt="" style="width:30px;height:30px;border-radius:6px;display:block;">Cursed Realm</a></div>
         <a href="collection.html" class="header-link nav-collapsible">My Vault</a>
     <button class="btn btn-ghost nav-collapsible" onclick="window.location.href='decks.html'">My Workshop</button>
-    <button class="btn btn-primary nav-collapsible" onclick="window.location.href='deckbuilder.html'">New Deck</button>
     <a href="archive.html" class="header-link nav-collapsible" style="color:var(--arcane)">The Archive</a>
+    <button class="btn btn-primary nav-collapsible" onclick="window.location.href='deckbuilder.html'">New Deck</button>
     <div class="more-menu">
       <button class="more-trigger header-link nav-collapsible" onclick="toggleMoreMenu(event)">More <span style="font-size:0.6rem;">▾</span></button>
       <div class="more-dropdown" id="more-dropdown">
@@ -233,8 +233,8 @@
 <div class="mobile-nav" id="mobile-nav">
     <a href="collection.html" class="header-link">My Vault</a>
   <a href="decks.html" class="header-link">My Workshop</a>
-  <a href="deckbuilder.html" class="header-link">New Deck</a>
   <a href="archive.html" class="header-link">The Archive</a>
+  <a href="deckbuilder.html" class="header-link">New Deck</a>
   <a href="index.html#about-legal" class="header-link">About</a>
   <div class="mobile-nav-divider"></div>
   <a href="videos.html" class="header-link">Videos</a>

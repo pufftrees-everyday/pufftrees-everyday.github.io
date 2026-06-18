@@ -209,9 +209,9 @@
   .deck-tile:hover { border-color: var(--arcane); box-shadow: var(--glow); }
   .deck-tile-name { font-family: 'Cinzel', serif; font-size: 0.9rem; font-weight: 600; color: var(--gold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px; }
   .deck-tile-meta { font-size: 0.78rem; color: var(--rune); font-style: italic; }
-  .deck-tile-del { position: absolute; top: 8px; right: 8px; background: none; border: none; color: var(--mist); cursor: pointer; font-size: 0.85rem; padding: 2px 5px; transition: color 0.15s; }
+  .deck-tile-del { position: absolute; top: 8px; right: 8px; background: none; border: none; color:var(--rune); cursor: pointer; font-size: 0.85rem; padding: 2px 5px; transition: color 0.15s; }
   .deck-tile-del:hover { color: var(--ember); }
-  .deck-tile-link { position: absolute; top: 8px; right: 30px; background: none; border: none; color: var(--mist); cursor: pointer; font-size: 0.82rem; padding: 2px 5px; transition: color 0.15s; }
+  .deck-tile-link { position: absolute; top: 8px; right: 30px; background: none; border: none; color:var(--rune); cursor: pointer; font-size: 0.82rem; padding: 2px 5px; transition: color 0.15s; }
   .deck-tile-link:hover { color: var(--gold); }
 
   .new-deck-tile {
@@ -242,7 +242,7 @@
     padding: 4px 0 6px; letter-spacing: 0.04em; width: 240px; outline: none;
   }
   #deck-name-input:focus { border-bottom-color: var(--gold); }
-  #deck-name-input::placeholder { color: var(--mist); font-style: italic; font-family: 'Crimson Pro', serif; font-size: 0.95rem; font-weight: 400; letter-spacing: 0; }
+  #deck-name-input::placeholder { color:var(--rune); font-style: italic; font-family: 'Crimson Pro', serif; font-size: 0.95rem; font-weight: 400; letter-spacing: 0; }
 
   .deck-builder-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-left: auto; }
 
@@ -256,7 +256,7 @@
   .dvg-header {
     grid-column: 1 / -1;
     font-family: 'Cinzel', serif; font-size: 0.68rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase;
-    color: var(--mist); padding: 10px 0 4px; border-bottom: 1px solid var(--border);
+    color:var(--rune); padding: 10px 0 4px; border-bottom: 1px solid var(--border);
     display: flex; justify-content: space-between;
   }
   .dvg-header span { color: var(--arcane); font-family: 'Crimson Pro', serif; font-style: normal; letter-spacing: 0; }
@@ -275,7 +275,7 @@
   .del-btn { width: 26px; height: 26px; background: rgba(196,97,74,0.15); border: 1px solid rgba(196,97,74,0.4); color: var(--ember); font-size: 0.8rem; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.15s; }
   .del-btn:hover { background: rgba(196,97,74,0.35); }
 
-  .deck-empty { color: var(--mist); font-style: italic; padding: 24px 0; font-size: 0.9rem; }
+  .deck-empty { color:var(--rune); font-style: italic; padding: 24px 0; font-size: 0.9rem; }
 
   /* CARD EXPLORER — STONEWORK FILTER WALL */
   .search-bar {
@@ -406,7 +406,7 @@
   .invoke-cheat-h { font-family: 'Cinzel', serif; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold); margin-bottom: 8px; }
   .invoke-cheat-row { font-family: 'Crimson Pro', serif; font-size: 0.88rem; color: var(--shimmer); padding: 3px 0; line-height: 1.4; }
   .invoke-cheat-row code { font-family: 'Courier New', monospace; font-size: 0.82rem; color: var(--arcane); background: rgba(155,135,212,0.1); padding: 1px 6px; border-radius: 3px; margin-right: 5px; }
-  .invoke-dim { color: var(--mist); font-size: 0.8rem; font-style: italic; }
+  .invoke-dim { color:var(--rune); font-size: 0.8rem; font-style: italic; }
   .invoke-examples { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
   .invoke-example { font-family: 'Courier New', monospace; font-size: 0.8rem; background: rgba(155,135,212,0.08); border: 1px solid var(--border-strong); border-radius: 4px; color: var(--shimmer); padding: 5px 10px; cursor: pointer; transition: all 0.15s; }
   .invoke-example:hover { border-color: var(--arcane); background: rgba(155,135,212,0.18); }
@@ -473,7 +473,7 @@
   }
   .advanced-toggle.has-active .adv-dot { background: var(--arcane); }
   .advanced-toggle-arrow {
-    font-size: 0.7rem; color: var(--mist); transition: transform 0.2s;
+    font-size: 0.7rem; color:var(--rune); transition: transform 0.2s;
   }
   .advanced-toggle.open .advanced-toggle-arrow { transform: rotate(180deg); }
 
@@ -529,7 +529,7 @@
   .adv-range input[type="number"]::-webkit-outer-spin-button,
   .adv-range input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
   .adv-range input[type="number"]:focus { border-color: var(--rune); }
-  .adv-range span { color: var(--mist); font-size: 0.9rem; }
+  .adv-range span { color:var(--rune); font-size: 0.9rem; }
 
   .search-input-wrap { position: relative; flex: 1; }
   .search-input-wrap svg { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; opacity: 0.35; fill: var(--arcane); pointer-events: none; }
@@ -569,7 +569,7 @@
     background: var(--mist); transition: background 0.2s;
   }
   .filter-toggle-bar.has-active .filter-dot { background: var(--arcane); }
-  .filter-toggle-bar .filter-arrow { font-size: 0.7rem; color: var(--mist); transition: transform 0.2s; }
+  .filter-toggle-bar .filter-arrow { font-size: 0.7rem; color:var(--rune); transition: transform 0.2s; }
   .filter-toggle-bar.open .filter-arrow { transform: rotate(180deg); }
 
   .filter-stones-panel { display: none; }
@@ -580,7 +580,7 @@
     display: flex; align-items: center; gap: 8px;
     margin-bottom: 14px; flex-wrap: wrap;
   }
-  .sort-label { font-family: 'Cinzel', serif; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--mist); }
+  .sort-label { font-family: 'Cinzel', serif; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color:var(--rune); }
   .sort-btn {
     font-family: 'Cinzel', serif; font-size: 0.65rem; font-weight: 600;
     letter-spacing: 0.1em; text-transform: uppercase;
@@ -626,7 +626,7 @@
   }
   .card-row:hover { background: #1a1728; }
   .cr-name { font-family: 'Crimson Pro', serif; font-size: 0.98rem; color: var(--parchment); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
-  .cr-meta { font-size: 0.72rem; color: var(--mist); white-space: nowrap; }
+  .cr-meta { font-size: 0.72rem; color:var(--rune); white-space: nowrap; }
   .cr-rarity { font-family: 'Cinzel', serif; font-size: 0.55rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 1px 6px; border-radius: 8px; white-space: nowrap; }
   .cr-rarity.ordinary { background: rgba(140,140,150,0.12); color: #9a9aa5; }
   .cr-rarity.exceptional { background: rgba(90,138,176,0.14); color: #6f9ec4; }
@@ -654,13 +654,13 @@
   .set-gothic { color: #b49ce0; background: rgba(155,135,212,0.16); border-color: rgba(155,135,212,0.55); }
   .set-dragon { color: #e0907c; background: rgba(196,97,74,0.16); border-color: rgba(196,97,74,0.55); }
   .set-promo  { color: #88b4d8; background: rgba(120,160,200,0.15); border-color: rgba(120,160,200,0.55); }
-  .set-other  { color: var(--mist); background: rgba(120,110,150,0.12); border-color: rgba(120,110,150,0.4); }
+  .set-other  { color:var(--rune); background: rgba(120,110,150,0.12); border-color: rgba(120,110,150,0.4); }
 
   .add-btn { position: absolute; top: 6px; right: 6px; width: 28px; height: 28px; background: rgba(11,10,15,0.85); border: 1px solid var(--border-strong); border-radius: 50%; color: var(--arcane); font-size: 1.2rem; display: flex; align-items: center; justify-content: center; cursor: pointer; opacity: 0; transition: opacity 0.15s, background 0.15s; }
   .card-thumb:hover .add-btn { opacity: 1; }
   .add-btn:hover { background: var(--rune); color: #fff; }
 
-  .status { padding: 60px 24px; text-align: center; color: var(--mist); font-style: italic; }
+  .status { padding: 60px 24px; text-align: center; color:var(--rune); font-style: italic; }
   .status .loading-rune { font-size: 2.5rem; display: block; margin-bottom: 16px; animation: pulse 2s infinite; }
   @keyframes pulse { 0%,100%{opacity:0.3} 50%{opacity:1} }
 
@@ -686,7 +686,7 @@
   .modal-stat b { color: var(--arcane); }
   .modal-add { padding: 10px 20px; font-family: 'Cinzel', serif; font-size: 0.85rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; background: var(--rune); border: 1px solid var(--arcane); color: #fff; border-radius: 4px; cursor: pointer; transition: background 0.2s; }
   .modal-add:hover { background: var(--arcane); }
-  .modal-close { position: absolute; top: 12px; right: 16px; background: none; border: none; color: var(--mist); font-size: 1.6rem; cursor: pointer; transition: color 0.15s; }
+  .modal-close { position: absolute; top: 12px; right: 16px; background: none; border: none; color:var(--rune); font-size: 1.6rem; cursor: pointer; transition: color 0.15s; }
   .modal-close:hover { color: var(--parchment); }
 
   /* TOAST */
@@ -719,7 +719,7 @@
   .footer-inner { max-width: 760px; margin: 0 auto; text-align: center; }
   .footer-brand { font-family: 'Cinzel Decorative', serif; color: var(--gold); font-size: 1.1rem; letter-spacing: 0.04em; margin-bottom: 10px; }
   .footer-disclaimer { font-size: 0.78rem; line-height: 1.6; color: var(--rune); margin-bottom: 12px; }
-  .footer-links { font-size: 0.78rem; color: var(--mist); display: flex; gap: 8px; justify-content: center; align-items: center; }
+  .footer-links { font-size: 0.78rem; color:var(--rune); display: flex; gap: 8px; justify-content: center; align-items: center; }
   .footer-links a { color: var(--arcane); text-decoration: none; }
   .footer-links a:hover { color: var(--shimmer); text-decoration: underline; }
 
@@ -742,8 +742,8 @@
     <div class="logo"><a href="index.html" style="color:var(--gold);text-decoration:none;font-family:'Cinzel Decorative',serif;font-weight:700;letter-spacing:0.04em;display:flex;align-items:center;gap:9px;"><img src="icon-192.png" alt="" style="width:30px;height:30px;border-radius:6px;display:block;">Cursed Realm</a></div>
         <a href="collection.html" class="header-link nav-collapsible">My Vault</a>
     <button class="btn btn-ghost nav-collapsible" onclick="window.location.href='decks.html'">My Workshop</button>
-    <button class="btn btn-primary nav-collapsible" onclick="window.location.href='deckbuilder.html'">New Deck</button>
     <a href="archive.html" class="header-link nav-collapsible">The Archive</a>
+    <button class="btn btn-primary nav-collapsible" onclick="window.location.href='deckbuilder.html'">New Deck</button>
     <div class="more-menu">
       <button class="more-trigger header-link nav-collapsible" onclick="toggleMoreMenu(event)">More <span style="font-size:0.6rem;">▾</span></button>
       <div class="more-dropdown" id="more-dropdown">
@@ -766,8 +766,8 @@
   <div class="mobile-nav-divider"></div>
     <a href="collection.html" class="header-link">My Vault</a>
   <a href="decks.html" class="header-link">My Workshop</a>
-  <a href="deckbuilder.html" class="header-link">New Deck</a>
   <a href="archive.html" class="header-link">The Archive</a>
+  <a href="deckbuilder.html" class="header-link">New Deck</a>
   <div class="mobile-nav-divider"></div>
   <a href="videos.html" class="header-link">Videos</a>
   <a href="tracker.html" class="header-link">Life Tracker</a>

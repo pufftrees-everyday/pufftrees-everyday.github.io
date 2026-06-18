@@ -96,7 +96,7 @@
   .guest-banner-text { font-size: 0.92rem; color: var(--parchment); line-height: 1.4; flex: 1; }
   .guest-banner-text a { color: var(--gold); cursor: pointer; text-decoration: underline; font-weight: 600; }
   .guest-banner-text a:hover { color: var(--shimmer); }
-  .guest-banner-close { background: none; border: none; color: var(--mist); font-size: 1.1rem; cursor: pointer; flex-shrink: 0; padding: 0 4px; }
+  .guest-banner-close { background: none; border: none; color:var(--rune); font-size: 1.1rem; cursor: pointer; flex-shrink: 0; padding: 0 4px; }
   .guest-banner-close:hover { color: var(--ember); }
 
   /* COLLECTION HEADER BAR */
@@ -117,6 +117,12 @@
   }
   .collection-title img { width: 24px; height: 24px; border-radius: 5px; display: block; }
 
+  /* Page header (matches The Archive / My Workshop) */
+  .gallery-head { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; margin-bottom: 24px; }
+  .gallery-title { font-family: 'Cinzel Decorative', serif; font-size: 1.8rem; color: var(--gold); display: flex; align-items: center; gap: 12px; }
+  .gallery-title img { width: 34px; height: 34px; border-radius: 7px; }
+  .gallery-sub { color: var(--parchment); font-size: 1.02rem; line-height: 1.6; margin-top: 8px; max-width: 720px; }
+
   .collection-stats { display: flex; gap: 10px; flex-wrap: wrap; }
   .cstat { font-size: 0.82rem; background: rgba(155,135,212,0.06); border: 1px solid var(--border); border-radius: 3px; padding: 3px 10px; color: var(--shimmer); white-space: nowrap; }
   .cstat b { color: var(--arcane); }
@@ -130,7 +136,7 @@
   .view-btn {
     padding: 5px 14px; font-family: 'Cinzel', serif; font-size: 0.65rem; font-weight: 600;
     letter-spacing: 0.1em; text-transform: uppercase; background: transparent;
-    color: var(--mist); border: none; cursor: pointer; transition: all 0.15s;
+    color:var(--rune); border: none; cursor: pointer; transition: all 0.15s;
     border-right: 1px solid var(--border);
   }
   .view-btn:last-child { border-right: none; }
@@ -189,7 +195,7 @@
     background: var(--mist); transition: background 0.2s;
   }
   .filter-toggle-bar.has-active .filter-dot { background: var(--arcane); }
-  .filter-toggle-bar .filter-arrow { font-size: 0.7rem; color: var(--mist); transition: transform 0.2s; }
+  .filter-toggle-bar .filter-arrow { font-size: 0.7rem; color:var(--rune); transition: transform 0.2s; }
   .filter-toggle-bar.open .filter-arrow { transform: rotate(180deg); }
   .filter-stones-panel { display: none; }
   .filter-stones-panel.open { display: block; }
@@ -224,7 +230,7 @@
   .advanced-toggle-label { font-family: 'Cinzel', serif; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--rune); display: flex; align-items: center; gap: 7px; }
   .adv-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--mist); transition: background 0.2s; }
   .advanced-toggle.has-active .adv-dot { background: var(--arcane); }
-  .advanced-toggle-arrow { font-size: 0.6rem; color: var(--mist); transition: transform 0.2s; }
+  .advanced-toggle-arrow { font-size: 0.6rem; color:var(--rune); transition: transform 0.2s; }
   .advanced-toggle.open .advanced-toggle-arrow { transform: rotate(180deg); }
   .advanced-panel { display: none; flex-direction: column; gap: 14px; background: #0a0910; border: 1px solid #2a2640; border-top: none; padding: 14px 16px; }
   .advanced-panel.open { display: flex; }
@@ -241,7 +247,7 @@
   .adv-range input[type="number"] { width: 56px; background: #13111e; border: 1px solid #2a2640; color: var(--parchment); font-family: 'Crimson Pro', serif; font-size: 0.9rem; padding: 4px 7px; outline: none; -moz-appearance: textfield; }
   .adv-range input[type="number"]::-webkit-outer-spin-button, .adv-range input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
   .adv-range input[type="number"]:focus { border-color: var(--rune); }
-  .adv-range span { color: var(--mist); font-size: 0.85rem; }
+  .adv-range span { color:var(--rune); font-size: 0.85rem; }
 
   /* RESULT COUNT */
   .result-count { font-size: 0.82rem; color: var(--rune); font-style: italic; margin-bottom: 14px; }
@@ -320,7 +326,7 @@
   .card-row.flag-want { border-left-color: var(--ember); }
   .card-row.flag-have.flag-want { border-left-color: var(--gold); }
   .row-name { font-family: 'Crimson Pro', serif; font-size: 0.95rem; color: var(--parchment); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
-  .row-meta { font-size: 0.7rem; color: var(--mist); white-space: nowrap; }
+  .row-meta { font-size: 0.7rem; color:var(--rune); white-space: nowrap; }
   .row-meta.set { color: var(--shimmer); }
   /* Mana cost pip (shared style) */
   .cr-mana {
@@ -345,7 +351,7 @@
   .set-gothic { color: #b49ce0; background: rgba(155,135,212,0.16); border-color: rgba(155,135,212,0.55); }
   .set-dragon { color: #e0907c; background: rgba(196,97,74,0.16); border-color: rgba(196,97,74,0.55); }
   .set-promo  { color: #88b4d8; background: rgba(120,160,200,0.15); border-color: rgba(120,160,200,0.55); }
-  .set-other  { color: var(--mist); background: rgba(120,110,150,0.12); border-color: rgba(120,110,150,0.4); }
+  .set-other  { color:var(--rune); background: rgba(120,110,150,0.12); border-color: rgba(120,110,150,0.4); }
   .row-rarity { font-family: 'Cinzel', serif; font-size: 0.55rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 1px 6px; border-radius: 8px; white-space: nowrap; }
   .row-rarity.ordinary { background: rgba(140,140,150,0.12); color: #9a9aa5; }
   .row-rarity.exceptional { background: rgba(90,138,176,0.14); color: var(--water); }
@@ -445,7 +451,7 @@
   .row-flag-btn.trade.on { background: var(--arcane); border-color: var(--arcane); color: #fff; }
 
   /* STATUS */
-  .status { padding: 60px 24px; text-align: center; color: var(--mist); font-style: italic; }
+  .status { padding: 60px 24px; text-align: center; color:var(--rune); font-style: italic; }
   .loading-rune { font-size: 2.5rem; display: block; margin-bottom: 16px; animation: pulse 2s infinite; }
   @keyframes pulse { 0%,100%{opacity:0.3} 50%{opacity:1} }
 
@@ -504,8 +510,8 @@
     <div class="logo"><a href="index.html" style="color:var(--gold);text-decoration:none;font-family:'Cinzel Decorative',serif;font-weight:700;letter-spacing:0.04em;display:flex;align-items:center;gap:9px;"><img src="icon-192.png" alt="" style="width:30px;height:30px;border-radius:6px;display:block;">Cursed Realm</a></div>
         <a href="collection.html" class="header-link nav-collapsible">My Vault</a>
     <button class="btn btn-ghost nav-collapsible" onclick="window.location.href='decks.html'">My Workshop</button>
-    <button class="btn btn-primary nav-collapsible" onclick="window.location.href='deckbuilder.html'">New Deck</button>
     <a href="archive.html" class="header-link nav-collapsible">The Archive</a>
+    <button class="btn btn-primary nav-collapsible" onclick="window.location.href='deckbuilder.html'">New Deck</button>
     <div class="more-menu">
       <button class="more-trigger header-link nav-collapsible" onclick="toggleMoreMenu(event)">More <span style="font-size:0.6rem;">▾</span></button>
       <div class="more-dropdown" id="more-dropdown">
@@ -526,8 +532,8 @@
 <div class="mobile-nav" id="mobile-nav">
     <a href="collection.html" class="header-link">My Vault</a>
   <a href="decks.html" class="header-link">My Workshop</a>
-  <a href="deckbuilder.html" class="header-link">New Deck</a>
   <a href="archive.html" class="header-link">The Archive</a>
+  <a href="deckbuilder.html" class="header-link">New Deck</a>
   <div class="mobile-nav-divider"></div>
   <a href="videos.html" class="header-link">Videos</a>
   <a href="tracker.html" class="header-link">Life Tracker</a>
@@ -539,6 +545,14 @@
 
 <div class="page">
 
+  <!-- MY VAULT HEADER -->
+  <div class="gallery-head">
+    <div>
+      <div class="gallery-title"><img src="icon-192.png" alt="">My Vault</div>
+      <div class="gallery-sub">Your personal hoard — track every card you own, build Wants lists for cards you're hunting, and set aside Trade Binders of cards you're willing to part with. Use Card Search to browse the full Realm and add cards to any section.</div>
+    </div>
+  </div>
+
   <!-- GUEST WARNING (shown only when logged out) -->
   <div id="guest-banner" class="guest-banner" style="display:none;">
     <span class="guest-banner-icon">⚠</span>
@@ -548,7 +562,6 @@
 
   <!-- COLLECTION BAR -->
   <div class="collection-bar">
-    <div class="collection-title"><img src="icon-192.png" alt="">My Vault</div>
     <div class="collection-stats">
       <div class="cstat have-stat">Collection: <b id="stat-have">0</b><span id="stat-have-value" style="color:var(--sage);font-size:0.78rem;"></span></div>
       <div class="cstat want-stat">Want: <b id="stat-want">0</b><span id="stat-want-value" style="color:var(--ember);font-size:0.78rem;"></span></div>
@@ -948,11 +961,11 @@ function updateStats() {
   const totalHaveVal = stdHaveVal + foilHaveVal;
   if (totalEl) {
     const priceNote = priceDate
-      ? ` <span style="color:var(--mist);font-size:0.72rem;font-style:italic;">· TCG market, ${priceDate}</span>`
-      : ` <span style="color:var(--mist);font-size:0.72rem;font-style:italic;">· TCG market price</span>`;
+      ? ` <span style="color:var(--rune);font-size:0.72rem;font-style:italic;">· TCG market, ${priceDate}</span>`
+      : ` <span style="color:var(--rune);font-size:0.72rem;font-style:italic;">· TCG market price</span>`;
     totalEl.innerHTML = totalHaveVal > 0
       ? `Collection value: <b style="color:var(--gold)">$${totalHaveVal.toFixed(2)}</b>` +
-        (foilHaveVal > 0 ? ` <span style="color:var(--mist);font-size:0.74rem;">(std $${stdHaveVal.toFixed(2)} · foil $${foilHaveVal.toFixed(2)})</span>` : '') +
+        (foilHaveVal > 0 ? ` <span style="color:var(--rune);font-size:0.74rem;">(std $${stdHaveVal.toFixed(2)} · foil $${foilHaveVal.toFixed(2)})</span>` : '') +
         priceNote
       : '';
     totalEl.style.display = totalHaveVal > 0 ? '' : 'none';
