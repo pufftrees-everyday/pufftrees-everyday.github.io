@@ -996,6 +996,9 @@ async function loadCards() {
     }).sort((a, b) => a.name.localeCompare(b.name));
     reshuffle(); // assign random order for the default Random sort
     filterCards();
+    // Cards are now loaded → rebuild maps and refresh My Decks so avatar art / element bars appear
+    mdElementMap = null; mdSlugMap = null;
+    if (document.getElementById('my-decks-section')?.style.display !== 'none') renderMyDecks();
   } catch(e) {
     console.error('loadCards failed:', e);
     document.getElementById('card-grid').innerHTML = `<div class="status"><span class="loading-rune" style="animation:none;opacity:0.5">✦</span>Could not load cards.json.<br><small style="font-size:0.8rem;margin-top:8px;display:block">Error: ${e.message}<br>Make sure cards.json is in your GitHub repo alongside index.html.</small></div>`;
@@ -1325,15 +1328,22 @@ function runImport() {}
 
 
 // MY DECKS
-function toggleMyDecks() {
+async function toggleMyDecks() {
   const s = document.getElementById('my-decks-section');
+  const grid = document.getElementById('decks-grid');
   const wasHidden = s.style.display === 'none' || !s.style.display;
+  // Always reveal it (the user clicked expecting to see their decks)
+  s.style.display = 'block';
   if (wasHidden) {
-    s.style.display = 'block';
-    renderMyDecks();
+    // Show an immediate loading placeholder so the section isn't empty while we fetch
+    if (grid && !grid.children.length) {
+      grid.innerHTML = '<div class="status" style="grid-column:1/-1;padding:30px 0;">Summoning your decks…</div>';
+    }
+    s.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    await renderMyDecks();
+    // Re-scroll after content height settles so the top of the section is in view
     s.scrollIntoView({ behavior: 'smooth', block: 'start' });
   } else {
-    // Already open → scroll to it (don't hide, since the user clicked it expecting their decks)
     s.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 }
@@ -1353,7 +1363,9 @@ let myDecksExpanded = false;
 const MY_DECKS_PREVIEW = 10;
 
 function buildCardMaps() {
-  if (mdElementMap && mdSlugMap) return;
+  // Rebuild if not yet built OR if it was built before allCards loaded (empty)
+  if (mdElementMap && mdSlugMap && Object.keys(mdSlugMap).length) return;
+  if (!allCards || !allCards.length) { mdElementMap = mdElementMap || {}; mdSlugMap = mdSlugMap || {}; return; }
   mdElementMap = {}; mdSlugMap = {};
   allCards.forEach(c => {
     const key = (c.name || '').toLowerCase();
