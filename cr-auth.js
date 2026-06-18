@@ -144,6 +144,24 @@
     } else {
       bar.innerHTML = `<a class="header-link" onclick="CR.openAuth('login')" style="cursor:pointer;">Sign In</a>`;
     }
+    // Mirror into the mobile menu's auth slot if present
+    CR.renderMobileAuth('mobile-auth');
+  };
+
+  // Inline auth block for the mobile menu (flat items, no dropdown)
+  CR.renderMobileAuth = function (elId) {
+    const el = document.getElementById(elId);
+    if (!el) return;
+    if (CR.user) {
+      el.innerHTML = `
+        <div class="mobile-auth-header">
+          <div class="mobile-auth-name">${CR.user.username}</div>
+          <div class="mobile-auth-email">${CR.user.email || ''}</div>
+        </div>
+        <button class="header-link mobile-auth-signout" onclick="CR.logout()">Sign Out</button>`;
+    } else {
+      el.innerHTML = `<a class="header-link mobile-auth-signin" onclick="CR.openAuth('login')">Sign In / Create Account</a>`;
+    }
   };
 
   // ── PROFILE MENU ──

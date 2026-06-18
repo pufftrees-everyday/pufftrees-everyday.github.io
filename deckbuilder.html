@@ -283,6 +283,13 @@
   .adv-chip.active { background: var(--rune); border-color: var(--arcane); color: #fff; }
   .sort-chip { display: inline-flex; align-items: center; gap: 4px; }
   .sort-chip .sort-dir { font-size: 0.7rem; }
+  /* Sort row above the card explorer */
+  .explorer-sort-row { display: flex; align-items: center; gap: 8px; padding: 8px 0 2px; flex-wrap: wrap; }
+  .explorer-sort-label { font-family: 'Cinzel', serif; font-size: 0.66rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--rune); margin-right: 2px; }
+  .sort-chip-btn { display: inline-flex; align-items: center; gap: 5px; background: #13111e; border: 1px solid var(--border-strong); border-radius: 2px; color: var(--shimmer); font-family: 'Cinzel', serif; font-size: 0.72rem; letter-spacing: 0.04em; padding: 5px 11px; cursor: pointer; transition: all 0.15s; }
+  .sort-chip-btn:hover { border-color: var(--arcane); }
+  .sort-chip-btn.active { background: var(--gold); border-color: var(--gold); color: #1a1410; }
+  .sort-chip-btn .sort-dir { font-size: 0.7rem; }
 
   .adv-range-row { display: flex; flex-wrap: wrap; gap: 12px; }
   .adv-range { display: flex; align-items: center; gap: 6px; }
@@ -941,6 +948,11 @@
         </div>
         <div class="result-count" id="result-count" style="white-space:nowrap;padding:0;margin:0;"></div>
       </div>
+      <div class="explorer-sort-row">
+        <span class="explorer-sort-label">Sort</span>
+        <button class="sort-chip-btn active" id="ex-sort-az" data-sort="az" onclick="setExplorerSort('az')">A–Z <span class="sort-dir" id="ex-dir-az">↓</span></button>
+        <button class="sort-chip-btn" id="ex-sort-cost" data-sort="cost" onclick="setExplorerSort('cost')">Mana Cost <span class="sort-dir" id="ex-dir-cost"></span></button>
+      </div>
     </div>
 
     <!-- FILTER TOGGLE BAR -->
@@ -1001,13 +1013,6 @@
 
     <!-- ADVANCED PANEL -->
     <div class="advanced-panel" id="advanced-panel">
-      <div>
-        <div class="adv-section-title">Sort</div>
-        <div class="adv-chips">
-          <button class="adv-chip sort-chip active" id="ex-sort-az" data-sort="az" onclick="setExplorerSort('az')">A–Z <span class="sort-dir" id="ex-dir-az">↓</span></button>
-          <button class="adv-chip sort-chip" id="ex-sort-cost" data-sort="cost" onclick="setExplorerSort('cost')">Mana Cost <span class="sort-dir" id="ex-dir-cost"></span></button>
-        </div>
-      </div>
       <div>
         <div class="adv-section-title">Minion Subtype <button class="adv-clear" onclick="clearAdvGroup('minionSubtype')">clear</button></div>
         <div class="adv-chips">
@@ -1405,6 +1410,7 @@ const advFilters = { minionSubtype: new Set(), artifactSubtype: new Set(), siteS
 
 // Track collapsed state for deck sections
 const sectionCollapsed = { avatar: false, atlas: false, spellbook: false };
+const sectionUserToggled = { avatar: false, atlas: false, spellbook: false };
 const subCollapsed = {};
 
 function toggleFilterPanel() {
@@ -1433,6 +1439,7 @@ function updateFilterDot() {
 }
 
 function toggleDeckSection(section) {
+  sectionUserToggled[section] = true;
   sectionCollapsed[section] = !sectionCollapsed[section];
   const el = document.getElementById('deck-section-' + section);
   if (el) el.classList.toggle('collapsed', sectionCollapsed[section]);
@@ -2222,6 +2229,14 @@ function closeDeckStats() {
 function renderSection(title, section, entries, reqMsg, isOk, req, groups) {
   const count = entries.reduce((s,[,v])=>s+v.qty,0);
   const reqClass = isOk ? 'ok' : 'warn';
+  // Auto-collapse empty Atlas/Spellbook sections (keeps the deck side tidy when
+  // a section has no cards). Avatar stays open so its "Choose Avatar" prompt shows.
+  // Respect the user's manual toggle once they've clicked the header.
+  if (count === 0 && section !== 'avatar' && !sectionUserToggled[section]) {
+    sectionCollapsed[section] = true;
+  } else if (count > 0 && !sectionUserToggled[section]) {
+    sectionCollapsed[section] = false;
+  }
   const collapsed = sectionCollapsed[section] ? 'collapsed' : '';
 
   let cardsHtml = '';

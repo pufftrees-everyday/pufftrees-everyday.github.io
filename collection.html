@@ -231,6 +231,8 @@
 
   /* RESULT COUNT */
   .result-count { font-size: 0.82rem; color: var(--rune); font-style: italic; margin-bottom: 14px; }
+  /* Card toolbar (view + foil) sitting right above the grid */
+  .vault-card-toolbar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border); }
 
   /* CARD GRID */
   .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; }
@@ -459,7 +461,7 @@
   .more-item:hover { background: rgba(155,135,212,0.12); color: var(--shimmer); }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="cr-auth.js?v=6"></script>
+<script src="cr-auth.js?v=7"></script>
 </head>
 <body>
 
@@ -524,22 +526,8 @@
       <button class="view-btn" id="sec-wants" onclick="setView('want')">Wants</button>
       <button class="view-btn" id="sec-trade" onclick="setView('trade')">Trade Binder</button>
     </div>
-    <div class="viewmode-wrap">
-      <span class="viewmode-label">Change View</span>
-      <div class="viewmode-toggle">
-        <button class="viewmode-btn" id="vm-list" onclick="setViewMode('list')" title="Text view" aria-label="Text view">☰</button>
-        <button class="viewmode-btn active" id="vm-grid" onclick="setViewMode('grid')" title="Card view" aria-label="Card view">⊞</button>
-        <button class="viewmode-btn" id="vm-large" onclick="setViewMode('large')" title="Large card view" aria-label="Large card view">⊡</button>
-      </div>
-    </div>
-    <div class="finish-toggle">
-      <button class="finish-btn active" id="finish-standard" onclick="setFinish('standard')">Standard</button>
-      <button class="finish-btn" id="finish-foil" onclick="setFinish('foil')">Foil</button>
-    </div>
     <div class="collection-actions">
-      <button class="btn btn-ghost" onclick="exportWantList()">⬇ Export Wants</button>
-      <button class="btn btn-ghost" onclick="exportHaveList()">⬇ Export Collection</button>
-      <button class="btn btn-ghost" onclick="exportTradeList()">⬇ Export Trade Binder</button>
+      <button class="btn btn-ghost" id="export-btn" onclick="exportCurrentSection()">⬇ Export</button>
       <button class="btn btn-ghost" onclick="clearCollection()">Clear All Flags</button>
     </div>
   </div>
@@ -697,9 +685,25 @@
     </div>
   </div>
 
+  <!-- Card toolbar: sits right above the card grid -->
+  <div class="vault-card-toolbar">
+    <div class="finish-toggle">
+      <button class="finish-btn active" id="finish-standard" onclick="setFinish('standard')">Standard</button>
+      <button class="finish-btn" id="finish-foil" onclick="setFinish('foil')">Foil</button>
+    </div>
+    <div class="viewmode-wrap">
+      <span class="viewmode-label">Change View</span>
+      <div class="viewmode-toggle">
+        <button class="viewmode-btn" id="vm-list" onclick="setViewMode('list')" title="Text view" aria-label="Text view">☰</button>
+        <button class="viewmode-btn active" id="vm-grid" onclick="setViewMode('grid')" title="Card view" aria-label="Card view">⊞</button>
+        <button class="viewmode-btn" id="vm-large" onclick="setViewMode('large')" title="Large card view" aria-label="Large card view">⊡</button>
+      </div>
+    </div>
+  </div>
+
   <div id="result-count" class="result-count" style="margin-top:16px;"></div>
   <div id="card-grid" class="card-grid">
-    <div class="status"><span class="loading-rune">⧫</span>Consulting the arcane archives…</div>
+    <div class="status"><span class="loading-rune">✦</span>Consulting the arcane archives…</div>
   </div>
 
 </div>
@@ -1143,6 +1147,12 @@ function setView(view) {
   const idMap = { search: 'sec-search', all: 'sec-collection', want: 'sec-wants', trade: 'sec-trade' };
   const btn = document.getElementById(idMap[view]);
   if (btn) btn.classList.add('active');
+  // Update export button label to match the section
+  const exportBtn = document.getElementById('export-btn');
+  if (exportBtn) {
+    const label = view === 'want' ? '⬇ Export Wants' : view === 'trade' ? '⬇ Export Trade Binder' : '⬇ Export Collection';
+    exportBtn.textContent = label;
+  }
   filterCards();
 }
 
@@ -1315,6 +1325,13 @@ function exportList(flag, filename, title) {
 function exportWantList() { exportList('want', 'want_list.txt', 'Sorcery TCG — Want List'); }
 function exportHaveList() { exportList('have', 'have_list.txt', 'Sorcery TCG — Have List'); }
 function exportTradeList() { exportList('trade', 'trade_binder.txt', 'Sorcery TCG — Trade Binder'); }
+// Export whichever section the user is currently viewing
+function exportCurrentSection() {
+  if (currentView === 'want') return exportWantList();
+  if (currentView === 'trade') return exportTradeList();
+  // 'all' (Collection) and 'search' both export the owned collection
+  return exportHaveList();
+}
 
 function clearCollection() {
   if (!confirm('Clear ALL flags — Collection, Wants, and Trade Binder? This cannot be undone.')) return;
