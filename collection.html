@@ -234,6 +234,13 @@
 
   /* CARD GRID */
   .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; }
+  .card-grid.large-view { grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 18px; }
+  /* Friendly empty state for Collection / Wants / Trade sections */
+  .vault-empty { grid-column: 1 / -1; text-align: center; padding: 60px 24px; display: flex; flex-direction: column; align-items: center; }
+  .vault-empty-icon { font-size: 3rem; margin-bottom: 14px; opacity: 0.85; }
+  .vault-empty-title { font-family: 'Cinzel', serif; font-size: 1.3rem; font-weight: 700; color: var(--parchment); margin-bottom: 8px; }
+  .vault-empty-body { font-family: 'Crimson Pro', serif; font-size: 0.98rem; color: var(--rune); line-height: 1.6; max-width: 420px; }
+  .vault-empty-body b { color: var(--arcane); }
   .card-grid.sites-only { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
   .card-grid.sites-only .card-thumb { aspect-ratio: 4/3; display: flex; align-items: center; justify-content: center; }
   .card-grid.sites-only .card-thumb img { position: absolute; width: 75%; aspect-ratio: 3/4; transform: rotate(90deg); object-fit: contain; }
@@ -433,11 +440,13 @@
     .collection-actions { margin-left: 0; }
     .card-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
     .card-grid.sites-only { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+    .card-grid.large-view { grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); }
   }
 
   @media (max-width: 400px) {
     .filter-stone { flex: 1 1 100%; }
     .card-grid { grid-template-columns: repeat(2, 1fr); }
+    .card-grid.large-view { grid-template-columns: 1fr; }
   }
 
   /* More dropdown menu */
@@ -510,15 +519,17 @@
       <div class="cstat trade-stat">Trade: <b id="stat-trade">0</b></div>
     </div>
     <div class="view-toggle section-switcher">
-      <button class="view-btn active" id="sec-collection" onclick="setView('all')">Collection</button>
+      <button class="view-btn active" id="sec-search" onclick="setView('search')">Card Search</button>
+      <button class="view-btn" id="sec-collection" onclick="setView('all')">Collection</button>
       <button class="view-btn" id="sec-wants" onclick="setView('want')">Wants</button>
       <button class="view-btn" id="sec-trade" onclick="setView('trade')">Trade Binder</button>
     </div>
     <div class="viewmode-wrap">
       <span class="viewmode-label">Change View</span>
       <div class="viewmode-toggle">
-        <button class="viewmode-btn active" id="vm-grid" onclick="setViewMode('grid')" title="Grid view" aria-label="Grid view">⊞</button>
-        <button class="viewmode-btn" id="vm-list" onclick="setViewMode('list')" title="List view" aria-label="List view">☰</button>
+        <button class="viewmode-btn" id="vm-list" onclick="setViewMode('list')" title="Text view" aria-label="Text view">☰</button>
+        <button class="viewmode-btn active" id="vm-grid" onclick="setViewMode('grid')" title="Card view" aria-label="Card view">⊞</button>
+        <button class="viewmode-btn" id="vm-large" onclick="setViewMode('large')" title="Large card view" aria-label="Large card view">⊡</button>
       </div>
     </div>
     <div class="finish-toggle">
@@ -701,7 +712,7 @@ let allCards = [];
 let currentCards = [];
 let visibleCount = 200;
 const PAGE_SIZE = 200;
-let currentView = 'all'; // all (Collection) | want (Wants) | trade (Trade Binder) | have | missing
+let currentView = 'search'; // search (Card Search, all cards) | all (Collection, owned) | want | trade | have | missing
 let viewMode = localStorage.getItem('grimoire_view_mode') || 'grid'; // grid | list
 
 const activeFilters = { type: new Set(), set: new Set(), rarity: new Set(), element: new Set() };
@@ -973,16 +984,40 @@ function setBadge(setName) {
 }
 
 // ── RENDER ──
+// Friendly empty-state message that depends on which section you're in
+function emptyStateMessage() {
+  const hasSearchOrFilter = (document.getElementById('search-input')?.value || '').trim() !== ''
+    || Object.values(activeFilters).some(s => s.size > 0) || elementLock;
+  // If the user is actively searching/filtering, it's a "no matches" situation regardless of section
+  if (hasSearchOrFilter) {
+    return '<div class="status" style="padding:48px 0">No cards match your search.</div>';
+  }
+  const msgs = {
+    all:   { icon: '📚', title: 'Your Collection is empty', body: 'Head to <b>Card Search</b> and tap <span style="color:var(--sage)">✓ Have</span> on cards you own to add them here.' },
+    want:  { icon: '🔍', title: 'Your Wants list is empty', body: 'In <b>Card Search</b>, tap <span style="color:var(--ember)">♡ Want</span> on cards you’re hunting for and they’ll appear here.' },
+    trade: { icon: '⇄', title: 'Your Trade Binder is empty', body: 'In <b>Card Search</b>, tap <span style="color:var(--arcane)">⇄ Trade</span> on cards you’re willing to trade away.' },
+  };
+  const m = msgs[currentView];
+  if (!m) return '<div class="status" style="padding:48px 0">No cards to show.</div>';
+  return `<div class="vault-empty">
+    <div class="vault-empty-icon">${m.icon}</div>
+    <div class="vault-empty-title">${m.title}</div>
+    <div class="vault-empty-body">${m.body}</div>
+    <button class="btn btn-primary" style="margin-top:16px;" onclick="setView('search')">Go to Card Search</button>
+  </div>`;
+}
+
 function renderCards(cards, append = false) {
   const grid = document.getElementById('card-grid');
   const sitesOnly = activeFilters.type.size === 1 && activeFilters.type.has('Site');
   grid.classList.toggle('sites-only', sitesOnly && viewMode === 'grid');
   grid.classList.toggle('list-view', viewMode === 'list');
+  grid.classList.toggle('large-view', viewMode === 'large');
 
   if (!append) {
     currentCards = cards;
     visibleCount = PAGE_SIZE;
-    if (!cards.length) { grid.innerHTML = '<div class="status" style="padding:40px 0">No cards match your filters.</div>'; return; }
+    if (!cards.length) { grid.innerHTML = emptyStateMessage(); return; }
     grid.innerHTML = '';
   }
 
@@ -1086,6 +1121,8 @@ function setViewMode(mode) {
   localStorage.setItem('grimoire_view_mode', mode);
   document.getElementById('vm-grid').classList.toggle('active', mode === 'grid');
   document.getElementById('vm-list').classList.toggle('active', mode === 'list');
+  const lg = document.getElementById('vm-large');
+  if (lg) lg.classList.toggle('active', mode === 'large');
   filterCards();
 }
 
@@ -1103,11 +1140,9 @@ function setFinish(mode) {
 function setView(view) {
   currentView = view;
   document.querySelectorAll('.section-switcher .view-btn').forEach(b => b.classList.remove('active'));
-  const idMap = { all: 'sec-collection', want: 'sec-wants', trade: 'sec-trade' };
+  const idMap = { search: 'sec-search', all: 'sec-collection', want: 'sec-wants', trade: 'sec-trade' };
   const btn = document.getElementById(idMap[view]);
   if (btn) btn.classList.add('active');
-  document.body.classList.toggle('section-wants', view === 'want');
-  document.body.classList.toggle('section-trade', view === 'trade');
   filterCards();
 }
 
@@ -1195,6 +1230,9 @@ function filterCards() {
   const tf = finishMode === 'foil' ? 'tradeFoil' : 'trade';
   const filtered = allCards.filter(c => {
     // Section/view filter (respects current finish)
+    // 'search' = browse everything (no ownership filter)
+    // 'all' = Collection tab → only cards you own (have > 0)
+    if (currentView === 'all' && !(col[c.id]?.[hf] > 0)) return false;
     if (currentView === 'have' && !(col[c.id]?.[hf] > 0)) return false;
     if (currentView === 'want' && !(col[c.id]?.[wf] > 0)) return false;
     if (currentView === 'trade' && !(col[c.id]?.[tf] > 0)) return false;
@@ -1311,6 +1349,7 @@ document.getElementById('search-input').addEventListener('input', filterCards);
 // Restore saved view mode toggle state
 document.getElementById('vm-grid').classList.toggle('active', viewMode === 'grid');
 document.getElementById('vm-list').classList.toggle('active', viewMode === 'list');
+{ const _vl = document.getElementById('vm-large'); if (_vl) _vl.classList.toggle('active', viewMode === 'large'); }
 
 loadCards();
 
