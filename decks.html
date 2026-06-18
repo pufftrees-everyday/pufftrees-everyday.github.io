@@ -3,18 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cursed Realm — My Decks</title>
+<title>Cursed Realm — My Workshop</title>
 <meta name="description" content="Browse and search decks published by the Sorcery: Contested Realm community.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://cursedrealm.org/archive.html">
-<meta property="og:title" content="My Decks — Cursed Realm">
+<meta property="og:title" content="My Workshop — Cursed Realm">
 <meta property="og:description" content="Browse and search decks published by the Sorcery: Contested Realm community.">
 <meta property="og:image" content="https://cursedrealm.org/social-banner.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:site_name" content="Cursed Realm">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="My Decks — Cursed Realm">
+<meta name="twitter:title" content="My Workshop — Cursed Realm">
 <meta name="twitter:description" content="Browse and search decks published by the Sorcery: Contested Realm community.">
 <meta name="twitter:image" content="https://cursedrealm.org/social-banner.png">
 <meta name="theme-color" content="#0b0a0f">
@@ -211,7 +211,7 @@
   <div class="header-main" style="display:flex;align-items:center;gap:16px;">
     <div class="logo"><a href="index.html" style="color:var(--gold);text-decoration:none;font-family:'Cinzel Decorative',serif;font-weight:700;letter-spacing:0.04em;display:flex;align-items:center;gap:9px;"><img src="icon-192.png" alt="" style="width:30px;height:30px;border-radius:6px;display:block;">Cursed Realm</a></div>
         <a href="collection.html" class="header-link nav-collapsible">My Vault</a>
-    <button class="btn btn-ghost nav-collapsible" onclick="window.location.href='decks.html'">My Decks</button>
+    <button class="btn btn-ghost nav-collapsible" onclick="window.location.href='decks.html'">My Workshop</button>
     <button class="btn btn-primary nav-collapsible" onclick="window.location.href='deckbuilder.html'">New Deck</button>
     <a href="archive.html" class="header-link nav-collapsible" style="color:var(--arcane)">The Archive</a>
     <div class="more-menu">
@@ -232,7 +232,7 @@
 
 <div class="mobile-nav" id="mobile-nav">
     <a href="collection.html" class="header-link">My Vault</a>
-  <a href="decks.html" class="header-link">My Decks</a>
+  <a href="decks.html" class="header-link">My Workshop</a>
   <a href="deckbuilder.html" class="header-link">New Deck</a>
   <a href="archive.html" class="header-link">The Archive</a>
   <a href="index.html#about-legal" class="header-link">About</a>
@@ -245,7 +245,7 @@
 <div class="page">
   <div class="gallery-head">
     <div>
-      <div class="gallery-title"><img src="icon-192.png" alt="">My Decks</div>
+      <div class="gallery-title"><img src="icon-192.png" alt="">My Workshop</div>
       <div class="gallery-sub">Your personal workshop — every deck you've saved, all in one place. Open one to keep building, view it in its full glory, or start something new.</div>
     </div>
     <button class="btn btn-primary" onclick="window.location.href='deckbuilder.html'" style="flex-shrink:0;">+ New Deck</button>
@@ -450,7 +450,7 @@ function renderAuthBar() {
     bar.innerHTML = `<button class="profile-trigger header-link" onclick="toggleProfileMenu(event)" style="background:none;border:none;cursor:pointer;color:var(--gold);text-transform:none;letter-spacing:0.04em;font-family:inherit;font-size:inherit;display:inline-flex;align-items:center;gap:5px;">${currentUser.username} <span style="font-size:0.6rem;">▾</span></button>`;
     mob.innerHTML = `<a href="collection.html" class="header-link">My Vault</a>
       <a href="collection.html" class="header-link">My Trades</a>
-      <a href="decks.html" class="header-link">My Decks</a>
+      <a href="decks.html" class="header-link">My Workshop</a>
       <a class="header-link" onclick="logout()" style="color:var(--ember)">Sign Out</a>`;
   } else {
     bar.innerHTML = `<button class="btn btn-ghost" onclick="openAuth('login')">Sign In</button>
@@ -475,7 +475,7 @@ function toggleProfileMenu(e) {
       </div>
       <a href="collection.html" class="cr-pm-item">My Vault</a>
       <a href="collection.html" class="cr-pm-item">My Trades</a>
-      <a href="decks.html" class="cr-pm-item">My Decks</a>
+      <a href="decks.html" class="cr-pm-item">My Workshop</a>
       <div class="cr-pm-divider"></div>
       <button class="cr-pm-item cr-pm-signout" onclick="logout()">Sign Out</button>`;
     document.body.appendChild(menu);
@@ -575,7 +575,7 @@ function avatarImageUrl(deckData) {
 
 async function loadGallery() {
   const container = document.getElementById('gallery-content');
-  if (!supa) { container.innerHTML = '<div class="status">My Decks is unavailable — could not connect.</div>'; return; }
+  if (!supa) { container.innerHTML = '<div class="status">My Workshop is unavailable — could not connect.</div>'; return; }
   container.innerHTML = '<div class="status">Summoning your decks…</div>';
 
   // Must be logged in to have saved decks

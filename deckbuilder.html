@@ -874,7 +874,7 @@
   <div class="header-main" style="display:flex;align-items:center;gap:16px;">
     <div class="logo"><a href="index.html" style="color:var(--gold);text-decoration:none;font-family:'Cinzel Decorative',serif;font-weight:700;letter-spacing:0.04em;display:flex;align-items:center;gap:9px;"><img src="icon-192.png" alt="" style="width:30px;height:30px;border-radius:6px;display:block;">Cursed Realm</a></div>
         <a href="collection.html" class="header-link nav-collapsible">My Vault</a>
-    <button class="btn btn-ghost nav-collapsible" onclick="window.location.href='decks.html'">My Decks</button>
+    <button class="btn btn-ghost nav-collapsible" onclick="window.location.href='decks.html'">My Workshop</button>
     <button class="btn btn-primary nav-collapsible" onclick="window.location.href='deckbuilder.html'">New Deck</button>
     <a href="archive.html" class="header-link nav-collapsible">The Archive</a>
     <div class="more-menu">
@@ -896,7 +896,7 @@
 
 <div class="mobile-nav" id="mobile-nav">
   <a href="collection.html" class="header-link">My Vault</a>
-  <a href="decks.html" class="header-link">My Decks</a>
+  <a href="decks.html" class="header-link">My Workshop</a>
   <a href="deckbuilder.html" class="header-link">New Deck</a>
   <a href="archive.html" class="header-link">The Archive</a>
   <div class="mobile-nav-divider"></div>
@@ -1124,7 +1124,7 @@
         <div class="ro-actions">
           <button class="btn btn-ghost" onclick="openDeckStats()">Stats</button>
           <button class="btn btn-primary" id="ro-edit-btn" style="display:none;" onclick="editViewedDeck()">✎ Edit this deck</button>
-          <button class="btn btn-primary" id="ro-copy-btn" onclick="copyViewedDeck()">Copy to My Decks</button>
+          <button class="btn btn-primary" id="ro-copy-btn" onclick="copyViewedDeck()">Copy to My Workshop</button>
           <button class="btn btn-ghost" id="ro-back-btn" onclick="window.location.href='archive.html'">← The Archive</button>
         </div>
       </div>
@@ -1742,7 +1742,12 @@ function openAvatarPicker() {
   renderAvatarPicker(avatarList);
   document.getElementById('ap-search').value = '';
   picker.classList.add('open');
-  setTimeout(() => document.getElementById('ap-search').focus(), 100);
+  // Only auto-focus the search on desktop (mouse/large screen). On touch devices
+  // this would force the on-screen keyboard up, covering the avatar grid.
+  const isTouch = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+  if (!isTouch && window.innerWidth > 760) {
+    setTimeout(() => { const el = document.getElementById('ap-search'); if (el) el.focus(); }, 100);
+  }
 }
 
 function closeAvatarPicker() {
@@ -2879,7 +2884,7 @@ function toggleProfileMenu(e) {
       </div>
       <a href="collection.html" class="cr-pm-item">My Vault</a>
       <a href="collection.html" class="cr-pm-item">My Trades</a>
-      <a href="decks.html" class="cr-pm-item">My Decks</a>
+      <a href="decks.html" class="cr-pm-item">My Workshop</a>
       <div class="cr-pm-divider"></div>
       <button class="cr-pm-item cr-pm-signout" onclick="logout()">Sign Out</button>`;
     document.body.appendChild(menu);
@@ -3024,7 +3029,7 @@ function enterReadOnly(author, ownerCode) {
   if (editBtn) editBtn.style.display = isOwnerView ? '' : 'none';
   if (copyBtn) copyBtn.style.display = isOwnerView ? 'none' : '';
   if (backBtn) {
-    backBtn.textContent = isOwnerView ? '← My Decks' : '← The Archive';
+    backBtn.textContent = isOwnerView ? '← My Workshop' : '← The Archive';
     backBtn.setAttribute('onclick', isOwnerView ? "window.location.href='decks.html'" : "window.location.href='archive.html'");
   }
   // Hide the avatar picker if it tried to open
