@@ -139,6 +139,8 @@
   .deck-card-author { font-size: 0.85rem; color: var(--rune); }
   .deck-card-author b { color: var(--arcane); }
   .deck-card-avatar-name { font-family: 'Crimson Pro', serif; font-style: italic; font-size: 0.85rem; color: var(--gold); }
+  .dc-avatar-link { color: var(--gold); text-decoration: none; border-bottom: 1px dotted rgba(200,169,110,0.5); transition: color 0.15s, border-color 0.15s; }
+  .dc-avatar-link:hover { color: var(--shimmer); border-bottom-color: var(--shimmer); }
   .deck-card-actions { display: flex; gap: 8px; margin-top: auto; padding-top: 10px; align-items: center; }
   .deck-card-actions .btn { flex: 1; text-align: center; }
   .deck-card-link { background: none; border: 1px solid var(--border-strong); border-radius: 5px; color: var(--arcane); cursor: pointer; padding: 7px 10px; font-size: 0.95rem; flex: 0 0 auto; }
@@ -802,7 +804,7 @@ function renderDeckCard(d, authors) {
     <div class="deck-card-body">
       <div class="deck-card-name">${escapeHtml(d.name || 'Untitled Deck')} ${pubBadge}</div>
       <div class="deck-card-author">${qty} cards${date ? ' · '+date : ''}</div>
-      ${av ? `<div class="deck-card-avatar-name">${escapeHtml(av)}</div>` : ''}
+      ${av ? `<div class="deck-card-avatar-name"><a href="avatar.html?a=${encodeURIComponent(av)}" class="dc-avatar-link" onclick="event.stopPropagation()">${escapeHtml(av)}</a></div>` : ''}
       <div class="deck-card-actions">
         <button class="btn btn-primary" onclick="window.location.href='deckbuilder.html?d=${d.short_code}'">Edit</button>
         <button class="btn btn-ghost" onclick="window.location.href='deck.html?d=${d.short_code}'">View</button>
