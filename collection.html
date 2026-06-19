@@ -457,6 +457,13 @@
 
   /* TOAST */
   .toast { position: fixed; bottom: 24px; right: 24px; background: var(--dusk); border: 1px solid var(--border-strong); color: var(--shimmer); font-size: 0.9rem; padding: 10px 18px; border-radius: 6px; box-shadow: var(--glow); z-index: 999; opacity: 0; transform: translateY(8px); transition: opacity 0.2s, transform 0.2s; pointer-events: none; font-style: italic; }
+  /* HOVER PREVIEW (desktop only, list view) */
+  .hover-preview { position: fixed; z-index: 1500; pointer-events: none; opacity: 0; transition: opacity 0.12s; display: none; }
+  .hover-preview.show { opacity: 1; }
+  .hover-preview img { width: 280px; max-width: 42vw; border-radius: 12px; border: 1px solid var(--border-strong); box-shadow: 0 12px 40px rgba(0,0,0,0.75); display: block; background: #0b0a0f; }
+  .hover-preview.is-site { width: 392px; max-width: 59vw; height: 280px; max-height: 42vw; display: flex; align-items: center; justify-content: center; }
+  .hover-preview.is-site img { width: 280px; max-width: 42vw; transform: rotate(90deg); transform-origin: center center; }
+  @media (hover: hover) and (pointer: fine) { .hover-preview { display: block; } }
   .toast.show { opacity: 1; transform: translateY(0); }
 
   /* HAMBURGER + MOBILE NAV */
@@ -767,6 +774,9 @@
 
 <div class="toast" id="toast"></div>
 
+<!-- HOVER PREVIEW (desktop, list view only) -->
+<div class="hover-preview" id="hover-preview"><img id="hover-preview-img" src="" alt=""></div>
+
 <script>
 // ── STATE ──
 let allCards = [];
@@ -1035,6 +1045,41 @@ function getImageUrl(card) {
   if (card.slug) return `${IMAGE_BASE}${card.slug}.png`;
   return `${IMAGE_BASE}${(card.name||'').toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'')}.png`;
 }
+
+// ── HOVER PREVIEW (desktop, list view only) ──
+let _hpEl, _hpImg, _hpVisible = false;
+function hpShow(id, x, y) {
+  if (viewMode !== 'list') return;
+  const card = allCards.find(c => c.id === id || c.name === id);
+  if (!card) return;
+  if (!_hpEl) { _hpEl = document.getElementById('hover-preview'); _hpImg = document.getElementById('hover-preview-img'); }
+  // Respect the current finish (foil image when in foil mode, if available)
+  const url = (finishMode === 'foil' && card.foilSlug) ? `${IMAGE_BASE}${card.foilSlug}.png` : getImageUrl(card);
+  const fk = id + (finishMode==='foil'?'-f':'');
+  if (_hpImg.dataset.for !== fk) { _hpImg.src = url; _hpImg.dataset.for = fk; }
+  _hpEl.classList.toggle('is-site', card.type === 'Site');
+  hpMove(x, y);
+  _hpEl.classList.add('show');
+  _hpVisible = true;
+}
+function hpMove(x, y) {
+  if (!_hpEl) return;
+  const pad = 18, pw = _hpEl.offsetWidth || 290, ph = _hpEl.offsetHeight || 400;
+  let left = x + pad, top = y + pad;
+  if (left + pw > window.innerWidth - 8) left = x - pw - pad;
+  if (top + ph > window.innerHeight - 8) top = window.innerHeight - ph - 8;
+  if (top < 8) top = 8;
+  _hpEl.style.left = left + 'px';
+  _hpEl.style.top = top + 'px';
+}
+function hpHide() { if (_hpEl) _hpEl.classList.remove('show'); _hpVisible = false; }
+(function wireHover() {
+  const root = document.getElementById('card-grid');
+  if (!root) return;
+  root.addEventListener('mouseover', e => { const r = e.target.closest('[data-id]'); if (r) hpShow(r.getAttribute('data-id'), e.clientX, e.clientY); });
+  root.addEventListener('mousemove', e => { if (!_hpVisible) return; const r = e.target.closest('[data-id]'); if (!r) { hpHide(); return; } hpMove(e.clientX, e.clientY); });
+  root.addEventListener('mouseout', e => { const to = e.relatedTarget; if (!to || !to.closest || !to.closest('[data-id]')) hpHide(); });
+})();
 
 // Map a set name to a compact lettered, color-coded badge
 function setBadge(setName) {

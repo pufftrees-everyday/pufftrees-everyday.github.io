@@ -646,6 +646,14 @@
   @media (max-width: 520px) { .card-row .cr-type { display: none; } }
   @media (max-width: 400px) { .card-row .cr-set { display: none; } }
 
+  /* HOVER PREVIEW (desktop only, list views) */
+  .hover-preview { position: fixed; z-index: 1500; pointer-events: none; opacity: 0; transition: opacity 0.12s; display: none; }
+  .hover-preview.show { opacity: 1; }
+  .hover-preview img { width: 280px; max-width: 42vw; border-radius: 12px; border: 1px solid var(--border-strong); box-shadow: 0 12px 40px rgba(0,0,0,0.75); display: block; background: #0b0a0f; }
+  .hover-preview.is-site { width: 392px; max-width: 59vw; height: 280px; max-height: 42vw; display: flex; align-items: center; justify-content: center; }
+  .hover-preview.is-site img { width: 280px; max-width: 42vw; transform: rotate(90deg); transform-origin: center center; }
+  @media (hover: hover) and (pointer: fine) { .hover-preview { display: block; } }
+
   /* Set badges */
   .set-badge { display: inline-flex; align-items: center; justify-content: center; font-family: 'Cinzel', serif; font-weight: 700; font-size: 0.6rem; letter-spacing: 0.02em; min-width: 20px; height: 18px; padding: 0 5px; border-radius: 9px; border: 1px solid; white-space: nowrap; line-height: 1; }
   .set-alpha  { color: #d8b878; background: rgba(200,169,110,0.15); border-color: rgba(200,169,110,0.55); }
@@ -1019,6 +1027,9 @@
 
 <div class="toast" id="toast"></div>
 
+<!-- HOVER PREVIEW (desktop, list views only) -->
+<div class="hover-preview" id="hover-preview"><img id="hover-preview-img" src="" alt=""></div>
+
 <!-- INVOKE (advanced search) MODAL -->
 <div class="invoke-overlay" id="invoke-overlay" onclick="if(event.target===this)closeInvoke()">
   <div class="invoke-box">
@@ -1150,6 +1161,38 @@ function getImageUrl(card) {
   return `${IMAGE_BASE}${(card.name||'').toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'')}.png`;
 }
 
+// ── HOVER PREVIEW (desktop, list view only) ──
+let _hpEl, _hpImg, _hpVisible = false;
+function hpShow(id, x, y) {
+  if (viewMode !== 'list') return;            // only in text/list view
+  const card = getCard(id);
+  if (!card) return;
+  if (!_hpEl) { _hpEl = document.getElementById('hover-preview'); _hpImg = document.getElementById('hover-preview-img'); }
+  if (_hpImg.dataset.for !== String(id)) { _hpImg.src = getImageUrl(card); _hpImg.dataset.for = String(id); }
+  _hpEl.classList.toggle('is-site', card.type === 'Site');
+  hpMove(x, y);
+  _hpEl.classList.add('show');
+  _hpVisible = true;
+}
+function hpMove(x, y) {
+  if (!_hpEl) return;
+  const pad = 18, pw = _hpEl.offsetWidth || 290, ph = _hpEl.offsetHeight || 400;
+  let left = x + pad, top = y + pad;
+  if (left + pw > window.innerWidth - 8) left = x - pw - pad;
+  if (top + ph > window.innerHeight - 8) top = window.innerHeight - ph - 8;
+  if (top < 8) top = 8;
+  _hpEl.style.left = left + 'px';
+  _hpEl.style.top = top + 'px';
+}
+function hpHide() { if (_hpEl) _hpEl.classList.remove('show'); _hpVisible = false; }
+(function wireHover() {
+  const root = document.getElementById('card-grid');
+  if (!root) return;
+  root.addEventListener('mouseover', e => { const r = e.target.closest('[data-card-id]'); if (r) hpShow(r.getAttribute('data-card-id'), e.clientX, e.clientY); });
+  root.addEventListener('mousemove', e => { if (!_hpVisible) return; const r = e.target.closest('[data-card-id]'); if (!r) { hpHide(); return; } hpMove(e.clientX, e.clientY); });
+  root.addEventListener('mouseout', e => { const to = e.relatedTarget; if (!to || !to.closest || !to.closest('[data-card-id]')) hpHide(); });
+})();
+
 function escId(id) { return String(id).replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
 
 // RENDER CARDS
@@ -1185,7 +1228,7 @@ function renderCardThumb(card) {
 function renderCardRow(card) {
   const rarity = card.rarity || '';
   const cost = (card.cost != null && card.cost !== '') ? card.cost : '';
-  return `<div class="card-row" onclick="openModal('${escId(card.id)}')">
+  return `<div class="card-row" data-card-id="${escId(card.id)}" onclick="openModal('${escId(card.id)}')">
       <span class="cr-mana${cost===''?' empty':''}">${cost}</span>
       <div class="cr-name">${card.name}</div>
       <span class="cr-meta cr-set">${setBadge(card.set)}</span>
@@ -1903,6 +1946,7 @@ function openModal(id) {
   document.getElementById('modal-stats').innerHTML = stats.map(s=>`<div class="modal-stat"><b>${s.l}:</b> ${s.v}</div>`).join('');
   document.getElementById('modal-add-btn').style.display = 'none';
   document.getElementById('modal-overlay').classList.add('open');
+  if (typeof hpHide === 'function') hpHide();
 }
 
 document.getElementById('modal-add-btn').onclick = () => { if (currentModalCard) { addCard(currentModalCard); closeModal(); } };

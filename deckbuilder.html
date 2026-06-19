@@ -806,6 +806,13 @@
 
   /* TOAST */
   .toast { position: fixed; bottom: 20px; right: 20px; background: var(--dusk); border: 1px solid var(--border-strong); color: var(--shimmer); font-size: 0.9rem; padding: 9px 16px; border-radius: 4px; box-shadow: var(--glow); z-index: 999; opacity: 0; transform: translateY(6px); transition: opacity 0.2s, transform 0.2s; pointer-events: none; font-style: italic; }
+  /* HOVER PREVIEW (desktop only, list view) */
+  .hover-preview { position: fixed; z-index: 1500; pointer-events: none; opacity: 0; transition: opacity 0.12s; display: none; }
+  .hover-preview.show { opacity: 1; }
+  .hover-preview img { width: 280px; max-width: 42vw; border-radius: 12px; border: 1px solid var(--border-strong); box-shadow: 0 12px 40px rgba(0,0,0,0.75); display: block; background: #0b0a0f; }
+  .hover-preview.is-site { width: 392px; max-width: 59vw; height: 280px; max-height: 42vw; display: flex; align-items: center; justify-content: center; }
+  .hover-preview.is-site img { width: 280px; max-width: 42vw; transform: rotate(90deg); transform-origin: center center; }
+  @media (hover: hover) and (pointer: fine) { .hover-preview { display: block; } }
   .confirm-overlay { display: none; position: fixed; inset: 0; background: rgba(11,10,15,0.84); backdrop-filter: blur(4px); z-index: 1100; align-items: center; justify-content: center; padding: 20px; }
   .confirm-overlay.open { display: flex; }
   .confirm-box { background: var(--dusk); border: 1px solid var(--border-strong); border-radius: 10px; max-width: 440px; width: 100%; padding: 26px; text-align: center; box-shadow: 0 16px 50px rgba(0,0,0,0.6); }
@@ -1314,6 +1321,9 @@
 
 <div class="toast" id="toast"></div>
 
+<!-- HOVER PREVIEW (desktop, list view only) -->
+<div class="hover-preview" id="hover-preview"><img id="hover-preview-img" src="" alt=""></div>
+
 <script>
 // ── SUPABASE ──
 const SUPABASE_URL = 'https://nuizkjkcephopnbcmtlz.supabase.co';
@@ -1407,6 +1417,38 @@ function getImageUrl(card) {
   if (card.slug) return `${IMAGE_BASE}${card.slug}.png`;
   return `${IMAGE_BASE}${(card.name||'').toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'')}.png`;
 }
+
+// ── HOVER PREVIEW (desktop, list view only) ──
+let _hpEl, _hpImg, _hpVisible = false;
+function hpShow(id, x, y) {
+  if (viewMode !== 'list') return;
+  const card = allCards.find(c => c.id === id || c.name === id);
+  if (!card) return;
+  if (!_hpEl) { _hpEl = document.getElementById('hover-preview'); _hpImg = document.getElementById('hover-preview-img'); }
+  if (_hpImg.dataset.for !== String(id)) { _hpImg.src = getImageUrl(card); _hpImg.dataset.for = String(id); }
+  _hpEl.classList.toggle('is-site', card.type === 'Site');
+  hpMove(x, y);
+  _hpEl.classList.add('show');
+  _hpVisible = true;
+}
+function hpMove(x, y) {
+  if (!_hpEl) return;
+  const pad = 18, pw = _hpEl.offsetWidth || 290, ph = _hpEl.offsetHeight || 400;
+  let left = x + pad, top = y + pad;
+  if (left + pw > window.innerWidth - 8) left = x - pw - pad;
+  if (top + ph > window.innerHeight - 8) top = window.innerHeight - ph - 8;
+  if (top < 8) top = 8;
+  _hpEl.style.left = left + 'px';
+  _hpEl.style.top = top + 'px';
+}
+function hpHide() { if (_hpEl) _hpEl.classList.remove('show'); _hpVisible = false; }
+(function wireHover() {
+  const root = document.getElementById('card-grid');
+  if (!root) return;
+  root.addEventListener('mouseover', e => { const r = e.target.closest('[data-card-id]'); if (r) hpShow(r.getAttribute('data-card-id'), e.clientX, e.clientY); });
+  root.addEventListener('mousemove', e => { if (!_hpVisible) return; const r = e.target.closest('[data-card-id]'); if (!r) { hpHide(); return; } hpMove(e.clientX, e.clientY); });
+  root.addEventListener('mouseout', e => { const to = e.relatedTarget; if (!to || !to.closest || !to.closest('[data-card-id]')) hpHide(); });
+})();
 
 function escId(id) { return String(id).replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
 
@@ -1728,6 +1770,7 @@ function openModal(id) {
   document.getElementById('add-feedback').className = 'add-feedback';
 
   document.getElementById('modal-overlay').classList.add('open');
+  if (typeof hpHide === 'function') hpHide();
 }
 
 function changeAddQty(delta) {
@@ -3262,6 +3305,7 @@ let dragGhost = null;
 
 function onCardDragStart(e, cardId) {
   dragCardId = cardId;
+  if (typeof hpHide === 'function') hpHide();
   e.dataTransfer.effectAllowed = 'copy';
   e.dataTransfer.setData('text/plain', cardId);
 
