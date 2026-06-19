@@ -422,6 +422,12 @@
     background: rgba(155,135,212,0.08);
     box-shadow: inset 0 0 0 2px var(--arcane);
   }
+  /* Explorer highlights red-ish when a deck card is dragged over it to remove one */
+  #card-grid.drag-over-remove {
+    background: rgba(196,97,74,0.07);
+    box-shadow: inset 0 0 0 2px var(--ember);
+    border-radius: 6px;
+  }
 
   .drag-ghost {
     position: fixed; pointer-events: none; z-index: 9999;
@@ -609,6 +615,9 @@
     border: 1px solid var(--border); background: var(--dusk);
     cursor: pointer; transition: border-color 0.15s, box-shadow 0.15s;
   }
+  .dvg-card[draggable="true"] { cursor: grab; }
+  .dvg-card[draggable="true"]:active { cursor: grabbing; }
+  .dvg-card.dragging, .deck-card-row.dragging { opacity: 0.4; }
   .dvg-card:hover { border-color: var(--arcane); box-shadow: var(--glow); }
   .dvg-card img { width: 100%; aspect-ratio: 3/4; object-fit: cover; display: block; border-radius: 3px; }
 
@@ -2463,8 +2472,8 @@ function renderDeckCard(section, key, card, qty) {
       <button class="qty-btn" onclick="event.stopPropagation();changeQty('${section}','${key}',1)">+</button>` : ''}
       <button class="del-btn" onclick="event.stopPropagation();removeCard('${section}','${key}')">✕</button>
     </div>`;
-  return `<div class="dvg-card${isSite ? ' is-site' : ''}" data-card-id="${escId(card.id)}" onclick="openModal('${escId(card.id)}')">
-    <img src="${getImageUrl(card)}" alt="${card.name}" loading="lazy" onerror="this.style.opacity='0.2'">
+  return `<div class="dvg-card${isSite ? ' is-site' : ''}" data-card-id="${escId(card.id)}" draggable="${readOnly ? 'false' : 'true'}" ondragstart="onDeckCardDragStart(event,'${section}','${escId(key)}')" ondragend="onCardDragEnd(event)" onclick="openModal('${escId(card.id)}')">
+    <img src="${getImageUrl(card)}" alt="${card.name}" loading="lazy" onerror="this.style.opacity='0.2'" draggable="false">
     ${qty > 1 ? `<div class="dvg-qty">×${qty}</div>` : ''}
     ${thresholdOverlay(card)}
     ${controls}
@@ -2516,7 +2525,7 @@ function renderDeckCardRow(section, key, card, qty) {
       <button class="dr-qty-btn" onclick="event.stopPropagation();changeQty('${section}','${key}',1)">+</button>` : ''}
       <button class="dr-del-btn" onclick="event.stopPropagation();removeCard('${section}','${key}')">✕</button>
     </div>`;
-  return `<div class="deck-card-row" data-card-id="${escId(card.id)}" onclick="openModal('${escId(card.id)}')">
+  return `<div class="deck-card-row" data-card-id="${escId(card.id)}" draggable="${readOnly ? 'false' : 'true'}" ondragstart="onDeckCardDragStart(event,'${section}','${escId(key)}')" ondragend="onCardDragEnd(event)" onclick="openModal('${escId(card.id)}')">
     <span class="dr-qty">${qty}×</span>
     <span class="dr-name">${card.name}</span>
     ${thr}
@@ -3384,8 +3393,14 @@ function runImport() {
 // ── DRAG AND DROP ──
 let dragCardId = null;
 let dragGhost = null;
+let dragSource = 'explorer';      // 'explorer' (adds to deck) | 'deck' (removes from deck)
+let dragDeckSection = null;       // when dragging from the deck: which section
+let dragDeckKey = null;           // when dragging from the deck: which card key
 
 function onCardDragStart(e, cardId) {
+  dragSource = 'explorer';
+  dragDeckSection = null;
+  dragDeckKey = null;
   dragCardId = cardId;
   if (typeof hpHide === 'function') hpHide();
   e.dataTransfer.effectAllowed = 'copy';
@@ -3406,11 +3421,40 @@ function onCardDragStart(e, cardId) {
   e.currentTarget.classList.add('dragging');
 }
 
+// Dragging a card OUT of the deck (right side). Dropping it on the explorer removes one.
+function onDeckCardDragStart(e, section, key) {
+  if (readOnly) { e.preventDefault(); return; }
+  dragSource = 'deck';
+  dragDeckSection = section;
+  dragDeckKey = key;
+  const entry = deck[section] && deck[section][key];
+  const card = entry ? entry.card : null;
+  dragCardId = card ? card.id : null;
+  if (typeof hpHide === 'function') hpHide();
+  e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.setData('text/plain', dragCardId || '');
+  if (card) {
+    dragGhost = document.createElement('div');
+    dragGhost.className = 'drag-ghost';
+    dragGhost.innerHTML = `<img src="${getImageUrl(card)}" style="width:100%;display:block">`;
+    document.body.appendChild(dragGhost);
+    dragGhost.style.left = '-200px';
+    dragGhost.style.top = '-200px';
+    e.dataTransfer.setDragImage(dragGhost, 40, 40);
+  }
+  e.currentTarget.classList.add('dragging');
+}
+
 function onCardDragEnd(e) {
   e.currentTarget.classList.remove('dragging');
   if (dragGhost) { dragGhost.remove(); dragGhost = null; }
   dragCardId = null;
+  dragSource = 'explorer';
+  dragDeckSection = null;
+  dragDeckKey = null;
   document.getElementById('deck-body').classList.remove('drag-over');
+  const cg = document.getElementById('card-grid');
+  if (cg) cg.classList.remove('drag-over-remove');
 }
 
 // ── TOAST ──
@@ -3514,6 +3558,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Drag and drop onto deck panel
   const deckBody = document.getElementById('deck-body');
   deckBody.addEventListener('dragover', e => {
+    if (dragSource === 'deck') return;   // re-dropping a deck card onto the deck does nothing
     e.preventDefault();
     e.dataTransfer.dropEffect = 'copy';
     deckBody.classList.add('drag-over');
@@ -3524,6 +3569,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
   deckBody.addEventListener('drop', e => {
+    if (dragSource === 'deck') return;   // ignore; only explorer→deck adds
     e.preventDefault();
     deckBody.classList.remove('drag-over');
     const id = e.dataTransfer.getData('text/plain') || dragCardId;
@@ -3539,6 +3585,31 @@ document.addEventListener('DOMContentLoaded', async () => {
       toast(result.message);
     }
   });
+
+  // Explorer (left) acts as a "remove" drop zone: dragging a card OUT of the deck
+  // and dropping it here removes one copy — the mirror of drag-to-add.
+  const cardGrid = document.getElementById('card-grid');
+  if (cardGrid) {
+    cardGrid.addEventListener('dragover', e => {
+      if (dragSource !== 'deck') return;
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      cardGrid.classList.add('drag-over-remove');
+    });
+    cardGrid.addEventListener('dragleave', e => {
+      if (!cardGrid.contains(e.relatedTarget)) cardGrid.classList.remove('drag-over-remove');
+    });
+    cardGrid.addEventListener('drop', e => {
+      if (dragSource !== 'deck') return;
+      e.preventDefault();
+      cardGrid.classList.remove('drag-over-remove');
+      const section = dragDeckSection, key = dragDeckKey;
+      if (!section || key == null || !deck[section] || !deck[section][key]) return;
+      const removed = deck[section][key].card;
+      changeQty(section, key, -1);   // decrement one (deletes the stack at 0), re-renders
+      if (removed) toast(`Removed 1 ${removed.name}`);
+    });
+  }
 
   // Restore saved view mode toggle state
   const vg = document.getElementById('vm-grid'), vl = document.getElementById('vm-list'), vlg = document.getElementById('vm-large');
