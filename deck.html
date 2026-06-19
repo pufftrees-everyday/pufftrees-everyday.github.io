@@ -156,6 +156,7 @@
   .deck-section.collapsed .deck-section-caret { transform: rotate(-90deg); }
   .deck-section.collapsed .deck-section-body { display: none; }
   .deck-section-count { font-family: 'Crimson Pro', serif; font-size: 0.9rem; color: var(--rune); }
+  .count-breakdown { color: var(--arcane); }
   .deck-subgroup-title { font-family: 'Cinzel', serif; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--arcane); margin: 14px 0 8px; }
 
   /* TEXT view */
@@ -601,10 +602,29 @@
     }
     const sid = 'section-' + title.replace(/\s+/g,'-');
     const collapsed = collapsedSections[title] ? ' collapsed' : '';
+    // Count suffix: either a per-type breakdown, a simple parenthetical, or the limit text.
+    let suffix = '';
+    if (opts.breakdown === 'type') {
+      const byType = {};
+      entries.forEach(([name, q]) => {
+        const c = cardMap[(name||'').toLowerCase()];
+        const t = (c && c.type) ? c.type : 'Other';
+        byType[t] = (byType[t] || 0) + (q || 0);
+      });
+      const order = ['Minion','Magic','Artifact','Aura','Avatar','Site','Other'];
+      const parts = Object.entries(byType)
+        .sort((a,b) => (order.indexOf(a[0])+1||99) - (order.indexOf(b[0])+1||99))
+        .map(([t,n]) => `${n} ${t.toLowerCase()}${n===1?'':'s'}`);
+      if (parts.length) suffix = ` <span class="count-breakdown">(${parts.join(', ')})</span>`;
+    } else if (opts.paren) {
+      suffix = ` <span class="count-breakdown">(${opts.paren})</span>`;
+    } else if (opts.limit) {
+      suffix = ` · ${opts.limit}`;
+    }
     return `<div class="deck-section${collapsed}" id="${sid}">
       <div class="deck-section-head" onclick="toggleSection('${title}')">
         <span class="deck-section-title"><span class="deck-section-caret">▾</span>${title}</span>
-        <span class="deck-section-count">${count} card${count===1?'':'s'}${opts.limit?` · ${opts.limit}`:''}</span>
+        <span class="deck-section-count">${count} card${count===1?'':'s'}${suffix}</span>
       </div>
       <div class="deck-section-body">
         ${entries.length ? inner : '<div style="color:var(--rune);font-style:italic;padding:8px 0;">None</div>'}
@@ -780,10 +800,11 @@
     let html = '';
     // Avatar is already shown as the hero image + name at the top, so we don't
     // repeat it as a section here. (The .txt export builds it separately from dd.a.)
-    // Atlas
-    html += renderSectionBlock('Atlas', dd.t || [], { limit: '30+ sites' });
-    // Spellbook
-    html += renderSectionBlock('Spellbook', dd.s || [], { limit: '60+ spells' });
+    // Atlas — show site count, e.g. "30 cards (30 sites)"
+    const atlasCount = (dd.t || []).reduce((s,[,q]) => s + (q||0), 0);
+    html += renderSectionBlock('Atlas', dd.t || [], { paren: `${atlasCount} site${atlasCount===1?'':'s'}` });
+    // Spellbook — break down by type, e.g. "60 cards (38 minions, 18 magics, 4 artifacts)"
+    html += renderSectionBlock('Spellbook', dd.s || [], { breakdown: 'type' });
     // Deck Collection (only if present)
     if ((dd.c || []).length) {
       html += renderSectionBlock('Collection', dd.c || [], { limit: 'sideboard, up to 10' });
