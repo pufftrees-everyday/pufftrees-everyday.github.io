@@ -323,7 +323,7 @@
 <div class="confirm-overlay" id="bring-overlay" onclick="if(event.target===this)closeBring()">
   <div class="confirm-box">
     <div class="confirm-icon">✦</div>
-    <div class="confirm-title">Bring to My Workshop?</div>
+    <div class="confirm-title">Bring to Workshop?</div>
     <div class="confirm-msg" id="bring-msg">This will save a personal copy to your Workshop.</div>
     <div class="confirm-actions">
       <button class="btn btn-ghost" onclick="closeBring()">Cancel</button>
@@ -782,7 +782,7 @@ function renderDeckCard(d, authors) {
         <button class="btn btn-primary" onclick="openDeck('${d.short_code}')">View Deck</button>
         ${isOwner
           ? `<button class="btn btn-ghost" onclick="unpublishDeck('${d.id}')">Unpublish</button>`
-          : `<button class="btn btn-ghost" onclick="bringToWorkshop('${d.short_code}', ${JSON.stringify(d.name||'').replace(/"/g,'&quot;')})">Bring to My Workshop</button>`}
+          : `<button class="btn btn-ghost" onclick="bringToWorkshop('${d.short_code}', ${JSON.stringify(d.name||'').replace(/"/g,'&quot;')})">Bring to Workshop</button>`}
       </div>
       ${barHtml}
     </div>

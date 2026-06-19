@@ -162,13 +162,14 @@
   .deck-card-cell .cell-name { padding: 6px 8px; font-size: 0.78rem; color: var(--shimmer); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
   /* Threshold overlay — hidden by default, shown when body.show-thresholds */
-  .th-overlay { position: absolute; left: 6px; bottom: 6px; display: none; align-items: center; gap: 4px; z-index: 3; flex-wrap: wrap; max-width: calc(100% - 12px); }
+  .th-overlay { position: absolute; left: 6px; bottom: 6px; display: none; align-items: center; gap: 5px; z-index: 3; flex-wrap: wrap; max-width: calc(100% - 12px); background: rgba(11,10,15,0.78); border: 1px solid var(--border-strong); border-radius: 8px; padding: 4px 7px; backdrop-filter: blur(2px); }
   body.show-thresholds .th-overlay { display: inline-flex; }
-  .th-badge { min-width: 24px; height: 24px; padding: 0 5px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; font-family: 'Cinzel', serif; font-size: 0.95rem; font-weight: 700; color: #0b0a0f; border: 1.5px solid rgba(11,10,15,0.55); box-shadow: 0 2px 6px rgba(0,0,0,0.6); }
-  .deck-grid.large .th-badge { min-width: 30px; height: 30px; font-size: 1.15rem; }
-  /* threshold pips in the text list */
-  .deck-list-th { display: inline-flex; gap: 4px; align-items: center; }
-  .th-row-pip { min-width: 18px; height: 18px; padding: 0 4px; border-radius: 4px; display: inline-flex; align-items: center; justify-content: center; font-family: 'Cinzel', serif; font-size: 0.72rem; font-weight: 700; color: #0b0a0f; border: 1px solid rgba(0,0,0,0.3); }
+  .th-group { display: inline-flex; gap: 1px; align-items: center; }
+  .th-icon { width: 19px; height: 19px; object-fit: contain; display: inline-block; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.7)); }
+  .deck-grid.large .th-icon { width: 24px; height: 24px; }
+  /* threshold symbols in the text/details rows */
+  .deck-list-th, .dd-th { display: inline-flex; gap: 4px; align-items: center; }
+  .th-row-icon { width: 15px; height: 15px; object-fit: contain; display: inline-block; vertical-align: middle; }
 
   .status { text-align: center; padding: 60px 20px; color: var(--rune); font-style: italic; }
 
@@ -274,7 +275,7 @@
 <div class="confirm-overlay" id="copy-overlay" onclick="if(event.target===this)closeCopyConfirm()">
   <div class="confirm-box">
     <div class="confirm-icon">✦</div>
-    <div class="confirm-title">Bring to My Workshop?</div>
+    <div class="confirm-title">Bring to Workshop?</div>
     <div class="confirm-msg" id="copy-msg">This will save a personal copy of this deck to your Workshop, where you can edit it freely. The original stays untouched.</div>
     <div class="confirm-actions">
       <button class="btn btn-ghost" onclick="closeCopyConfirm()">Cancel</button>
@@ -405,26 +406,32 @@
     return `<span class="set-badge ${cls}">${label}</span>`;
   }
 
-  // Build the threshold overlay badges (e.g. 2 water + 1 fire) shown over a card
+  // Build the threshold overlay shown over a card — repeated element symbols
+  // (e.g. 2 fire threshold = two fire symbols), matching the rest of the site.
   const THRESHOLD_ELS = ['air','earth','fire','water'];
-  function thresholdOverlayHtml(name) {
+  const THRESHOLD_IMG = { air:'wind.png', earth:'earth.png', fire:'fire.png', water:'water.png' };
+  function thresholdSymbols(name, cls) {
     const th = cardThresholds(name);
-    const badges = [];
+    const groups = [];
     THRESHOLD_ELS.forEach(el => {
       const n = th[el] || 0;
       if (n > 0) {
-        badges.push(`<span class="th-badge" style="background:${ELEMENT_COLORS[el]};" title="${n} ${el} threshold">${n}</span>`);
+        const file = THRESHOLD_IMG[el];
+        const icons = Array.from({ length: n }, () => `<img src="${file}" alt="${el}" class="${cls}">`).join('');
+        groups.push(`<span class="th-group">${icons}</span>`);
       }
     });
-    if (!badges.length) return '';
-    return `<div class="th-overlay">${badges.join('')}</div>`;
+    return groups;
+  }
+  function thresholdOverlayHtml(name) {
+    const groups = thresholdSymbols(name, 'th-icon');
+    if (!groups.length) return '';
+    return `<div class="th-overlay">${groups.join('')}</div>`;
   }
 
   function renderEntryRow([name, qty]) {
     const cost = cardCost(name);
-    const th = cardThresholds(name);
-    const thStr = THRESHOLD_ELS.filter(el => th[el] > 0)
-      .map(el => `<span class="th-row-pip" style="background:${ELEMENT_COLORS[el]};" title="${el} ${th[el]}">${th[el]}</span>`).join('');
+    const thStr = thresholdSymbols(name, 'th-row-icon').join('');
     return `<div class="deck-list-row" onclick="zoom('${escAttr(name)}')">
       <span class="deck-list-cost${cost===''?' empty':''}">${cost}</span>
       <span class="deck-list-qty">${qty}×</span>
@@ -438,9 +445,7 @@
     const cost = cardCost(name);
     const rarity = cardRarity(name);
     const type = cardType(name);
-    const th = cardThresholds(name);
-    const thStr = THRESHOLD_ELS.filter(el => th[el] > 0)
-      .map(el => `<span class="th-row-pip" style="background:${ELEMENT_COLORS[el]};" title="${el} ${th[el]}">${th[el]}</span>`).join('');
+    const thStr = thresholdSymbols(name, 'th-row-icon').join('');
     return `<div class="deck-detail-row" onclick="zoom('${escAttr(name)}')">
       <span class="cr-mana${cost===''?' empty':''}">${cost}</span>
       <span class="dd-qty">${qty}×</span>
@@ -520,10 +525,9 @@
     // counts
     const aC = sectionCount(dd,'a'), tC = sectionCount(dd,'t'), sC = sectionCount(dd,'s'), cC = sectionCount(dd,'c');
     const pills = [];
-    pills.push(`<div class="deck-count-pill ${aC===1?'ok':'warn'}"><b>${aC}</b> Avatar</div>`);
     pills.push(`<div class="deck-count-pill ${tC>=30?'ok':'warn'}"><b>${tC}</b>/30 Atlas</div>`);
     pills.push(`<div class="deck-count-pill ${sC>=60?'ok':'warn'}"><b>${sC}</b>/60 Spellbook</div>`);
-    if (cC > 0) pills.push(`<div class="deck-count-pill ${cC<=10?'ok':'warn'}"><b>${cC}</b>/10 Collection</div>`);
+    pills.push(`<div class="deck-count-pill ${cC<=10?'ok':'warn'}"><b>${cC}</b>/10 Collection</div>`);
     pills.push(`<div class="deck-count-pill"><b>${aC+tC+sC+cC}</b> total</div>`);
     document.getElementById('hero-counts').innerHTML = pills.join('');
 
@@ -543,7 +547,7 @@
     if (isOwner) {
       acts.push(`<button class="btn btn-primary" onclick="window.location.href='deckbuilder.html?d=${currentDeck.short_code}'">✎ Edit in Workshop</button>`);
     } else {
-      acts.push(`<button class="btn btn-primary" onclick="openCopyConfirm()">✦ Bring to My Workshop</button>`);
+      acts.push(`<button class="btn btn-primary" onclick="openCopyConfirm()">✦ Bring to Workshop</button>`);
     }
     acts.push(`<button class="btn btn-ghost" onclick="copyDeckLink()">🔗 Copy Link</button>`);
     acts.push(`<button class="btn btn-ghost" onclick="history.length>1?history.back():window.location.href='archive.html'">← Back</button>`);
