@@ -723,7 +723,7 @@
     .md-deck-avatar { height: 170px; }
     .md-deck-actions .btn { padding: 9px 10px; font-size: 0.9rem; }
   }
-  .site-footer { border-top: 1px solid var(--border); margin-top: 40px; padding: 28px 20px 36px; background: var(--abyss); }
+  .site-footer { border-top: 1px solid var(--border); margin-top: 40px; padding: 28px 20px 36px; background: var(--abyss); scroll-margin-top: 76px; }
   .footer-inner { max-width: 760px; margin: 0 auto; text-align: center; }
   .footer-brand { font-family: 'Cinzel Decorative', serif; color: var(--gold); font-size: 1.1rem; letter-spacing: 0.04em; margin-bottom: 10px; }
   .footer-disclaimer { font-size: 0.78rem; line-height: 1.6; color: var(--rune); margin-bottom: 12px; }
@@ -768,7 +768,7 @@
         <a href="https://play.sorcerytcg.com/" target="_blank" rel="noopener" class="more-item">Play Network</a>
         <a href="https://sorcerytcg.com/" target="_blank" rel="noopener" class="more-item">Sorcery TCG</a>
         <a href="https://discord.gg/Ry84Dnd8X" target="_blank" rel="noopener" class="more-item more-discord">Join our Discord</a>
-        <a href="index.html#about-legal" class="more-item">About</a>
+        <a href="#about-legal" class="more-item" onclick="goToAbout(event)">About</a>
       </div>
     </div>
   </div>
@@ -791,7 +791,7 @@
   <a href="https://play.sorcerytcg.com/" target="_blank" class="header-link">Play Network</a>
   <a href="https://sorcerytcg.com/" target="_blank" class="header-link">Sorcery TCG</a>
   <a href="https://discord.gg/Ry84Dnd8X" target="_blank" rel="noopener" class="header-link mobile-discord">Join our Discord</a>
-    <a href="index.html#about-legal" class="header-link">About</a>
+    <a href="#about-legal" class="header-link" onclick="goToAbout(event)">About</a>
 </div>
 
 <div class="page">
@@ -2038,6 +2038,12 @@ document.getElementById('vm-grid').classList.toggle('active', viewMode === 'grid
 document.getElementById('vm-list').classList.toggle('active', viewMode === 'list');
 loadCards();
 
+// If we arrived from another page's "About" link (index.html#about-legal),
+// scroll to it once layout settles (the sticky header offset is handled by CSS scroll-margin).
+if (window.location.hash === '#about-legal') {
+  setTimeout(function(){ var el=document.getElementById('about-legal'); if(el) el.scrollIntoView({ behavior:'smooth', block:'start' }); }, 250);
+}
+
 // Auth: render bar, refresh session, re-render decks once known
 (async function initIndexAuth() {
   if (!window.CR) return;
@@ -2058,6 +2064,16 @@ function toggleMoreMenu(e){
   var open=d.classList.toggle('open');
   if(open){ setTimeout(function(){ document.addEventListener('click', moreMenuOutside); },0); }
   else { document.removeEventListener('click', moreMenuOutside); }
+}
+
+// Scroll to the About section reliably (works even when already on the homepage,
+// and accounts for the sticky header). Also closes any open nav menus.
+function goToAbout(e){
+  if(e) e.preventDefault();
+  var d=document.getElementById('more-dropdown'); if(d) d.classList.remove('open');
+  var mn=document.getElementById('mobile-nav'); if(mn) mn.classList.remove('open');
+  var el=document.getElementById('about-legal');
+  if(el){ el.scrollIntoView({ behavior:'smooth', block:'start' }); history.replaceState(null,'','#about-legal'); }
 }
 function moreMenuOutside(e){
   var d=document.getElementById('more-dropdown');
