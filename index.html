@@ -1107,7 +1107,13 @@ async function loadCards() {
     if (!raw.length) throw new Error('Empty card list');
     allCards = raw.map(card => {
       const g = card.guardian || {};
-      const firstSet = (card.sets || [])[0];
+      // Prefer the Beta printing (cheaper, widely available) over Alpha;
+      // fall back to Alpha, then to whatever set is listed first (Gothic, Arthurian, etc.).
+      const sets = card.sets || [];
+      const chosenSet = sets.find(s => /beta/i.test(s.name || ''))
+        || sets.find(s => /alpha/i.test(s.name || ''))
+        || sets[0];
+      const firstSet = chosenSet;
       const firstVariant = firstSet
         ? (firstSet.variants || []).find(v => v.finish === 'Standard' && v.product === 'Booster') || firstSet.variants[0]
         : null;

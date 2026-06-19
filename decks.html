@@ -518,11 +518,17 @@ async function loadCardElements() {
       const key = (c.name || '').toLowerCase();
       const els = Array.isArray(c.elements) ? c.elements : (c.elements ? String(c.elements).split(',') : []);
       emap[key] = els.map(e => String(e).trim().toLowerCase()).filter(Boolean);
-      // Find an image slug from the card's set variants
+      // Find an image slug — prefer the Beta printing, then Alpha, then first set.
       let slug = c.slug || null;
-      if (!slug && c.sets && c.sets[0] && c.sets[0].variants && c.sets[0].variants.length) {
-        const v = c.sets[0].variants.find(v => v.finish === 'Standard' && v.product === 'Booster') || c.sets[0].variants[0];
-        slug = v ? v.slug : null;
+      if (!slug && c.sets && c.sets.length) {
+        const sets = c.sets;
+        const chosen = sets.find(s => /beta/i.test(s.name || ''))
+          || sets.find(s => /alpha/i.test(s.name || ''))
+          || sets[0];
+        if (chosen && chosen.variants && chosen.variants.length) {
+          const v = chosen.variants.find(v => v.finish === 'Standard' && v.product === 'Booster') || chosen.variants[0];
+          slug = v ? v.slug : null;
+        }
       }
       smap[key] = slug;
     });

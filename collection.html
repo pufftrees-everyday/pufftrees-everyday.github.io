@@ -991,7 +991,11 @@ async function loadCards() {
     const raw = Array.isArray(data) ? data : (data.data || data.cards || []);
     allCards = raw.map(card => {
       const g = card.guardian || {};
-      const firstSet = (card.sets || [])[0];
+      // Prefer Beta printing over Alpha; fall back to Alpha, then first set listed.
+      const sets = card.sets || [];
+      const firstSet = sets.find(s => /beta/i.test(s.name || ''))
+        || sets.find(s => /alpha/i.test(s.name || ''))
+        || sets[0];
       const variants = firstSet ? (firstSet.variants || []) : [];
       const firstVariant = variants.find(v => v.finish === 'Standard' && v.product === 'Booster') || variants[0];
       const foilVariant = variants.find(v => v.finish === 'Foil') || variants.find(v => (v.finish||'').toLowerCase().includes('foil'));

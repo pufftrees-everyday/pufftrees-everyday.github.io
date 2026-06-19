@@ -322,9 +322,14 @@
       cards.forEach(c => {
         const key = (c.name || '').toLowerCase();
         const g = c.guardian || {};
+        // Prefer Beta printing over Alpha; fall back to Alpha, then first set listed.
+        const sets = c.sets || [];
+        const chosenSet = sets.find(s => /beta/i.test(s.name || ''))
+          || sets.find(s => /alpha/i.test(s.name || ''))
+          || sets[0];
         let slug = c.slug || null;
-        if (!slug && c.sets && c.sets[0] && c.sets[0].variants && c.sets[0].variants.length) {
-          const v = c.sets[0].variants.find(v => v.finish === 'Standard' && v.product === 'Booster') || c.sets[0].variants[0];
+        if (!slug && chosenSet && chosenSet.variants && chosenSet.variants.length) {
+          const v = chosenSet.variants.find(v => v.finish === 'Standard' && v.product === 'Booster') || chosenSet.variants[0];
           slug = v ? v.slug : null;
         }
         const els = Array.isArray(c.elements) ? c.elements : (c.elements ? String(c.elements).split(',') : []);
@@ -333,7 +338,7 @@
         cardMap[key] = {
           name: c.name, type: g.type || '', rarity: g.rarity || '', cost: g.cost,
           element: els.join(', '), slug, thresholds: g.thresholds || {},
-          set: (c.sets && c.sets[0]) ? (c.sets[0].name || '') : '',
+          set: chosenSet ? (chosenSet.name || '') : '',
           subTypes: c.subTypes || ''
         };
       });
