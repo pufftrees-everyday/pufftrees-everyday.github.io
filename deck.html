@@ -183,7 +183,35 @@
   .hover-preview { position: fixed; z-index: 1500; pointer-events: none; opacity: 0; transition: opacity 0.12s; display: none; }
   .hover-preview.show { opacity: 1; }
   .hover-preview img { width: 280px; max-width: 42vw; border-radius: 12px; border: 1px solid var(--border-strong); box-shadow: 0 12px 40px rgba(0,0,0,0.75); display: block; background: #0b0a0f; }
+  /* Site cards preview rotated landscape — box is sized landscape, image rotated to fill */
+  .hover-preview.is-site { width: 392px; max-width: 59vw; height: 280px; max-height: 42vw; display: flex; align-items: center; justify-content: center; }
+  .hover-preview.is-site img { width: 280px; max-width: 42vw; transform: rotate(90deg); transform-origin: center center; }
   @media (hover: hover) and (pointer: fine) { .hover-preview { display: block; } }
+
+  /* CARD DETAIL MODAL */
+  .card-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(11,10,15,0.85); z-index: 1200; align-items: center; justify-content: center; backdrop-filter: blur(4px); padding: 20px; }
+  .card-modal-overlay.open { display: flex; }
+  .card-modal { background: var(--dusk); border: 1px solid var(--border-strong); border-radius: 12px; display: grid; grid-template-columns: 460px 1fr; max-width: 860px; width: 100%; overflow: hidden; position: relative; box-shadow: 0 20px 60px rgba(0,0,0,0.7); max-height: 90vh; }
+  .card-modal.site-modal { grid-template-columns: 1fr; max-width: 760px; }
+  .card-modal-img { background: var(--twilight); display: flex; align-items: center; justify-content: center; padding: 22px; }
+  .card-modal-img img { width: 100%; max-width: 340px; aspect-ratio: 5/7; object-fit: contain; border-radius: 8px; display: block; }
+  .card-modal.site-modal .card-modal-img img { max-width: 460px; aspect-ratio: auto; transform: rotate(90deg); transform-origin: center center; }
+  .card-modal.site-modal .card-modal-img { min-height: 360px; }
+  .card-modal-info { padding: 24px 26px; overflow-y: auto; }
+  .card-modal-name { font-family: 'Cinzel Decorative', serif; font-size: 1.6rem; font-weight: 700; color: var(--parchment); line-height: 1.15; margin-bottom: 6px; }
+  .card-modal-type { font-family: 'Cinzel', serif; font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold); margin-bottom: 16px; }
+  .card-modal-stats { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+  .card-modal-stat { background: rgba(11,10,15,0.45); border: 1px solid var(--border); border-radius: 5px; padding: 5px 11px; font-size: 0.88rem; color: var(--shimmer); }
+  .card-modal-stat b { color: var(--rune); font-family: 'Cinzel', serif; font-size: 0.7rem; letter-spacing: 0.05em; text-transform: uppercase; margin-right: 3px; }
+  .card-modal-stat .th-row-icon { width: 14px; height: 14px; vertical-align: middle; }
+  .card-modal-text { font-family: 'Crimson Pro', serif; font-size: 1.02rem; line-height: 1.6; color: var(--parchment); white-space: pre-wrap; }
+  .card-modal-close { position: absolute; top: 12px; right: 12px; background: rgba(11,10,15,0.7); border: 1px solid var(--border-strong); color: var(--shimmer); width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 1rem; z-index: 3; }
+  .card-modal-close:hover { color: var(--ember); border-color: var(--ember); }
+  @media (max-width: 720px) {
+    .card-modal { grid-template-columns: 1fr; max-height: 92vh; overflow-y: auto; }
+    .card-modal-img img { max-width: 240px; }
+    .card-modal-name { font-size: 1.3rem; }
+  }
 
   /* confirm modal */
   .confirm-overlay { display: none; position: fixed; inset: 0; background: rgba(11,10,15,0.84); backdrop-filter: blur(4px); z-index: 1100; align-items: center; justify-content: center; padding: 20px; }
@@ -278,6 +306,22 @@
 <!-- LIGHTBOX -->
 <div class="lightbox" id="lightbox" onclick="this.classList.remove('open')"><img id="lightbox-img" src="" alt=""></div>
 
+<!-- CARD DETAIL MODAL (same idea as the card explorer) -->
+<div class="card-modal-overlay" id="card-modal-overlay" onclick="if(event.target===this)closeCardModal()">
+  <div class="card-modal" id="card-modal">
+    <div class="card-modal-img" id="card-modal-img-wrap">
+      <img id="card-modal-img" src="" alt="">
+    </div>
+    <div class="card-modal-info">
+      <div class="card-modal-name" id="card-modal-name"></div>
+      <div class="card-modal-type" id="card-modal-type"></div>
+      <div class="card-modal-stats" id="card-modal-stats"></div>
+      <div class="card-modal-text" id="card-modal-text"></div>
+    </div>
+    <button class="card-modal-close" onclick="closeCardModal()">✕</button>
+  </div>
+</div>
+
 <!-- HOVER PREVIEW -->
 <div class="hover-preview" id="hover-preview"><img id="hover-preview-img" src="" alt=""></div>
 
@@ -337,6 +381,7 @@
         cardSlugMap[key] = slug;
         cardMap[key] = {
           name: c.name, type: g.type || '', rarity: g.rarity || '', cost: g.cost,
+          attack: g.attack, defence: g.defence, life: g.life, rules_text: g.rulesText || '',
           element: els.join(', '), slug, thresholds: g.thresholds || {},
           set: chosenSet ? (chosenSet.name || '') : '',
           subTypes: c.subTypes || ''
@@ -576,17 +621,57 @@
   }
 
   // ── Lightbox ──
-  function zoom(name) {
-    document.getElementById('lightbox-img').src = imgUrl(name);
-    document.getElementById('lightbox').classList.add('open');
+  // Open the full card-detail modal (same info as the card explorer)
+  function zoom(name) { openCardModal(name); }
+
+  const THRESHOLD_LABEL = { air:'Air', earth:'Earth', fire:'Fire', water:'Water' };
+  function openCardModal(name) {
+    const c = cardMap[(name||'').toLowerCase()];
     hidePreview();
+    const overlay = document.getElementById('card-modal-overlay');
+    const modal = document.getElementById('card-modal');
+    const imgWrap = document.getElementById('card-modal-img-wrap');
+    const img = document.getElementById('card-modal-img');
+    img.src = imgUrl(name);
+    img.alt = name;
+    // Fall back to a bare image if we have no card data
+    if (!c) {
+      modal.className = 'card-modal';
+      document.getElementById('card-modal-name').textContent = name;
+      document.getElementById('card-modal-type').textContent = '';
+      document.getElementById('card-modal-stats').innerHTML = '';
+      document.getElementById('card-modal-text').textContent = '';
+      overlay.classList.add('open');
+      return;
+    }
+    const site = (c.type || '').toLowerCase() === 'site';
+    modal.className = site ? 'card-modal site-modal' : 'card-modal';
+    document.getElementById('card-modal-name').textContent = c.name;
+    document.getElementById('card-modal-type').textContent = [c.type, c.set].filter(Boolean).join(' · ');
+    document.getElementById('card-modal-text').textContent = c.rules_text || '';
+    const stats = [];
+    if (c.cost != null) stats.push(['Cost', c.cost]);
+    if (c.attack != null) stats.push(['Attack', c.attack]);
+    if (c.defence != null) stats.push(['Defence', c.defence]);
+    if (c.life != null) stats.push(['Life', c.life]);
+    if (c.rarity) stats.push(['Rarity', c.rarity]);
+    if (c.element) stats.push(['Element', c.element]);
+    if (c.subTypes) stats.push(['Subtype', c.subTypes]);
+    // Threshold shown with the element symbols
+    const thSyms = thresholdSymbols(name, 'th-row-icon').join('');
+    let statHtml = stats.map(([l,v]) => `<div class="card-modal-stat"><b>${l}</b>${v}</div>`).join('');
+    if (thSyms) statHtml += `<div class="card-modal-stat"><b>Threshold</b>${thSyms}</div>`;
+    document.getElementById('card-modal-stats').innerHTML = statHtml;
+    overlay.classList.add('open');
   }
+  function closeCardModal() { document.getElementById('card-modal-overlay').classList.remove('open'); }
 
   // ── Hover preview (desktop) ──
   let previewEl, previewImg, previewVisible = false;
   function showPreview(name, x, y) {
     if (!previewEl) { previewEl = document.getElementById('hover-preview'); previewImg = document.getElementById('hover-preview-img'); }
     if (previewImg.dataset.for !== name) { previewImg.src = imgUrl(name); previewImg.dataset.for = name; }
+    previewEl.classList.toggle('is-site', isSite(name));
     positionPreview(x, y);
     previewEl.classList.add('show');
     previewVisible = true;
@@ -747,7 +832,7 @@
   function escAttr(s){ return String(s==null?'':s).replace(/'/g,"\\'").replace(/"/g,'&quot;'); }
   function toast(msg){ const el=document.getElementById('toast'); el.textContent=msg; el.classList.add('show'); clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove('show'),2400); }
 
-  document.addEventListener('keydown', e => { if (e.key==='Escape'){ document.getElementById('lightbox').classList.remove('open'); closeCopyConfirm(); } });
+  document.addEventListener('keydown', e => { if (e.key==='Escape'){ document.getElementById('lightbox').classList.remove('open'); closeCopyConfirm(); closeCardModal(); } });
 
   // ── INIT ──
   (async function init() {
