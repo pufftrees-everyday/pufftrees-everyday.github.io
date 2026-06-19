@@ -3269,26 +3269,49 @@ function runImport() {
   if (!text) return;
   const lines = text.split('\n').map(l=>l.trim()).filter(Boolean);
   const newDeck = { avatar:{}, atlas:{}, spellbook:{}, collection:{} };
-  let matched=0, skipped=0;
-  const sectionRe = /^(Avatar|Artifact|Minion|Magic|Aura|Site|Spell|Atlas|Spellbook)\s*(\(\d+\))?/i;
+  let matched=0, skipped=0, collFull=0;
+  // Section headers that appear in a pasted decklist. The Maybeboard/Sideboard
+  // header flips us into "collection" mode so those cards land in the Deck Collection.
+  const mainSectionRe = /^(Avatar|Artifact|Minion|Magic|Aura|Site|Spell|Atlas|Spellbook)\s*(\(\d+\))?\s*$/i;
+  const sideboardRe = /^(Maybeboard|Sideboard|Side ?Deck|Deck Collection|Collection)\s*(\(\d+\))?\s*$/i;
+  let inCollection = false;
+  const collTotal = () => Object.values(newDeck.collection).reduce((s,e)=>s+(e.qty||0),0);
+
   for (const line of lines) {
-    if (sectionRe.test(line) || line.startsWith('//')) continue;
+    if (sideboardRe.test(line)) { inCollection = true; continue; }   // entering the sideboard
+    if (mainSectionRe.test(line)) { inCollection = false; continue; } // back to a main section
+    if (line.startsWith('//')) continue;
     const m = line.match(/^(\d+)[xX]?\s*(.+)/);
     if (!m) continue;
     const qty = parseInt(m[1]);
     const name = m[2].trim();
     if (!name || /^\d+$/.test(name)) continue;
     const card = allCards.find(c => c.name.toLowerCase() === name.toLowerCase());
-    if (card) {
-      const section = getDeckSection(card);
-      const key = String(card.id);
-      const rarity = card.rarity || 'Ordinary';
-      const limit = RARITY_LIMITS[rarity] || 4;
-      const actualQty = section === 'avatar' ? 1 : Math.min(qty, limit);
-      if (newDeck[section][key]) { newDeck[section][key].qty = Math.min(newDeck[section][key].qty + actualQty, limit); }
-      else { newDeck[section][key] = { card, qty: actualQty }; }
+    if (!card) { skipped++; console.warn('Not found:', name); continue; }
+
+    const rarity = card.rarity || 'Ordinary';
+    const limit = RARITY_LIMITS[rarity] || 4;
+    const key = String(card.id);
+
+    // Avatars never go to the collection; everything else can.
+    if (inCollection && card.type !== 'Avatar') {
+      const room = DECK_COLLECTION_LIMIT - collTotal();
+      if (room <= 0) { collFull += qty; continue; }
+      const existing = newDeck.collection[key] ? newDeck.collection[key].qty : 0;
+      const want = Math.min(qty, limit - existing, room);
+      if (want <= 0) { collFull += qty; continue; }
+      if (newDeck.collection[key]) newDeck.collection[key].qty += want;
+      else newDeck.collection[key] = { card, qty: want };
       matched++;
-    } else { skipped++; console.warn('Not found:', name); }
+      continue;
+    }
+
+    // Main deck: route by card type.
+    const section = getDeckSection(card);
+    const actualQty = section === 'avatar' ? 1 : Math.min(qty, limit);
+    if (newDeck[section][key]) { newDeck[section][key].qty = Math.min(newDeck[section][key].qty + actualQty, limit); }
+    else { newDeck[section][key] = { card, qty: actualQty }; }
+    matched++;
   }
   if (matched === 0) { toast('No cards matched — check format'); return; }
   deck = newDeck;
@@ -3299,7 +3322,12 @@ function runImport() {
   renderCardGrid();
   renderVisibilityBar();
   closeImport();
-  toast(`Imported ${matched} cards${skipped ? ` (${skipped} not found)` : ''}`);
+  let msg = `Imported ${matched} cards`;
+  const extras = [];
+  if (skipped) extras.push(`${skipped} not found`);
+  if (collFull) extras.push(`${collFull} over Collection limit`);
+  if (extras.length) msg += ` (${extras.join(', ')})`;
+  toast(msg);
 }
 
 // ── DRAG AND DROP ──
