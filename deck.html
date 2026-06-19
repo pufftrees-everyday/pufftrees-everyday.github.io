@@ -554,8 +554,8 @@
   function renderSections() {
     const dd = currentDeck.deck_data || {};
     let html = '';
-    // Avatar
-    html += renderSectionBlock('Avatar', dd.a || []);
+    // Avatar is already shown as the hero image + name at the top, so we don't
+    // repeat it as a section here. (The .txt export builds it separately from dd.a.)
     // Atlas
     html += renderSectionBlock('Atlas', dd.t || [], { limit: '30+ sites' });
     // Spellbook
