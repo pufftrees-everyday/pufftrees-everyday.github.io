@@ -152,7 +152,7 @@
   #sec-collection.active { background: var(--sage); color: #fff; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.15), 0 0 12px rgba(90,138,106,0.4); }
   /* Wants active = ember */
   #sec-wants.active { background: var(--ember); color: #fff; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.15), 0 0 12px rgba(196,97,74,0.4); }
-  /* Trade Binders active = arcane purple */
+  /* Trades active = arcane purple */
   #sec-trade.active { background: var(--arcane); color: #1a1410; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2), 0 0 12px rgba(155,135,212,0.45); }
   /* When a vault section (not search) is active, give the whole switcher a lifted look */
   body.in-vault-section .section-switcher { box-shadow: 0 0 0 1px var(--border-strong); }
@@ -559,7 +559,7 @@
   <div class="gallery-head">
     <div>
       <div class="gallery-title"><img src="icon-192.png" alt="">My Vault</div>
-      <div class="gallery-sub">Your personal hoard — track every card you own, build Wants lists for cards you're hunting, and set aside Trade Binders of cards you're willing to part with. Use Card Search to browse the full Realm and add cards to any section.</div>
+      <div class="gallery-sub">Your personal hoard — track every card you own in your <b>Vault</b>, build <b>Wants</b> lists for cards you're hunting, and list cards for <b>Trades</b>. Marking a Vault card for trade moves it into Trades. Use Card Search to browse the full Realm and add cards to any section.</div>
     </div>
   </div>
 
@@ -573,15 +573,15 @@
   <!-- COLLECTION BAR -->
   <div class="collection-bar">
     <div class="collection-stats">
-      <div class="cstat have-stat">Collection: <b id="stat-have">0</b><span id="stat-have-value" style="color:var(--sage);font-size:0.78rem;"></span></div>
+      <div class="cstat have-stat">Vault: <b id="stat-have">0</b><span id="stat-have-value" style="color:var(--sage);font-size:0.78rem;"></span></div>
+      <div class="cstat trade-stat">Trades: <b id="stat-trade">0</b><span id="stat-trade-value" style="color:var(--arcane);font-size:0.78rem;"></span></div>
       <div class="cstat want-stat">Want: <b id="stat-want">0</b><span id="stat-want-value" style="color:var(--ember);font-size:0.78rem;"></span></div>
-      <div class="cstat trade-stat">Trade: <b id="stat-trade">0</b></div>
     </div>
     <div class="view-toggle section-switcher">
       <button class="view-btn active" id="sec-search" onclick="setView('search')">Card Search</button>
-      <button class="view-btn" id="sec-collection" onclick="setView('all')">Collection</button>
+      <button class="view-btn" id="sec-collection" onclick="setView('all')">Vault</button>
+      <button class="view-btn" id="sec-trade" onclick="setView('trade')">Trades</button>
       <button class="view-btn" id="sec-wants" onclick="setView('want')">Wants</button>
-      <button class="view-btn" id="sec-trade" onclick="setView('trade')">Trade Binders</button>
     </div>
     <div class="collection-actions">
       <button class="btn btn-ghost" id="export-btn" onclick="exportCurrentSection()">⬇ Export</button>
@@ -741,7 +741,7 @@
     </div>
   </div>
 
-  <!-- Section statistics (Collection / Wants / Trade Binders) -->
+  <!-- Section statistics (Vault / Trades / Wants) -->
   <div id="section-stats" class="section-stats" style="display:none;"></div>
 
   <!-- Card toolbar: sits right above the card grid -->
@@ -859,9 +859,21 @@ function entryEmpty(e) {
 function toggleFlag(cardId, flag) {
   const col = getCollection();
   if (!col[cardId]) col[cardId] = { have: 0, want: 0 };
-  const field = finishField(flag);
-  col[cardId][field] = col[cardId][field] > 0 ? 0 : 1;
-  if (entryEmpty(col[cardId])) delete col[cardId];
+  const e = col[cardId];
+  // Resolve the storage fields for the current finish (standard vs foil)
+  const haveF = finishField('have'), tradeF = finishField('trade'), wantF = finishField('want');
+  if (flag === 'want') {
+    // Wants are independent of ownership
+    e[wantF] = (e[wantF] || 0) > 0 ? 0 : 1;
+  } else if (flag === 'have') {
+    // Vault and Trades are mutually exclusive buckets of owned cards
+    if ((e[haveF] || 0) > 0) e[haveF] = 0;            // remove from Vault entirely
+    else { e[haveF] = (e[tradeF] || 0) > 0 ? e[tradeF] : 1; e[tradeF] = 0; } // pull back from Trades, or add new
+  } else if (flag === 'trade') {
+    if ((e[tradeF] || 0) > 0) { e[haveF] = (e[haveF] || 0) + e[tradeF]; e[tradeF] = 0; } // un-trade → back to Vault
+    else { e[tradeF] = (e[haveF] || 0) > 0 ? e[haveF] : 1; e[haveF] = 0; }                // move out of Vault → Trades
+  }
+  if (entryEmpty(e)) delete col[cardId];
   saveCollection(col);
   updateStats();
   if (viewMode === 'list') { updateCardRow(cardId, col[cardId]); }
@@ -869,7 +881,9 @@ function toggleFlag(cardId, flag) {
     const thumb = document.querySelector(`.card-thumb[data-id="${CSS.escape(cardId)}"]`);
     if (thumb) updateCardThumbFlags(thumb, cardId, col[cardId]);
   }
-  if (currentView !== 'all') filterCards();
+  // Re-filter whenever we're in a section view — a card can move between
+  // Vault/Trades/Wants (or out entirely), so the list must refresh.
+  if (currentView !== 'search') filterCards();
 }
 
 function changeQty(cardId, flag, delta) {
@@ -885,7 +899,9 @@ function changeQty(cardId, flag, delta) {
     const thumb = document.querySelector(`.card-thumb[data-id="${CSS.escape(cardId)}"]`);
     if (thumb) updateCardThumbFlags(thumb, cardId, col[cardId]);
   }
-  if (currentView !== 'all') filterCards();
+  // Re-filter whenever we're in a section view — a card can move between
+  // Vault/Trades/Wants (or out entirely), so the list must refresh.
+  if (currentView !== 'search') filterCards();
 }
 
 // Re-render a single list row in place after have/want changes
@@ -930,9 +946,9 @@ function updateStats() {
   const col = getCollection();
   const entries = Object.entries(col);
   // Standard totals
-  let stdHaveQty = 0, stdWantQty = 0, stdHaveVal = 0, stdWantVal = 0, stdTradeQty = 0;
+  let stdHaveQty = 0, stdWantQty = 0, stdHaveVal = 0, stdWantVal = 0, stdTradeQty = 0, stdTradeVal = 0;
   // Foil totals
-  let foilHaveQty = 0, foilWantQty = 0, foilHaveVal = 0, foilWantVal = 0, foilTradeQty = 0;
+  let foilHaveQty = 0, foilWantQty = 0, foilHaveVal = 0, foilWantVal = 0, foilTradeQty = 0, foilTradeVal = 0;
   for (const [name, v] of entries) {
     const sp = prices[name]?.market || 0;
     const fp = foilPrices[name]?.market || 0;
@@ -941,11 +957,13 @@ function updateStats() {
     stdTradeQty += v.trade || 0;
     stdHaveVal += sp * (v.have || 0);
     stdWantVal += sp * (v.want || 0);
+    stdTradeVal += sp * (v.trade || 0);
     foilHaveQty += v.haveFoil || 0;
     foilWantQty += v.wantFoil || 0;
     foilTradeQty += v.tradeFoil || 0;
     foilHaveVal += fp * (v.haveFoil || 0);
     foilWantVal += fp * (v.wantFoil || 0);
+    foilTradeVal += fp * (v.tradeFoil || 0);
   }
 
   // Show the current finish's have/want/trade in the main pills
@@ -956,10 +974,13 @@ function updateStats() {
   if (tradeStatEl) tradeStatEl.textContent = isFoil ? foilTradeQty : stdTradeQty;
   const haveVal = isFoil ? foilHaveVal : stdHaveVal;
   const wantVal = isFoil ? foilWantVal : stdWantVal;
+  const tradeVal = isFoil ? foilTradeVal : stdTradeVal;
   const haveValEl = document.getElementById('stat-have-value');
   const wantValEl = document.getElementById('stat-want-value');
+  const tradeValEl = document.getElementById('stat-trade-value');
   if (haveValEl) haveValEl.textContent = haveVal > 0 ? ` ($${haveVal.toFixed(2)})` : '';
   if (wantValEl) wantValEl.textContent = wantVal > 0 ? ` ($${wantVal.toFixed(2)})` : '';
+  if (tradeValEl) tradeValEl.textContent = tradeVal > 0 ? ` ($${tradeVal.toFixed(2)})` : '';
 
   // Combined value summary (both finishes) in a dedicated pill
   let totalEl = document.getElementById('stat-total-value');
@@ -971,17 +992,19 @@ function updateStats() {
     const statsBar = document.querySelector('.collection-stats');
     if (statsBar) statsBar.appendChild(totalEl);
   }
-  const totalHaveVal = stdHaveVal + foilHaveVal;
+  const vaultVal = stdHaveVal + foilHaveVal;
+  const tradesVal = stdTradeVal + foilTradeVal;
+  const totalCollectionVal = vaultVal + tradesVal;
   if (totalEl) {
     const priceNote = priceDate
       ? ` <span style="color:var(--rune);font-size:0.72rem;font-style:italic;">· TCG market, ${priceDate}</span>`
       : ` <span style="color:var(--rune);font-size:0.72rem;font-style:italic;">· TCG market price</span>`;
-    totalEl.innerHTML = totalHaveVal > 0
-      ? `Collection value: <b style="color:var(--gold)">$${totalHaveVal.toFixed(2)}</b>` +
-        (foilHaveVal > 0 ? ` <span style="color:var(--rune);font-size:0.74rem;">(std $${stdHaveVal.toFixed(2)} · foil $${foilHaveVal.toFixed(2)})</span>` : '') +
+    totalEl.innerHTML = totalCollectionVal > 0
+      ? `Total Collection Value: <b style="color:var(--gold)">$${totalCollectionVal.toFixed(2)}</b>` +
+        (tradesVal > 0 ? ` <span style="color:var(--rune);font-size:0.74rem;">(Vault $${vaultVal.toFixed(2)} · Trades $${tradesVal.toFixed(2)})</span>` : '') +
         priceNote
       : '';
-    totalEl.style.display = totalHaveVal > 0 ? '' : 'none';
+    totalEl.style.display = totalCollectionVal > 0 ? '' : 'none';
   }
   // Keep the section stats panel live as cards are added/removed
   if (typeof currentView !== 'undefined' && currentView !== 'search') {
@@ -1110,9 +1133,9 @@ function emptyStateMessage() {
     return '<div class="status" style="padding:48px 0">No cards match your search.</div>';
   }
   const msgs = {
-    all:   { icon: '📚', title: 'Your Collection is empty', body: 'Head to <b>Card Search</b> and tap <span style="color:var(--sage)">✓ Have</span> on cards you own to add them here.' },
+    all:   { icon: '📚', title: 'Your Vault is empty', body: 'Head to <b>Card Search</b> and tap <span style="color:var(--sage)">✓ Have</span> on cards you own to add them to your Vault.' },
     want:  { icon: '🔍', title: 'Your Wants list is empty', body: 'In <b>Card Search</b>, tap <span style="color:var(--ember)">♡ Want</span> on cards you’re hunting for and they’ll appear here.' },
-    trade: { icon: '⇄', title: 'Your Trade Binders are empty', body: 'In <b>Card Search</b>, tap <span style="color:var(--arcane)">⇄ Trade</span> on cards you’re willing to trade away.' },
+    trade: { icon: '⇄', title: 'Your Trades are empty', body: 'Tap <span style="color:var(--arcane)">⇄ Trade</span> on a card in <b>Card Search</b> or your <b>Vault</b> to list it for trade. Trading a Vault card moves it here.' },
   };
   const m = msgs[currentView];
   if (!m) return '<div class="status" style="padding:48px 0">No cards to show.</div>';
@@ -1264,7 +1287,7 @@ function setView(view) {
   // Update export button label to match the section
   const exportBtn = document.getElementById('export-btn');
   if (exportBtn) {
-    const label = view === 'want' ? '⬇ Export Wants' : view === 'trade' ? '⬇ Export Trade Binders' : '⬇ Export Collection';
+    const label = view === 'want' ? '⬇ Export Wants' : view === 'trade' ? '⬇ Export Trades' : '⬇ Export Vault';
     exportBtn.textContent = label;
   }
   // Card Search hides the stats panel; the three vault sections show it
@@ -1274,7 +1297,7 @@ function setView(view) {
   filterCards();
 }
 
-// Build a statistics panel for the active vault section (Collection/Wants/Trade Binders)
+// Build a statistics panel for the active vault section (Vault/Trades/Wants)
 function renderSectionStats(view) {
   const panel = document.getElementById('section-stats');
   if (!panel) return;
@@ -1299,7 +1322,7 @@ function renderSectionStats(view) {
   });
   const totalCards = stdCount + foilCount;
 
-  const sectionName = view === 'want' ? 'Wants' : view === 'trade' ? 'Trade Binders' : 'Collection';
+  const sectionName = view === 'want' ? 'Wants' : view === 'trade' ? 'Trades' : 'Vault';
   const accent = view === 'want' ? 'var(--ember)' : view === 'trade' ? 'var(--arcane)' : 'var(--sage)';
 
   if (totalCards === 0) { panel.style.display = 'none'; panel.innerHTML = ''; return; }
@@ -1528,7 +1551,7 @@ function exportList(flag, filename, title) {
 
 function exportWantList() { exportList('want', 'want_list.txt', 'Sorcery TCG — Want List'); }
 function exportHaveList() { exportList('have', 'have_list.txt', 'Sorcery TCG — Have List'); }
-function exportTradeList() { exportList('trade', 'trade_binder.txt', 'Sorcery TCG — Trade Binders'); }
+function exportTradeList() { exportList('trade', 'trade_list.txt', 'Sorcery TCG — Trades'); }
 // Export whichever section the user is currently viewing
 function exportCurrentSection() {
   if (currentView === 'want') return exportWantList();

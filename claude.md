@@ -63,6 +63,11 @@ then variant where `finish==='Standard' && product==='Booster'`. Example real sl
 ## Pages (all in repo root)
 - **index.html** — Card Explorer homepage. 4 views (Text/Details/Card/Large), threshold toggle.
 - **collection.html** — "My Vault." Foil/Standard toggle + prices (only page with prices via prices.json).
+  Sections (in order): Card Search, **Vault** (owned), **Trades**, **Wants**.
+  Data: `collection[cardId] = {have,want,trade,haveFoil,wantFoil,tradeFoil}` (cloud + localStorage `grimoire_collection`).
+  Vault = `have`; Trades = `trade`. **Vault and Trades are mutually exclusive** per card: flagging
+  Trade moves the card (and its qty) out of the Vault into Trades; un-flagging returns it. `want` is
+  independent. "Total Collection Value" = Vault value + Trades value (both finishes).
 - **archive.html** — "The Archive" public deck gallery.
 - **decks.html** — "My Workshop" (user's own decks).
 - **deckbuilder.html** — deck building interface.
