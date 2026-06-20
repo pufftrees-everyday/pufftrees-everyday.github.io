@@ -162,6 +162,8 @@
   .comment-reply-box { margin: 10px 0 2px; }
   .comment-body strong { color: var(--shimmer); font-weight: 700; }
   .comment-body em { font-style: italic; }
+  .comment-body del { opacity: 0.7; }
+  .comment-body blockquote.comment-quote { margin: 7px 0; padding: 5px 13px; border-left: 3px solid var(--rune); background: rgba(155,135,212,0.07); border-radius: 0 5px 5px 0; color: var(--shimmer); font-style: italic; }
   /* Comment formatting toolbar */
   .comment-toolbar { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
   .ctb-btn { width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center; background: var(--dusk); border: 1px solid var(--border-strong); border-radius: 6px; color: var(--shimmer); font-family: 'Crimson Pro', serif; font-size: 0.95rem; cursor: pointer; transition: all 0.15s; padding: 0; }
@@ -1450,21 +1452,47 @@
   }
 
   // ── Comment formatting (basic markdown-lite + emoji) ──
-  // Render: escape first, then apply a safe subset — **bold**, _italic_.
+  // Render: escape first, then apply a safe subset — **bold**, _italic_,
+  // ~~strike~~, and line-based "> " quotes.
   function formatCommentBody(raw) {
-    let s = escHtml(raw);
-    s = s.replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>');
-    s = s.replace(/_([^_\n]+)_/g, '<em>$1</em>');
-    return s;
+    const inline = t => t
+      .replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>')
+      .replace(/~~([^~\n]+)~~/g, '<del>$1</del>')
+      .replace(/_([^_\n]+)_/g, '<em>$1</em>');
+    const lines = escHtml(raw).split('\n');
+    const parts = [];
+    let textRun = [], quoteRun = [];
+    const flushText = () => { if (textRun.length) { parts.push(inline(textRun.join('\n'))); textRun = []; } };
+    const flushQuote = () => { if (quoteRun.length) { parts.push('<blockquote class="comment-quote">' + quoteRun.map(inline).join('<br>') + '</blockquote>'); quoteRun = []; } };
+    for (const line of lines) {
+      const qm = line.match(/^&gt;\s?(.*)$/); // "> " becomes "&gt; " after escaping
+      if (qm) { flushText(); quoteRun.push(qm[1]); }
+      else { flushQuote(); textRun.push(line); }
+    }
+    flushText(); flushQuote();
+    return parts.join('');
   }
   // onmousedown preventDefault keeps the textarea selection while clicking a tool
   function commentToolbarHtml(taId) {
     return `<div class="comment-toolbar">
       <button type="button" class="ctb-btn" title="Bold (**text**)" onmousedown="event.preventDefault()" onclick="wrapCommentText('${taId}','**','**')"><b>B</b></button>
       <button type="button" class="ctb-btn" title="Italic (_text_)" onmousedown="event.preventDefault()" onclick="wrapCommentText('${taId}','_','_')"><i>I</i></button>
+      <button type="button" class="ctb-btn" title="Strikethrough (~~text~~)" onmousedown="event.preventDefault()" onclick="wrapCommentText('${taId}','~~','~~')"><s>S</s></button>
+      <button type="button" class="ctb-btn" title="Quote" onmousedown="event.preventDefault()" onclick="quoteCommentLines('${taId}')">❝</button>
       <button type="button" class="ctb-btn ctb-emoji" title="Emoji" onmousedown="event.preventDefault()" onclick="toggleEmojiPicker(event,'${taId}')">😀</button>
-      <span class="ctb-hint">**bold**, _italic_</span>
+      <span class="ctb-hint">**bold**, _italic_, ~~strike~~</span>
     </div>`;
+  }
+  // Prefix each selected line (or the current line) with "> " for a quote block
+  function quoteCommentLines(taId) {
+    const ta = document.getElementById(taId); if (!ta) return;
+    const val = ta.value;
+    const ls = val.lastIndexOf('\n', ta.selectionStart - 1) + 1;
+    let le = val.indexOf('\n', ta.selectionEnd); if (le === -1) le = val.length;
+    const quoted = val.slice(ls, le).split('\n').map(l => l.startsWith('> ') ? l : '> ' + l).join('\n');
+    ta.value = val.slice(0, ls) + quoted + val.slice(le);
+    ta.focus();
+    ta.setSelectionRange(ls, ls + quoted.length);
   }
   function wrapCommentText(taId, pre, post) {
     const ta = document.getElementById(taId); if (!ta) return;
