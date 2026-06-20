@@ -113,8 +113,9 @@
           options: { data: { display_name: displayName }, emailRedirectTo: window.location.origin + '/archive.html' }
         });
         if (error) throw error;
-        CR._showMsg('Account created! Check your email to confirm, then sign in.', 'success');
-        setTimeout(() => CR.setAuthMode('login'), 400);
+        CR.closeAuth();
+        CR.setAuthMode('login');
+        CR.toast('Account created — check your email to confirm and step into the realm.');
       } else {
         const { error } = await supa.auth.signInWithPassword({ email, password });
         if (error) throw error;
@@ -234,6 +235,41 @@
       if (error) throw error;
       return data || [];
     } catch (e) { console.warn('fetchCloudDecks', e); return []; }
+  };
+
+  // ── TOAST (self-contained, fixed-position, brand-styled) ──
+  CR.toast = function (text, opts) {
+    opts = opts || {};
+    if (!document.getElementById('cr-toast-styles')) {
+      const st = document.createElement('style');
+      st.id = 'cr-toast-styles';
+      st.textContent = `
+        .cr-toast { position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%) translateY(12px); z-index: 600; display: flex; align-items: center; gap: 11px; max-width: min(420px, 92vw); background: var(--dusk, #1a1826); border: 1px solid var(--gold, #c8a96e); border-radius: 10px; box-shadow: 0 10px 34px rgba(0,0,0,0.55), 0 0 22px rgba(200,169,110,0.18); padding: 13px 18px; opacity: 0; pointer-events: none; transition: opacity 0.28s ease, transform 0.28s ease; cursor: pointer; }
+        .cr-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
+        .cr-toast img { width: 22px; height: 22px; flex-shrink: 0; }
+        .cr-toast span { font-family: 'Crimson Pro', serif; font-size: 0.97rem; line-height: 1.4; color: var(--parchment, #e8e0cc); }
+        @media (prefers-reduced-motion: reduce) { .cr-toast { transition: opacity 0.28s ease; transform: translateX(-50%); } .cr-toast.show { transform: translateX(-50%); } }
+      `;
+      document.head.appendChild(st);
+    }
+    let t = document.getElementById('cr-toast');
+    if (!t) {
+      t = document.createElement('div');
+      t.id = 'cr-toast';
+      t.className = 'cr-toast';
+      t.innerHTML = '<img src="moon-glow.png" alt=""><span></span>';
+      t.addEventListener('click', CR._hideToast);
+      document.body.appendChild(t);
+    }
+    t.querySelector('span').textContent = text;
+    void t.offsetWidth; // reflow so the transition runs
+    t.classList.add('show');
+    clearTimeout(CR._toastTimer);
+    CR._toastTimer = setTimeout(CR._hideToast, opts.duration || 5500);
+  };
+  CR._hideToast = function () {
+    const t = document.getElementById('cr-toast');
+    if (t) t.classList.remove('show');
   };
 
   window.CR = CR;
