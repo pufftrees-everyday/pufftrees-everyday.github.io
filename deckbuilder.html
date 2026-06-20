@@ -1514,9 +1514,9 @@ async function loadCards() {
     if (sharedCode) await loadSharedDeck(sharedCode, forceView);
     else if (deckId) loadDeck(deckId);
     else {
+      // Fresh New Deck → don't auto-open the avatar picker; the blank avatar
+      // section shows a "Choose your Avatar" link so people can open it when ready.
       renderDeck();
-      // Fresh New Deck → prompt for an avatar first
-      openAvatarPicker();
     }
   } catch(e) {
     document.getElementById('card-grid').innerHTML = `<div class="status">Could not load cards.json.<br><small>${e.message}</small></div>`;
