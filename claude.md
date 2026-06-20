@@ -88,6 +88,12 @@ then variant where `finish==='Standard' && product==='Booster'`. Example real sl
 - **avatar.html** — avatar detail (?a=Name). Uses real rulesText only (no copyrighted flavor).
 - **profile.html** — user profile (?u=username). Bio, public decks, total likes.
 - **tracker.html** — life tracker PWA (service worker tracker-sw.js, cache versioned).
+- **rulebook.html** — searchable Sorcery rulebook. Loads **rulebook-content.json**
+  (`{title,released,pageCount, toc:[{group,items:[titleStr]}], sections:[{id,title,page,text}],
+  glossary:[{id,term,definition,page}], quickReference:[{id,term,definition,page}]}`). Features: live
+  search (sections + glossary, highlights matches), clickable TOC sidebar (collapsible on mobile),
+  page-number jump (3–37), per-section page badges, \n→paragraphs. The site's "Rulebook" nav link
+  (More menu + mobile nav on all pages) points here now, not the old Drive PDF.
 - **videos.html**, **gallery.html** — supporting pages.
 - **set-inspector.html** — diagnostic, unlinked (can be deleted).
 - **cr-auth.js** — shared auth (window.CR). Bump `?v=N` when edited.
