@@ -78,8 +78,9 @@
   .deck-hero-avatar-name { font-family: 'Crimson Pro', serif; font-size: 1.05rem; color: var(--gold); margin-bottom: 16px; }
   .hero-avatar-link { color: var(--gold); text-decoration: none; border-bottom: 1px dotted rgba(200,169,110,0.5); transition: color 0.15s, border-color 0.15s; }
   .hero-avatar-link:hover { color: var(--shimmer); border-bottom-color: var(--shimmer); }
-  .hero-author-link { text-decoration: none; color: var(--arcane); transition: color 0.15s; }
+  .hero-author-link { text-decoration: none; color: var(--arcane); transition: color 0.15s; display: inline-flex; align-items: center; gap: 6px; vertical-align: middle; }
   .hero-author-link:hover { color: var(--shimmer); text-decoration: underline; }
+  .hero-author-avatar { width: 22px; height: 22px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border-strong); flex-shrink: 0; }
   /* Like button */
   .like-btn { display: inline-flex; align-items: center; gap: 7px; background: var(--dusk); border: 1px solid var(--border-strong); color: var(--shimmer); font-family: 'Cinzel', serif; font-size: 0.78rem; letter-spacing: 0.04em; padding: 9px 16px; border-radius: 8px; cursor: pointer; transition: all 0.15s; }
   .like-btn:hover { border-color: var(--ember); color: var(--ember); }
@@ -166,8 +167,9 @@
   .comment { background: var(--abyss); border: 1px solid var(--border); border-radius: 8px; padding: 13px 15px; }
   .comment.is-reply { margin-left: 28px; background: rgba(17,16,24,0.6); border-left: 2px solid var(--mist); }
   .comment-top { display: flex; align-items: center; gap: 9px; margin-bottom: 6px; flex-wrap: wrap; }
-  .comment-author { font-family: 'Cinzel', serif; font-size: 0.85rem; font-weight: 700; color: var(--arcane); text-decoration: none; }
+  .comment-author { font-family: 'Cinzel', serif; font-size: 0.85rem; font-weight: 700; color: var(--arcane); text-decoration: none; display: inline-flex; align-items: center; gap: 5px; vertical-align: middle; }
   .comment-author:hover { color: var(--shimmer); }
+  .comment-author-avatar { width: 18px; height: 18px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border-strong); flex-shrink: 0; }
   .comment-author-badge { font-family: 'Cinzel', serif; font-size: 0.56rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #1a1410; background: var(--gold); padding: 2px 7px; border-radius: 9px; }
   .comment-time { font-size: 0.78rem; color: var(--rune); font-style: italic; }
   .comment-body { font-family: 'Crimson Pro', serif; font-size: 1.02rem; line-height: 1.6; color: var(--parchment); white-space: pre-wrap; word-wrap: break-word; }
@@ -1049,8 +1051,9 @@
     }
     document.getElementById('hero-name').textContent = currentDeck.name || 'Untitled Deck';
     const author = currentDeck._author || '';
+    const authorAv = currentDeck._authorAvatar ? `<img class="hero-author-avatar" src="${escHtml(currentDeck._authorAvatar)}" alt="" onerror="this.style.display='none'">` : '';
     document.getElementById('hero-author').innerHTML = author
-      ? `by <a href="profile.html?u=${encodeURIComponent(author)}" class="hero-author-link"><b>${escHtml(author)}</b></a>`
+      ? `by <a href="profile.html?u=${encodeURIComponent(author)}" class="hero-author-link">${authorAv}<b>${escHtml(author)}</b></a>`
       : '';
     document.getElementById('hero-avatar-name').innerHTML = av
       ? `<a href="avatar.html?a=${encodeURIComponent(av)}" class="hero-avatar-link">${escHtml(av)}</a>`
@@ -1265,9 +1268,9 @@
     try {
       const { data } = await supa.auth.getUser();
       if (data && data.user) {
-        let username = data.user.email;
-        try { const { data: prof } = await supa.from('profiles').select('username').eq('id', data.user.id).single(); if (prof && prof.username) username = prof.username; } catch(e){}
-        currentUser = { id: data.user.id, email: data.user.email, username };
+        let username = data.user.email, avatar = null;
+        try { const { data: prof } = await supa.from('profiles').select('*').eq('id', data.user.id).single(); if (prof) { if (prof.username) username = prof.username; if (prof.avatar) avatar = prof.avatar; } } catch(e){}
+        currentUser = { id: data.user.id, email: data.user.email, username, avatar };
       } else currentUser = null;
     } catch (e) { currentUser = null; }
   }
@@ -1275,7 +1278,8 @@
     const bar = document.getElementById('auth-bar');
     if (!bar) return;
     if (currentUser) {
-      bar.innerHTML = `<a href="profile.html?u=${encodeURIComponent(currentUser.username)}" class="header-link" style="color:var(--gold)">${escHtml(currentUser.username)}</a>`;
+      const av = currentUser.avatar ? `<img src="${escHtml(currentUser.avatar)}" alt="" style="width:22px;height:22px;border-radius:50%;object-fit:cover;border:1px solid var(--border-strong);vertical-align:middle;margin-right:6px;" onerror="this.style.display='none'">` : '';
+      bar.innerHTML = `<a href="profile.html?u=${encodeURIComponent(currentUser.username)}" class="header-link" style="color:var(--gold);display:inline-flex;align-items:center;">${av}${escHtml(currentUser.username)}</a>`;
     } else {
       bar.innerHTML = `<a href="decks.html" class="header-link">Sign In</a>`;
     }
@@ -1294,9 +1298,10 @@
       // resolve author
       if (deckRow.owner_id) {
         try {
-          const { data: prof } = await supa.from('profiles').select('username').eq('id', deckRow.owner_id).single();
+          const { data: prof } = await supa.from('profiles').select('*').eq('id', deckRow.owner_id).single();
           currentDeck._author = prof && prof.username ? prof.username : null;
-        } catch(e) { currentDeck._author = null; }
+          currentDeck._authorAvatar = prof && prof.avatar ? prof.avatar : null;
+        } catch(e) { currentDeck._author = null; currentDeck._authorAvatar = null; }
       }
       document.title = `${currentDeck.name || 'Deck'} — Cursed Realm`;
       renderHero();
@@ -1403,11 +1408,11 @@
 
     // Resolve usernames
     const ids = [...new Set(rows.map(r => r.user_id).filter(Boolean))];
-    const names = {};
+    const names = {}, avatars = {};
     if (ids.length) {
       try {
-        const { data: profs } = await supa.from('profiles').select('id, username').in('id', ids);
-        (profs || []).forEach(p => names[p.id] = p.username);
+        const { data: profs } = await supa.from('profiles').select('*').in('id', ids);
+        (profs || []).forEach(p => { names[p.id] = p.username; if (p.avatar) avatars[p.id] = p.avatar; });
       } catch(e) {}
     }
 
@@ -1432,20 +1437,22 @@
     } else {
       html += '<div class="comment-list">';
       tops.forEach(c => {
-        html += renderCommentNode(c, names, ownerId, false);
-        (repliesByParent[c.id] || []).forEach(r => { html += renderCommentNode(r, names, ownerId, true); });
+        html += renderCommentNode(c, names, ownerId, false, avatars);
+        (repliesByParent[c.id] || []).forEach(r => { html += renderCommentNode(r, names, ownerId, true, avatars); });
       });
       html += '</div>';
     }
     wrap.innerHTML = html;
   }
 
-  function renderCommentNode(c, names, ownerId, isReply) {
+  function renderCommentNode(c, names, ownerId, isReply, avatars) {
     const uname = names[c.user_id] || 'Unknown';
+    const avUrl = avatars && avatars[c.user_id];
     const isAuthor = c.user_id && c.user_id === ownerId;
     const canDelete = currentUser && (currentUser.id === c.user_id || (currentDeck && currentUser.id === currentDeck.owner_id));
     const canReply = currentUser && !isReply; // one level of threading
-    const authorLink = `<a class="comment-author" href="profile.html?u=${encodeURIComponent(uname)}">${escHtml(uname)}</a>`;
+    const avImg = avUrl ? `<img class="comment-author-avatar" src="${escHtml(avUrl)}" alt="" onerror="this.style.display='none'">` : '';
+    const authorLink = `<a class="comment-author" href="profile.html?u=${encodeURIComponent(uname)}">${avImg}${escHtml(uname)}</a>`;
     const badge = isAuthor ? '<span class="comment-author-badge">Author</span>' : '';
     let actions = '';
     if (canReply) actions += `<button class="comment-action" onclick="toggleReplyBox('${c.id}')">Reply</button>`;

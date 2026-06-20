@@ -80,6 +80,52 @@
   .empty-note { color: var(--rune); font-style: italic; padding: 16px 0; }
   .toast { position: fixed; bottom: 24px; right: 24px; background: var(--dusk); border: 1px solid var(--border-strong); color: var(--shimmer); padding: 10px 18px; border-radius: 6px; z-index: 999; opacity: 0; transform: translateY(8px); transition: opacity 0.2s, transform 0.2s; pointer-events: none; font-style: italic; }
   .toast.show { opacity: 1; transform: translateY(0); }
+
+  /* AVATAR */
+  .profile-avatar-wrap { position: relative; width: 84px; height: 84px; flex-shrink: 0; }
+  .profile-avatar-img { width: 84px; height: 84px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border-strong); display: block; background: var(--dusk); }
+  .avatar-change-btn { position: absolute; bottom: -2px; right: -2px; width: 30px; height: 30px; border-radius: 50%; background: var(--rune); color: #fff; border: 2px solid var(--void); cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; transition: background 0.15s; }
+  .avatar-change-btn:hover { background: var(--arcane); }
+
+  /* SOCIAL LINKS */
+  .links-section { margin-bottom: 30px; }
+  .profile-links { display: flex; flex-wrap: wrap; gap: 9px; }
+  .plink { display: inline-flex; align-items: center; gap: 6px; font-family: 'Crimson Pro', serif; font-size: 0.9rem; color: var(--shimmer); text-decoration: none; background: var(--dusk); border: 1px solid var(--border); border-radius: 20px; padding: 6px 14px; cursor: pointer; transition: border-color 0.15s, color 0.15s; }
+  .plink:hover { border-color: var(--arcane); color: var(--gold); }
+  .links-edit { display: grid; gap: 10px; margin-top: 12px; max-width: 520px; }
+  .links-edit label { display: grid; grid-template-columns: 92px 1fr; align-items: center; gap: 10px; font-family: 'Cinzel', serif; font-size: 0.6rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--rune); }
+  .links-edit input { background: var(--abyss); border: 1px solid var(--border-strong); border-radius: 6px; color: var(--parchment); font-family: 'Crimson Pro', serif; font-size: 0.96rem; padding: 9px 12px; }
+  .links-edit input:focus { outline: none; border-color: var(--arcane); }
+
+  /* MODAL */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(11,10,15,0.85); backdrop-filter: blur(4px); z-index: 600; display: none; align-items: center; justify-content: center; padding: 20px; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--dusk); border: 1px solid var(--border-strong); border-radius: 12px; width: 100%; max-width: 560px; max-height: 88vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.6); }
+  .modal-head { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid var(--border); }
+  .modal-title { font-family: 'Cinzel Decorative', serif; color: var(--gold); font-size: 1.2rem; }
+  .modal-close { background: none; border: none; color: var(--mist); font-size: 1.3rem; cursor: pointer; line-height: 1; }
+  .modal-close:hover { color: var(--shimmer); }
+  .modal-body { padding: 18px 20px; overflow-y: auto; }
+  .modal-foot { padding: 14px 20px; border-top: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+  .modal-foot .spacer { flex: 1; }
+  .av-preview { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+  .av-preview img, .av-preview .none { width: 64px; height: 64px; border-radius: 50%; flex-shrink: 0; }
+  .av-preview img { object-fit: cover; border: 2px solid var(--border-strong); background: var(--abyss); }
+  .av-preview .none { border: 2px dashed var(--border-strong); display: flex; align-items: center; justify-content: center; color: var(--mist); font-size: 0.7rem; font-style: italic; }
+  .av-tabs { display: flex; gap: 6px; margin-bottom: 16px; }
+  .av-tab { flex: 1; padding: 9px; font-family: 'Cinzel', serif; font-size: 0.62rem; letter-spacing: 0.06em; text-transform: uppercase; background: var(--abyss); border: 1px solid var(--border); border-radius: 6px; color: var(--rune); cursor: pointer; }
+  .av-tab.active { color: var(--gold); border-color: var(--arcane); background: rgba(155,135,212,0.1); }
+  .av-pane { display: none; }
+  .av-pane.active { display: block; }
+  .card-search { width: 100%; background: var(--abyss); border: 1px solid var(--border-strong); border-radius: 6px; color: var(--parchment); font-family: 'Crimson Pro', serif; font-size: 1rem; padding: 9px 12px; margin-bottom: 12px; }
+  .card-search:focus { outline: none; border-color: var(--arcane); }
+  .card-pick-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); gap: 8px; max-height: 320px; overflow-y: auto; }
+  .card-pick { border: 2px solid transparent; border-radius: 6px; overflow: hidden; cursor: pointer; background: #0b0a0f; aspect-ratio: 5/7; }
+  .card-pick img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .card-pick:hover { border-color: var(--arcane); }
+  .card-pick.sel { border-color: var(--gold); }
+  .av-note { font-size: 0.82rem; color: var(--rune); margin-top: 8px; font-style: italic; }
+  input[type=file].card-search { padding: 8px; }
 </style>
 </head>
 <body>
@@ -114,6 +160,18 @@
   let currentUser = null;     // logged-in viewer
   let profile = null;         // the profile being viewed
   let cardMap = {};           // name → slug (for avatar art)
+  let cardsList = [];         // [{name, slug, type}] for the avatar card picker
+  let isOwnProfile = false;   // viewer is looking at their own profile
+  let pendingAvatar = '';     // avatar URL staged in the avatar modal
+
+  // Social/contact links shown on profiles
+  const LINK_DEFS = [
+    { key: 'discord', label: 'Discord',     ph: 'username or invite link' },
+    { key: 'twitter', label: 'X / Twitter', ph: 'https://x.com/you' },
+    { key: 'youtube', label: 'YouTube',     ph: 'https://youtube.com/@you' },
+    { key: 'twitch',  label: 'Twitch',      ph: 'https://twitch.tv/you' },
+    { key: 'website', label: 'Website',     ph: 'https://your.site' },
+  ];
 
   function escHtml(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
   function getParam(n){ return new URLSearchParams(location.search).get(n); }
@@ -131,8 +189,11 @@
           const v = set.variants.find(v=>v.finish==='Standard'&&v.product==='Booster') || set.variants[0];
           slug = v ? v.slug : null;
         }
-        cardMap[(c.name||'').toLowerCase()] = slug || (c.name||'').toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'');
+        const finalSlug = slug || (c.name||'').toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'');
+        cardMap[(c.name||'').toLowerCase()] = finalSlug;
+        if (c.name && finalSlug) cardsList.push({ name: c.name, slug: finalSlug, type: (c.guardian && c.guardian.type) || '' });
       });
+      cardsList.sort((a,b)=>a.name.localeCompare(b.name));
     } catch(e) { /* art will fall back */ }
   }
 
@@ -164,7 +225,8 @@
     // find profile by username (case-insensitive)
     let prof;
     try {
-      const { data } = await supa.from('profiles').select('id, username, bio, created_at').ilike('username', uname).limit(1);
+      // select * so avatar/links columns come through (and a missing column won't error)
+      const { data } = await supa.from('profiles').select('*').ilike('username', uname).limit(1);
       prof = data && data[0];
     } catch(e) {}
     if (!prof) { statusEl.textContent = `No Sorcerer named "${escHtml(uname)}" found.`; return; }
@@ -180,6 +242,7 @@
 
     const totalLikes = decks.reduce((s,d) => s + (d.like_count||0), 0);
     const isOwn = currentUser && currentUser.id === prof.id;
+    isOwnProfile = isOwn;
 
     render(decks, totalLikes, isOwn);
     statusEl.style.display = 'none';
@@ -189,6 +252,19 @@
   function render(decks, totalLikes, isOwn) {
     const joined = profile.created_at ? new Date(profile.created_at).toLocaleDateString(undefined, { year:'numeric', month:'long' }) : null;
     const initial = (profile.username||'?').charAt(0).toUpperCase();
+
+    const avatarInner = profile.avatar
+      ? `<img class="profile-avatar-img" src="${escHtml(profile.avatar)}" alt="${escHtml(profile.username)}" onerror="avatarFallback(this)">`
+      : `<div class="profile-sigil">${escHtml(initial)}</div>`;
+    const avatarHead = `<div class="profile-avatar-wrap" data-init="${escHtml(initial)}">${avatarInner}${isOwn ? `<button class="avatar-change-btn" title="Change avatar" onclick="openAvatarModal()">✎</button>` : ''}</div>`;
+
+    const hasLinks = profile.links && Object.keys(profile.links).some(k => profile.links[k]);
+    const linksSection = (isOwn || hasLinks) ? `
+      <div class="links-section">
+        <div class="section-title">Links</div>
+        <div id="links-view" class="profile-links">${linksDisplay()}</div>
+        ${isOwn ? `<div class="bio-actions"><button class="btn-link" onclick="toggleLinksEdit(true)">✎ Edit links</button></div>${linksEditHtml()}` : ''}
+      </div>` : '';
 
     const bioBlock = isOwn ? `
       <div class="bio-section">
@@ -229,7 +305,7 @@
 
     document.getElementById('content').innerHTML = `
       <div class="profile-head">
-        <div class="profile-sigil">${escHtml(initial)}</div>
+        ${avatarHead}
         <div class="profile-info">
           <div class="profile-name">${escHtml(profile.username)}</div>
           ${joined ? `<div class="profile-joined">Joined ${escHtml(joined)}</div>` : ''}
@@ -239,10 +315,187 @@
           </div>
         </div>
       </div>
+      ${linksSection}
       ${bioBlock}
       <div class="section-title">Public Decks</div>
       <div class="deck-grid">${deckCards}</div>
     `;
+  }
+
+  // ── Links (display + edit, own profile only) ──
+  function linkPill(d, val){
+    if (!val) return '';
+    const isUrl = /^https?:\/\//i.test(val);
+    if (d.key === 'discord' && !isUrl) {
+      return `<button class="plink" data-copy="${escHtml(val)}" onclick="copyText(this.dataset.copy)" title="Copy Discord">${d.label}: ${escHtml(val)}</button>`;
+    }
+    const href = isUrl ? val : 'https://' + val.replace(/^\/+/, '');
+    return `<a class="plink" href="${escHtml(href)}" target="_blank" rel="noopener noreferrer">${d.label}</a>`;
+  }
+  function linksDisplay(){
+    const L = profile.links || {};
+    const pills = LINK_DEFS.map(d => linkPill(d, L[d.key])).filter(Boolean).join('');
+    return pills || `<span class="empty-note" style="padding:0;">No links yet.</span>`;
+  }
+  function linksEditHtml(){
+    const L = profile.links || {};
+    return `<div class="links-edit" id="links-edit" style="display:none;">
+      ${LINK_DEFS.map(d => `<label>${d.label}<input type="text" id="link-${d.key}" value="${escHtml(L[d.key]||'')}" placeholder="${escHtml(d.ph)}"></label>`).join('')}
+      <div class="bio-actions"><button class="btn btn-primary" onclick="saveLinks()">Save links</button><button class="btn" onclick="toggleLinksEdit(false)">Cancel</button></div>
+    </div>`;
+  }
+  function toggleLinksEdit(show){
+    const ed = document.getElementById('links-edit');
+    if (ed) ed.style.display = show ? '' : 'none';
+  }
+  async function saveLinks(){
+    const obj = {};
+    LINK_DEFS.forEach(d => { const v = (document.getElementById('link-'+d.key).value||'').trim(); if (v) obj[d.key] = v; });
+    try {
+      const { error } = await supa.from('profiles').update({ links: obj }).eq('id', profile.id);
+      if (error) { toast('Could not save links'); return; }
+      profile.links = obj;
+      document.getElementById('links-view').innerHTML = linksDisplay();
+      toggleLinksEdit(false);
+      toast('Links saved');
+    } catch(e) { toast('Could not save links'); }
+  }
+  window.copyText = function(t){
+    if (navigator.clipboard) navigator.clipboard.writeText(t).then(()=>toast('Copied: '+t)).catch(()=>toast(t));
+    else toast(t);
+  };
+
+  // ── Avatar (display fallback + editor modal) ──
+  window.avatarFallback = function(img){
+    const w = img.parentNode; if (!w) return;
+    const init = w.getAttribute('data-init') || '?';
+    const btn = w.querySelector('.avatar-change-btn');
+    w.innerHTML = `<div class="profile-sigil">${escHtml(init)}</div>` + (btn ? btn.outerHTML : '');
+  };
+
+  function buildAvatarModal(){
+    if (document.getElementById('avatar-modal')) return;
+    const m = document.createElement('div');
+    m.id = 'avatar-modal'; m.className = 'modal-overlay';
+    m.addEventListener('click', e => { if (e.target === m) closeAvatarModal(); });
+    m.innerHTML = `
+      <div class="modal">
+        <div class="modal-head">
+          <div class="modal-title">Choose your avatar</div>
+          <button class="modal-close" onclick="closeAvatarModal()">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="av-preview">
+            <div id="av-prev-box"></div>
+            <div>
+              <div style="font-family:'Cinzel',serif;color:var(--rune);font-size:0.66rem;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">Preview</div>
+              <button class="btn-link" onclick="setPendingAvatar('')">Remove avatar</button>
+            </div>
+          </div>
+          <div class="av-tabs">
+            <button class="av-tab active" data-tab="card" onclick="avTab('card')">Choose a card</button>
+            <button class="av-tab" data-tab="upload" onclick="avTab('upload')">Upload</button>
+            <button class="av-tab" data-tab="url" onclick="avTab('url')">Image URL</button>
+          </div>
+          <div class="av-pane active" id="av-pane-card">
+            <input type="text" class="card-search" id="card-search" placeholder="Search cards… (Avatars shown by default)" oninput="renderCardPicker(this.value)">
+            <div class="card-pick-grid" id="card-pick-grid"></div>
+          </div>
+          <div class="av-pane" id="av-pane-upload">
+            <input type="file" accept="image/png,image/jpeg,image/webp,image/gif" id="av-file" class="card-search" onchange="onAvatarFile(event)">
+            <div class="av-note">PNG, JPG, WEBP or GIF, up to 2 MB.</div>
+          </div>
+          <div class="av-pane" id="av-pane-url">
+            <input type="text" class="card-search" id="av-url" placeholder="https://example.com/my-image.png" oninput="setPendingAvatar(this.value.trim())">
+            <div class="av-note">Paste a direct link to an image.</div>
+          </div>
+        </div>
+        <div class="modal-foot">
+          <span id="av-status" class="av-note" style="margin:0;"></span>
+          <span class="spacer"></span>
+          <button class="btn" onclick="closeAvatarModal()">Cancel</button>
+          <button class="btn btn-primary" onclick="commitAvatar()">Save avatar</button>
+        </div>
+      </div>`;
+    document.body.appendChild(m);
+  }
+  function setPendingAvatar(url){
+    pendingAvatar = url || '';
+    const box = document.getElementById('av-prev-box');
+    if (box) box.innerHTML = pendingAvatar
+      ? `<img src="${escHtml(pendingAvatar)}" alt="" onerror="this.outerHTML='<div class=\\'none\\'>broken</div>'">`
+      : `<div class="none">none</div>`;
+  }
+  function avTab(t){
+    document.querySelectorAll('.av-tab').forEach(x => x.classList.toggle('active', x.dataset.tab === t));
+    document.querySelectorAll('.av-pane').forEach(x => x.classList.remove('active'));
+    const p = document.getElementById('av-pane-'+t); if (p) p.classList.add('active');
+  }
+  function renderCardPicker(q){
+    q = (q||'').trim().toLowerCase();
+    let list = q ? cardsList.filter(c => c.name.toLowerCase().includes(q)) : cardsList.filter(c => /avatar/i.test(c.type||''));
+    list = list.slice(0, 120);
+    const grid = document.getElementById('card-pick-grid');
+    if (!grid) return;
+    grid.innerHTML = list.length ? list.map(c => {
+      const url = IMAGE_BASE + c.slug + '.png';
+      return `<div class="card-pick" data-url="${escHtml(url)}" onclick="pickCard(this)"><img loading="lazy" src="${escHtml(url)}" alt="${escHtml(c.name)}" title="${escHtml(c.name)}" onerror="this.parentNode.style.display='none'"></div>`;
+    }).join('') : `<div class="av-note">No cards match “${escHtml(q)}”.</div>`;
+  }
+  function pickCard(el){
+    document.querySelectorAll('#card-pick-grid .card-pick.sel').forEach(x => x.classList.remove('sel'));
+    el.classList.add('sel');
+    setPendingAvatar(el.getAttribute('data-url'));
+  }
+  async function onAvatarFile(e){
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    if (!/^image\//.test(file.type)) { toast('Please choose an image file'); return; }
+    if (file.size > 2*1024*1024) { toast('Image must be under 2 MB'); return; }
+    const status = document.getElementById('av-status');
+    status.textContent = 'Uploading…';
+    try {
+      const ext = ((file.name.split('.').pop()||'png').toLowerCase().replace(/[^a-z0-9]/g,'')) || 'png';
+      const path = `${currentUser.id}/avatar_${Date.now()}.${ext}`;
+      const { error } = await supa.storage.from('avatars').upload(path, file, { upsert: true, contentType: file.type });
+      if (error) throw error;
+      const { data } = supa.storage.from('avatars').getPublicUrl(path);
+      setPendingAvatar(data.publicUrl);
+      status.textContent = 'Uploaded ✓';
+    } catch(err) {
+      status.textContent = '';
+      toast('Upload failed: ' + (err.message || 'storage not set up'));
+    }
+  }
+  function openAvatarModal(){
+    buildAvatarModal();
+    pendingAvatar = profile.avatar || '';
+    setPendingAvatar(pendingAvatar);
+    avTab('card');
+    renderCardPicker('');
+    const urlInput = document.getElementById('av-url');
+    if (urlInput) urlInput.value = (profile.avatar && /^https?:/i.test(profile.avatar)) ? profile.avatar : '';
+    document.getElementById('av-status').textContent = '';
+    document.getElementById('avatar-modal').classList.add('open');
+  }
+  function closeAvatarModal(){ const m = document.getElementById('avatar-modal'); if (m) m.classList.remove('open'); }
+  async function commitAvatar(){
+    try {
+      const url = pendingAvatar || null;
+      const { error } = await supa.from('profiles').update({ avatar: url }).eq('id', profile.id);
+      if (error) { toast('Could not save avatar'); return; }
+      profile.avatar = url;
+      const wrap = document.querySelector('.profile-avatar-wrap');
+      if (wrap) {
+        const init = (profile.username||'?').charAt(0).toUpperCase();
+        const inner = profile.avatar
+          ? `<img class="profile-avatar-img" src="${escHtml(profile.avatar)}" alt="${escHtml(profile.username)}" onerror="avatarFallback(this)">`
+          : `<div class="profile-sigil">${escHtml(init)}</div>`;
+        wrap.innerHTML = inner + `<button class="avatar-change-btn" title="Change avatar" onclick="openAvatarModal()">✎</button>`;
+      }
+      closeAvatarModal();
+      toast('Avatar saved');
+    } catch(e) { toast('Could not save avatar'); }
   }
 
   // ── Bio editing (own profile only) ──

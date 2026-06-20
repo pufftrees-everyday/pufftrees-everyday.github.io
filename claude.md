@@ -38,7 +38,9 @@ push happen directly, no manual upload.
 ## Data model (Supabase tables)
 - **decks**: id (uuid), short_code (unique), name, deck_data (jsonb), owner_id,
   is_public, is_saved, views, created_at
-- **profiles**: id (→auth.users), username, bio, created_at
+- **profiles**: id (→auth.users), username, bio, created_at, **avatar** (text — full image
+  URL: an R2 card image, an uploaded-to-Storage URL, or a pasted link), **links** (jsonb —
+  `{discord, twitter, youtube, twitch, website}`). See the profiles setup gotcha for the SQL.
 - **collections**: user_id (pk), data (jsonb)
 - **deck_likes**: id, deck_id, user_id, created_at (unique deck_id+user_id)
 - **deck_comments**: id, deck_id (→decks, cascade), user_id (→auth.users), parent_id
@@ -90,7 +92,12 @@ then variant where `finish==='Standard' && product==='Booster'`. Example real sl
   via the `increment_deck_views` RPC — see gotcha below. Comments section under the deck
   (deck_comments table): logged-in users post + reply (one level); owner posts badged "Author".
 - **avatar.html** — avatar detail (?a=Name). Uses real rulesText only (no copyrighted flavor).
-- **profile.html** — user profile (?u=username). Bio, public decks, total likes.
+- **profile.html** — user profile (?u=username). Avatar, bio, social links, public decks, total
+  likes. On your **own** profile (reached via "Edit Profile" in the account dropdown) you can edit
+  everything: set an avatar (pick a card's art / upload an image to Storage / paste a URL via a
+  modal), edit Discord/X/YouTube/Twitch/Website links, and edit the bio. Custom avatars also show
+  next to your name in the account dropdown and beside author names on archive.html, deck.html
+  (hero + comments). Requires the profiles avatar/links columns + the `avatars` Storage bucket.
 - **tracker.html** — life tracker PWA (service worker tracker-sw.js, cache versioned).
 - **rulebook.html** — searchable Sorcery rulebook. Loads **rulebook-content.json**
   (`{title,released,pageCount, toc:[{group,items:[titleStr]}], sections:[{id,title,page,text}],
@@ -177,6 +184,34 @@ NO blur/glow. Element symbols + moon are loaded as real PNGs from the site.
     using (auth.uid() = user_id or exists (select 1 from public.decks d where d.id = deck_id and d.owner_id = auth.uid()));
   grant select on public.deck_comments to anon;
   grant select, insert, delete on public.deck_comments to authenticated;
+  ```
+- **Profile avatars + links** need two columns on `profiles` and a public Storage bucket
+  (profile.html degrades gracefully without them: editing just shows "could not save"). Run once
+  in the SQL editor:
+  ```sql
+  alter table public.profiles add column if not exists avatar text;
+  alter table public.profiles add column if not exists links jsonb not null default '{}'::jsonb;
+  -- profiles already allow self-update via RLS; if not, ensure a policy like:
+  -- create policy "update own profile" on public.profiles for update using (auth.uid() = id);
+  ```
+  Then create the avatar uploads bucket + policies (the "Choose a card" and "Image URL" avatar
+  options work without this; only **Upload** needs it):
+  ```sql
+  insert into storage.buckets (id, name, public) values ('avatars','avatars', true)
+    on conflict (id) do update set public = true;
+  -- public read
+  drop policy if exists "avatars public read" on storage.objects;
+  create policy "avatars public read" on storage.objects for select using (bucket_id = 'avatars');
+  -- users manage only their own folder: avatars/<auth.uid()>/...
+  drop policy if exists "avatars owner write" on storage.objects;
+  create policy "avatars owner write" on storage.objects for insert to authenticated
+    with check (bucket_id = 'avatars' and (storage.foldername(name))[1] = auth.uid()::text);
+  drop policy if exists "avatars owner update" on storage.objects;
+  create policy "avatars owner update" on storage.objects for update to authenticated
+    using (bucket_id = 'avatars' and (storage.foldername(name))[1] = auth.uid()::text);
+  drop policy if exists "avatars owner delete" on storage.objects;
+  create policy "avatars owner delete" on storage.objects for delete to authenticated
+    using (bucket_id = 'avatars' and (storage.foldername(name))[1] = auth.uid()::text);
   ```
 
 ## Open / future ideas

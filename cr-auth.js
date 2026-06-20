@@ -1,6 +1,6 @@
 // ─────────────────────────────────────────────────────────────
 // Cursed Realm — shared auth + cloud sync module
-// Loaded on collection, deckbuilder, and gallery pages.
+// Loaded on index, collection, rulebook, and about pages.
 // Exposes window.CR with auth + cloud helpers.
 // ─────────────────────────────────────────────────────────────
 (function () {
@@ -13,9 +13,16 @@
 
   const CR = {
     supa,
-    user: null,           // { id, email, username } when logged in
+    user: null,           // { id, email, username, avatar } when logged in
     authMode: 'login',
     onAuthChange: null,   // page sets this callback; fires after login/logout/refresh
+  };
+
+  // Build the <img> for a user avatar URL (or '' if none). Used in the auth bar/menus.
+  CR.avatarImg = function (url, size) {
+    size = size || 22;
+    if (!url) return '';
+    return `<img src="${String(url).replace(/"/g, '&quot;')}" alt="" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;border:1px solid var(--border-strong,rgba(155,135,212,0.35));flex-shrink:0;" onerror="this.style.display='none'">`;
   };
 
   // ── SESSION ──
@@ -23,14 +30,15 @@
     if (!supa) { CR.user = null; return null; }
     const { data } = await supa.auth.getUser();
     if (data && data.user) {
-      let username = null;
+      let username = null, avatar = null;
       try {
-        const { data: prof } = await supa.from('profiles').select('username').eq('id', data.user.id).single();
-        if (prof && prof.username) username = prof.username;
+        // select * so a missing avatar/links column never breaks the username lookup
+        const { data: prof } = await supa.from('profiles').select('*').eq('id', data.user.id).single();
+        if (prof) { if (prof.username) username = prof.username; if (prof.avatar) avatar = prof.avatar; }
       } catch (e) {}
       // Fall back to the display_name from signup metadata, never the email
       if (!username) username = (data.user.user_metadata && data.user.user_metadata.display_name) || 'Account';
-      CR.user = { id: data.user.id, email: data.user.email, username };
+      CR.user = { id: data.user.id, email: data.user.email, username, avatar };
     } else {
       CR.user = null;
     }
@@ -141,7 +149,7 @@
     const bar = document.getElementById(elId);
     if (!bar) return;
     if (CR.user) {
-      bar.innerHTML = `<button class="profile-trigger header-link" onclick="CR.toggleProfileMenu(event)" style="background:none;border:none;cursor:pointer;color:var(--gold);text-transform:none;letter-spacing:0.04em;font-family:inherit;font-size:inherit;display:inline-flex;align-items:center;gap:5px;">${CR.user.username} <span style="font-size:0.6rem;">▾</span></button>`;
+      bar.innerHTML = `<button class="profile-trigger header-link" onclick="CR.toggleProfileMenu(event)" style="background:none;border:none;cursor:pointer;color:var(--gold);text-transform:none;letter-spacing:0.04em;font-family:inherit;font-size:inherit;display:inline-flex;align-items:center;gap:7px;">${CR.avatarImg(CR.user.avatar, 24)}${CR.user.username} <span style="font-size:0.6rem;">▾</span></button>`;
     } else {
       bar.innerHTML = `<a class="header-link" onclick="CR.openAuth('login')" style="cursor:pointer;">Sign In</a>`;
     }
@@ -155,10 +163,14 @@
     if (!el) return;
     if (CR.user) {
       el.innerHTML = `
-        <div class="mobile-auth-header">
-          <div class="mobile-auth-name">${CR.user.username}</div>
-          <div class="mobile-auth-email">${CR.user.email || ''}</div>
+        <div class="mobile-auth-header" style="display:flex;align-items:center;gap:10px;">
+          ${CR.avatarImg(CR.user.avatar, 34)}
+          <div>
+            <div class="mobile-auth-name">${CR.user.username}</div>
+            <div class="mobile-auth-email">${CR.user.email || ''}</div>
+          </div>
         </div>
+        <a href="profile.html?u=${encodeURIComponent(CR.user.username)}" class="header-link mobile-auth-editprofile">Edit Profile</a>
         <button class="header-link mobile-auth-signout" onclick="CR.logout()">Sign Out</button>`;
     } else {
       el.innerHTML = `<a class="header-link mobile-auth-signin" onclick="CR.openAuth('login')">Sign In / Create Account</a>`;
@@ -174,11 +186,16 @@
       menu = document.createElement('div');
       menu.id = 'cr-profile-menu';
       menu.className = 'cr-profile-menu';
+      const pmAvatar = CR.user && CR.user.avatar ? CR.avatarImg(CR.user.avatar, 34) : '';
       menu.innerHTML = `
-        <div class="cr-pm-header">
-          <div class="cr-pm-name">${CR.user ? CR.user.username : 'Account'}</div>
-          <div class="cr-pm-email">${CR.user ? (CR.user.email || '') : ''}</div>
+        <div class="cr-pm-header" style="display:flex;align-items:center;gap:10px;">
+          ${pmAvatar}
+          <div style="min-width:0;">
+            <div class="cr-pm-name">${CR.user ? CR.user.username : 'Account'}</div>
+            <div class="cr-pm-email">${CR.user ? (CR.user.email || '') : ''}</div>
+          </div>
         </div>
+        <a href="profile.html?u=${encodeURIComponent(CR.user ? CR.user.username : '')}" class="cr-pm-item">Edit Profile</a>
         <a href="collection.html" class="cr-pm-item">My Vault</a>
         <a href="decks.html" class="cr-pm-item">My Workshop</a>
         <div class="cr-pm-divider"></div>
