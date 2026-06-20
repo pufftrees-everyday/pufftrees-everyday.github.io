@@ -76,9 +76,10 @@ then variant where `finish==='Standard' && product==='Booster'`. Example real sl
   view (has `like_count`, `author`, `views`). Sort: Newest / Most Viewed / Most Liked. Each card
   shows 👁 views + ♥ likes.
 - **decks.html** — "My Workshop" (user's own decks).
-- **deckbuilder.html** — deck building interface. Spellbook has a **TYPE** toggle (top of the
-  section) that groups cards into Minions/Magics/Artifacts/Auras; off = flat list. Shared with
-  deck.html via localStorage `grimoire_spell_typegroup` (default off).
+- **deckbuilder.html** — deck building interface. Spellbook **and** Collection have a **TYPE**
+  toggle (top of the section) that groups cards into Minions/Magics/Artifacts/Auras; off = flat
+  list. One shared preference across both sections and deck.html via localStorage
+  `grimoire_spell_typegroup` (default off).
 - **deck.html** — read-only deck view (?d=CODE). Stats panel, 4 views, like button, share.
   View counter (👁) next to the like button; increments once per browser session per deck
   via the `increment_deck_views` RPC — see gotcha below. Comments section under the deck

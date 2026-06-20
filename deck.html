@@ -1019,7 +1019,7 @@
     html += renderSectionBlock('Spellbook', dd.s || [], { breakdown: 'type', typeToggle: true });
     // Deck Collection (only if present)
     if ((dd.c || []).length) {
-      html += renderSectionBlock('Collection', dd.c || [], { limit: 'sideboard, up to 10' });
+      html += renderSectionBlock('Collection', dd.c || [], { limit: 'sideboard, up to 10', typeToggle: true });
     }
     document.getElementById('deck-sections').innerHTML = html;
   }

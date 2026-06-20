@@ -2209,7 +2209,7 @@ function renderDeck() {
   body.innerHTML += renderSection('Spellbook', 'spellbook', spellbookEntries, spellbookOk ? '' : `${spellbookCount}/60 Spells (need ${Math.max(0,60-spellbookCount)} more)`, spellbookOk, '60+', spellbookByType);
 
   // Deck Collection section (Sorcery's 10-card toolbox/sideboard) — always shown so it's discoverable
-  const collectionByType = groupByType(collectionEntries);
+  const collectionByType = spellTypeGroup ? groupByType(collectionEntries) : null;
   body.innerHTML += renderSection('Collection', 'collection', collectionEntries, `${collectionCount}/10 cards`, collectionOk, '0–10', collectionByType);
 }
 
@@ -2570,7 +2570,7 @@ function renderSection(title, section, entries, reqMsg, isOk, req, groups) {
         <div class="deck-section-header-left">
           <span class="deck-section-arrow">▼</span>
           <span>${title} <span class="section-count">${count}</span></span>
-          ${section === 'spellbook' ? `<button class="db-type-toggle${spellTypeGroup ? ' active' : ''}" onclick="event.stopPropagation();toggleSpellTypeGroup()" title="Group the spellbook by card type">Type</button>` : ''}
+          ${(section === 'spellbook' || section === 'collection') ? `<button class="db-type-toggle${spellTypeGroup ? ' active' : ''}" onclick="event.stopPropagation();toggleSpellTypeGroup()" title="Group cards by type">Type</button>` : ''}
         </div>
         <span class="section-req ${reqClass}">${req} ${reqMsg ? '— ' + reqMsg : (isOk ? '✓' : '')}</span>
       </div>
