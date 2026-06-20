@@ -175,6 +175,8 @@
   .rb-page-badge { font-family: 'Cinzel', serif; font-size: 0.62rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--rune); background: rgba(155,135,212,0.08); border: 1px solid var(--border); border-radius: 20px; padding: 2px 9px; white-space: nowrap; }
   .rb-para { margin: 0 0 11px; line-height: 1.62; color: var(--parchment); overflow-wrap: break-word; }
   .rb-para:last-child { margin-bottom: 0; }
+  .rb-link { color: var(--gold); text-decoration: underline; text-decoration-color: var(--border-strong); text-underline-offset: 2px; overflow-wrap: break-word; transition: color 0.15s, text-decoration-color 0.15s; }
+  .rb-link:hover { color: var(--shimmer); text-decoration-color: var(--arcane); }
 
   /* GLOSSARY / QUICK REFERENCE TERMS */
   .rb-terms { display: flex; flex-direction: column; gap: 4px; }
@@ -328,10 +330,29 @@
     if (!q) return e;
     return e.replace(new RegExp('('+escRegex(q)+')','gi'), '<mark>$1</mark>');
   }
-  // Render \n-separated text into paragraphs, with optional highlight
+  // Turn bare URLs in the text into clickable links, while still escaping and
+  // search-highlighting the surrounding text. Known TLDs only, so ordinary
+  // prose (e.g. "etc.") is never mistaken for a link.
+  const URL_RE = /((?:https?:\/\/|www\.)[^\s<)]+|(?:[a-z0-9-]+\.)+(?:com|io|org|net|gg)(?:\/[^\s<)]*)?)/gi;
+  function linkify(line, q){
+    let out = '', last = 0, m;
+    URL_RE.lastIndex = 0;
+    while ((m = URL_RE.exec(line))){
+      out += highlight(line.slice(last, m.index), q);
+      let raw = m[0], trail = '';
+      const tm = raw.match(/[.,;:!?]+$/);          // keep trailing punctuation out of the link
+      if (tm){ trail = raw.slice(-tm[0].length); raw = raw.slice(0, -tm[0].length); }
+      const href = /^https?:\/\//i.test(raw) ? raw : 'https://' + raw;
+      out += '<a class="rb-link" href="' + esc(href) + '" target="_blank" rel="noopener noreferrer">' + highlight(raw, q) + '</a>' + highlight(trail, q);
+      last = m.index + m[0].length;
+    }
+    out += highlight(line.slice(last), q);
+    return out;
+  }
+  // Render \n-separated text into paragraphs, with optional highlight + auto-links
   function renderText(text, q){
     return (text || '').split('\n')
-      .map(line => line.trim() ? '<p class="rb-para">'+highlight(line, q)+'</p>' : '')
+      .map(line => line.trim() ? '<p class="rb-para">'+linkify(line, q)+'</p>' : '')
       .join('');
   }
 
