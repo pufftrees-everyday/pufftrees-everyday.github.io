@@ -143,8 +143,15 @@
   .deck-card-avatar-name { font-family: 'Crimson Pro', serif; font-style: italic; font-size: 0.85rem; color: var(--gold); }
   .dc-avatar-link { color: var(--gold); text-decoration: none; border-bottom: 1px dotted rgba(200,169,110,0.5); transition: color 0.15s, border-color 0.15s; }
   .dc-avatar-link:hover { color: var(--shimmer); border-bottom-color: var(--shimmer); }
+  .deck-card-stats { display: flex; gap: 14px; margin: 7px 0 2px; }
+  .dc-stat { display: inline-flex; align-items: center; gap: 5px; font-family: 'Cinzel', serif; font-size: 0.78rem; font-weight: 600; color: var(--rune); }
+  .dc-stat .dc-eye { opacity: 0.8; }
+  .dc-stat .dc-heart { color: var(--ember); }
+  .dc-stat b { color: var(--gold); font-weight: 700; }
   .deck-card-actions { display: flex; gap: 8px; margin-top: auto; padding-top: 10px; }
   .deck-card-actions .btn { flex: 1; text-align: center; }
+  /* Sort dropdown */
+  select.arch-input { cursor: pointer; }
   /* Element balance section (bottom of card) */
   .el-section { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
   .el-section-title { font-family: 'Cinzel', serif; font-size: 0.58rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--rune); margin-bottom: 7px; }
@@ -276,6 +283,14 @@
     <div class="arch-filter-group">
       <span class="arch-filter-label">Creator</span>
       <input type="text" id="filter-creator" class="arch-input" placeholder="Any creator…" oninput="applyArchiveFilters()" autocomplete="off">
+    </div>
+    <div class="arch-filter-group">
+      <span class="arch-filter-label">Sort</span>
+      <select id="archive-sort" class="arch-input" onchange="setArchiveSort(this.value)">
+        <option value="newest">Newest</option>
+        <option value="views">Most Viewed</option>
+        <option value="likes">Most Liked</option>
+      </select>
     </div>
     <button class="arch-clear-btn" onclick="clearArchiveFilters()">Clear</button>
     <span class="arch-result-count" id="archive-result-count"></span>
@@ -501,6 +516,19 @@ function profileMenuOutside(e) {
 // ── GALLERY ──
 let galleryDecks = [];   // cached public decks
 let galleryAuthors = {}; // id → username
+let archiveSort = 'newest'; // newest | views | likes
+
+function setArchiveSort(v) { archiveSort = v; applyArchiveFilters(); }
+
+// Sort a filtered deck list by the active sort mode (newest is the tiebreaker)
+function sortArchiveDecks(decks) {
+  const byNewest = (a, b) => new Date(b.created_at) - new Date(a.created_at);
+  const arr = decks.slice();
+  if (archiveSort === 'views') arr.sort((a, b) => (b.views || 0) - (a.views || 0) || byNewest(a, b));
+  else if (archiveSort === 'likes') arr.sort((a, b) => (b.like_count || 0) - (a.like_count || 0) || byNewest(a, b));
+  else arr.sort(byNewest);
+  return arr;
+}
 let cardElementMap = {}; // lowercased card name → ['fire','water',...]
 let cardSlugMap = {};    // lowercased card name → image slug
 const IMAGE_BASE = 'https://pub-5999238092ad418ca60e7a9ad641cf57.r2.dev/';
@@ -585,9 +613,8 @@ async function loadGallery() {
 
   try {
     const { data: decks, error } = await supa
-      .from('decks')
-      .select('id, short_code, name, deck_data, owner_id, views, created_at')
-      .eq('is_public', true)
+      .from('public_decks_with_likes')
+      .select('id, short_code, name, deck_data, owner_id, views, created_at, like_count')
       .order('created_at', { ascending: false })
       .limit(200);
     if (error) throw error;
@@ -725,7 +752,7 @@ function applyArchiveFilters() {
     return true;
   });
 
-  renderGallery(filtered);
+  renderGallery(sortArchiveDecks(filtered));
   const rc = document.getElementById('archive-result-count');
   if (rc) rc.textContent = `${filtered.length} of ${galleryDecks.length} decks`;
 }
@@ -790,6 +817,10 @@ function renderDeckCard(d, authors) {
       <div class="deck-card-name">${escapeHtml(d.name || 'Untitled Deck')}</div>
       <div class="deck-card-author">by <a href="profile.html?u=${encodeURIComponent(author)}" class="dc-author-link" onclick="event.stopPropagation()"><b>${escapeHtml(author)}</b></a></div>
       ${av ? `<div class="deck-card-avatar-name"><a href="avatar.html?a=${encodeURIComponent(av)}" class="dc-avatar-link" onclick="event.stopPropagation()">${escapeHtml(av)}</a></div>` : ''}
+      <div class="deck-card-stats">
+        <span class="dc-stat" title="Views"><span class="dc-eye">👁</span> <b>${d.views || 0}</b></span>
+        <span class="dc-stat" title="Likes"><span class="dc-heart">♥</span> <b>${d.like_count || 0}</b></span>
+      </div>
       <div class="deck-card-actions">
         <button class="btn btn-primary" onclick="openDeck('${d.short_code}')">View Deck</button>
         ${isOwner

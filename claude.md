@@ -68,10 +68,14 @@ then variant where `finish==='Standard' && product==='Booster'`. Example real sl
   Vault = `have`; Trades = `trade`. **Vault and Trades are mutually exclusive** per card: flagging
   Trade moves the card (and its qty) out of the Vault into Trades; un-flagging returns it. `want` is
   independent. "Total Collection Value" = Vault value + Trades value (both finishes).
-- **archive.html** — "The Archive" public deck gallery.
+- **archive.html** — "The Archive" public deck gallery. Loads from the **public_decks_with_likes**
+  view (has `like_count`, `author`, `views`). Sort: Newest / Most Viewed / Most Liked. Each card
+  shows 👁 views + ♥ likes.
 - **decks.html** — "My Workshop" (user's own decks).
 - **deckbuilder.html** — deck building interface.
 - **deck.html** — read-only deck view (?d=CODE). Stats panel, 4 views, like button, share.
+  View counter (👁) next to the like button; increments once per session per fresh viewer
+  (owners excluded) via the `increment_deck_views` RPC — see gotcha below.
 - **avatar.html** — avatar detail (?a=Name). Uses real rulesText only (no copyrighted flavor).
 - **profile.html** — user profile (?u=username). Bio, public decks, total likes.
 - **tracker.html** — life tracker PWA (service worker tracker-sw.js, cache versioned).
@@ -112,6 +116,17 @@ NO blur/glow. Element symbols + moon are loaded as real PNGs from the site.
 - PWA (tracker) caches via service worker — bump `tracker-sw.js` CACHE version on icon/asset changes.
 - Browsers cache favicons hard — hard-refresh (Ctrl+Shift+R) to see icon changes.
 - supabase anon key is safe to expose (RLS protects data).
+- **Deck view counts** need a SECURITY DEFINER RPC in Supabase so anonymous viewers can bump the
+  counter (direct UPDATE on `decks` is blocked by RLS). Run once in the SQL editor:
+  ```sql
+  create or replace function public.increment_deck_views(deck_code text)
+  returns void language sql security definer set search_path = public as $$
+    update public.decks set views = coalesce(views,0)+1
+    where short_code = deck_code and is_public = true;
+  $$;
+  grant execute on function public.increment_deck_views(text) to anon, authenticated;
+  ```
+  Without it, counts still display but won't increment.
 
 ## Open / future ideas
 - Swap permanent Discord invite when available.

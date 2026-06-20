@@ -79,6 +79,10 @@
   .like-btn.liked { background: rgba(196,97,74,0.16); border-color: var(--ember); color: var(--ember); }
   .like-btn:disabled { opacity: 0.6; cursor: default; }
   .like-count-badge { color: var(--gold); font-weight: 700; }
+  /* Views counter (read-only, mirrors the like button) */
+  .views-badge { display: inline-flex; align-items: center; gap: 7px; background: var(--dusk); border: 1px solid var(--border-strong); color: var(--shimmer); font-family: 'Cinzel', serif; font-size: 0.78rem; letter-spacing: 0.04em; padding: 9px 16px; border-radius: 8px; cursor: default; }
+  .views-badge .views-eye { font-size: 1rem; line-height: 1; opacity: 0.85; }
+  .views-count-badge { color: var(--gold); font-weight: 700; }
 
   /* counts strip */
   .deck-counts { display: flex; gap: 10px; flex-wrap: wrap; margin: 14px 0 18px; }
@@ -973,10 +977,13 @@
     }
     // Like button — shows the count for everyone; togglable when logged in & not your own deck
     acts.push(`<button class="like-btn" id="like-btn" onclick="toggleLike()"><span class="heart">♡</span> <span id="like-count" class="like-count-badge">0</span></button>`);
+    // Views counter — read-only, shown to everyone
+    acts.push(`<span class="views-badge" title="Deck views"><span class="views-eye">👁</span> <span id="view-count" class="views-count-badge">${currentDeck.views || 0}</span></span>`);
     acts.push(`<button class="btn btn-ghost" onclick="copyDeckLink()">🔗 Copy Link</button>`);
     acts.push(`<button class="btn btn-ghost" onclick="history.length>1?history.back():window.location.href='archive.html'">← Back</button>`);
     document.getElementById('hero-actions').innerHTML = acts.join('');
     refreshLikes();
+    registerView();
 
     // view toggle initial state
     ['list','details','grid','large'].forEach(m => {
@@ -1199,6 +1206,26 @@
 
   // ── Likes ──
   let likedByMe = false, likeBusy = false;
+  // Count a view the first time a fresh viewer opens a public deck this session.
+  // Owners viewing their own deck don't count. Persisted via a SECURITY DEFINER
+  // RPC (increment_deck_views) so anonymous viewers can bump the counter safely;
+  // if the RPC isn't installed yet the call fails quietly and the count still
+  // reflects what's stored.
+  function registerView() {
+    if (!supa || !currentDeck || !currentDeck.is_public) return;
+    const code = currentDeck.short_code;
+    const key = 'viewed_deck_' + code;
+    try { if (sessionStorage.getItem(key)) return; } catch(e) {}
+    if (currentUser && currentDeck.owner_id === currentUser.id) return; // don't self-inflate
+    try { sessionStorage.setItem(key, '1'); } catch(e) {}
+    // Optimistic UI bump
+    currentDeck.views = (currentDeck.views || 0) + 1;
+    const vc = document.getElementById('view-count');
+    if (vc) vc.textContent = currentDeck.views;
+    // Persist (ignored silently if the RPC isn't present)
+    try { supa.rpc('increment_deck_views', { deck_code: code }).then(() => {}, () => {}); } catch(e) {}
+  }
+
   async function refreshLikes() {
     const btn = document.getElementById('like-btn');
     const countEl = document.getElementById('like-count');
