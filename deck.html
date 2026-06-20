@@ -134,6 +134,33 @@
   .deck-scroll-text { font-family: 'Crimson Pro', serif; font-size: 1.06rem; line-height: 1.75; color: var(--parchment); white-space: pre-wrap; word-wrap: break-word; }
   #deck-scroll-panel { margin-top: 8px; }
 
+  /* ── COMMENTS ── */
+  #deck-comments { margin-top: 28px; }
+  .comments-head { font-family: 'Cinzel', serif; font-size: 1rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold); margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
+  .comments-head .cc-count { color: var(--rune); font-family: 'Crimson Pro', serif; font-weight: 400; font-size: 0.95rem; text-transform: none; letter-spacing: 0; }
+  .comment-form { display: flex; flex-direction: column; gap: 8px; margin-bottom: 22px; }
+  .comment-input { width: 100%; resize: vertical; min-height: 70px; background: #0b0a0f; border: 1px solid var(--border-strong); border-radius: 8px; color: var(--parchment); font-family: 'Crimson Pro', serif; font-size: 1.02rem; line-height: 1.5; padding: 11px 13px; outline: none; }
+  .comment-input:focus { border-color: var(--rune); }
+  .comment-input::placeholder { color: #3a3658; font-style: italic; }
+  .comment-form-actions { display: flex; align-items: center; gap: 12px; }
+  .comment-signin { background: var(--abyss); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; color: var(--rune); font-style: italic; margin-bottom: 22px; }
+  .comment-signin a { color: var(--gold); cursor: pointer; text-decoration: underline; font-style: normal; }
+  .comment-list { display: flex; flex-direction: column; gap: 16px; }
+  .comment { background: var(--abyss); border: 1px solid var(--border); border-radius: 8px; padding: 13px 15px; }
+  .comment.is-reply { margin-left: 28px; background: rgba(17,16,24,0.6); border-left: 2px solid var(--mist); }
+  .comment-top { display: flex; align-items: center; gap: 9px; margin-bottom: 6px; flex-wrap: wrap; }
+  .comment-author { font-family: 'Cinzel', serif; font-size: 0.85rem; font-weight: 700; color: var(--arcane); text-decoration: none; }
+  .comment-author:hover { color: var(--shimmer); }
+  .comment-author-badge { font-family: 'Cinzel', serif; font-size: 0.56rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #1a1410; background: var(--gold); padding: 2px 7px; border-radius: 9px; }
+  .comment-time { font-size: 0.78rem; color: var(--rune); font-style: italic; }
+  .comment-body { font-family: 'Crimson Pro', serif; font-size: 1.02rem; line-height: 1.6; color: var(--parchment); white-space: pre-wrap; word-wrap: break-word; }
+  .comment-actions { display: flex; gap: 14px; margin-top: 8px; }
+  .comment-action { background: none; border: none; padding: 0; cursor: pointer; font-family: 'Cinzel', serif; font-size: 0.66rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--rune); transition: color 0.15s; }
+  .comment-action:hover { color: var(--arcane); }
+  .comment-action.danger:hover { color: var(--ember); }
+  .comment-empty { color: var(--rune); font-style: italic; padding: 6px 0 4px; }
+  .comment-reply-box { margin: 10px 0 2px; }
+
   /* ── DECK SECTIONS ── */
   .deck-section { margin-bottom: 26px; }
   .deck-section-head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; padding-bottom: 7px; border-bottom: 1px solid var(--border); }
@@ -398,6 +425,9 @@
 
     <!-- SCROLL (deck description) -->
     <div id="deck-scroll-panel" style="display:none;"></div>
+
+    <!-- COMMENTS -->
+    <div id="deck-comments" style="display:none;"></div>
   </div>
 </div>
 
@@ -1195,6 +1225,7 @@
       renderSections();
       renderScrollPanel();
       applyScrollLayout();
+      renderComments();
       statusEl.style.display = 'none';
       document.getElementById('deck-content').style.display = '';
       wireHover();
@@ -1206,17 +1237,15 @@
 
   // ── Likes ──
   let likedByMe = false, likeBusy = false;
-  // Count a view the first time a fresh viewer opens a public deck this session.
-  // Owners viewing their own deck don't count. Persisted via a SECURITY DEFINER
-  // RPC (increment_deck_views) so anonymous viewers can bump the counter safely;
-  // if the RPC isn't installed yet the call fails quietly and the count still
-  // reflects what's stored.
+  // Count a view the first time a deck is opened in this browser session.
+  // Persisted via a SECURITY DEFINER RPC (increment_deck_views) so anonymous
+  // viewers can bump the counter safely; if the RPC isn't installed yet the
+  // call fails quietly and the count still reflects what's stored.
   function registerView() {
     if (!supa || !currentDeck || !currentDeck.is_public) return;
     const code = currentDeck.short_code;
     const key = 'viewed_deck_' + code;
     try { if (sessionStorage.getItem(key)) return; } catch(e) {}
-    if (currentUser && currentDeck.owner_id === currentUser.id) return; // don't self-inflate
     try { sessionStorage.setItem(key, '1'); } catch(e) {}
     // Optimistic UI bump
     currentDeck.views = (currentDeck.views || 0) + 1;
@@ -1273,6 +1302,139 @@
     likeBusy = false;
   }
 
+  // ── COMMENTS ──
+  let commentsBusy = false;
+
+  async function renderComments() {
+    const wrap = document.getElementById('deck-comments');
+    if (!wrap || !supa || !currentDeck) return;
+    // Comments only on public decks (read RLS requires is_public)
+    if (!currentDeck.is_public) { wrap.style.display = 'none'; wrap.innerHTML = ''; return; }
+    wrap.style.display = '';
+
+    let rows = [];
+    try {
+      const { data, error } = await supa
+        .from('deck_comments')
+        .select('id, user_id, parent_id, body, created_at')
+        .eq('deck_id', currentDeck.id)
+        .order('created_at', { ascending: true });
+      if (error) throw error;
+      rows = data || [];
+    } catch(e) { rows = []; /* table may not exist yet */ }
+
+    // Resolve usernames
+    const ids = [...new Set(rows.map(r => r.user_id).filter(Boolean))];
+    const names = {};
+    if (ids.length) {
+      try {
+        const { data: profs } = await supa.from('profiles').select('id, username').in('id', ids);
+        (profs || []).forEach(p => names[p.id] = p.username);
+      } catch(e) {}
+    }
+
+    const ownerId = currentDeck.owner_id;
+    const tops = rows.filter(r => !r.parent_id);
+    const repliesByParent = {};
+    rows.filter(r => r.parent_id).forEach(r => { (repliesByParent[r.parent_id] = repliesByParent[r.parent_id] || []).push(r); });
+
+    let html = `<div class="comments-head">Comments <span class="cc-count">${rows.length ? '· ' + rows.length : ''}</span></div>`;
+    if (currentUser) {
+      html += `<div class="comment-form">
+        <textarea class="comment-input" id="comment-new" maxlength="2000" placeholder="Add a comment…"></textarea>
+        <div class="comment-form-actions"><button class="btn btn-primary" onclick="postComment(null)">Post Comment</button></div>
+      </div>`;
+    } else {
+      html += `<div class="comment-signin">Sign in to join the conversation. <a href="decks.html">Sign in</a></div>`;
+    }
+
+    if (!tops.length) {
+      html += `<div class="comment-empty">No comments yet — be the first to share your thoughts.</div>`;
+    } else {
+      html += '<div class="comment-list">';
+      tops.forEach(c => {
+        html += renderCommentNode(c, names, ownerId, false);
+        (repliesByParent[c.id] || []).forEach(r => { html += renderCommentNode(r, names, ownerId, true); });
+      });
+      html += '</div>';
+    }
+    wrap.innerHTML = html;
+  }
+
+  function renderCommentNode(c, names, ownerId, isReply) {
+    const uname = names[c.user_id] || 'Unknown';
+    const isAuthor = c.user_id && c.user_id === ownerId;
+    const canDelete = currentUser && (currentUser.id === c.user_id || (currentDeck && currentUser.id === currentDeck.owner_id));
+    const canReply = currentUser && !isReply; // one level of threading
+    const authorLink = `<a class="comment-author" href="profile.html?u=${encodeURIComponent(uname)}">${escHtml(uname)}</a>`;
+    const badge = isAuthor ? '<span class="comment-author-badge">Author</span>' : '';
+    let actions = '';
+    if (canReply) actions += `<button class="comment-action" onclick="toggleReplyBox('${c.id}')">Reply</button>`;
+    if (canDelete) actions += `<button class="comment-action danger" onclick="deleteComment('${c.id}')">Delete</button>`;
+    return `<div class="comment${isReply ? ' is-reply' : ''}" data-id="${c.id}">
+      <div class="comment-top">${authorLink}${badge}<span class="comment-time">${timeAgo(c.created_at)}</span></div>
+      <div class="comment-body">${escHtml(c.body)}</div>
+      ${actions ? `<div class="comment-actions">${actions}</div>` : ''}
+      <div class="comment-reply-slot" id="reply-slot-${c.id}"></div>
+    </div>`;
+  }
+
+  function toggleReplyBox(parentId) {
+    if (!currentUser) return;
+    const slot = document.getElementById('reply-slot-' + parentId);
+    if (!slot) return;
+    if (slot.dataset.open === '1') { slot.innerHTML = ''; slot.dataset.open = '0'; return; }
+    slot.dataset.open = '1';
+    slot.innerHTML = `<div class="comment-reply-box">
+      <textarea class="comment-input" id="reply-input-${parentId}" maxlength="2000" placeholder="Write a reply…"></textarea>
+      <div class="comment-form-actions" style="margin-top:8px;">
+        <button class="btn btn-primary" onclick="postComment('${parentId}')">Reply</button>
+        <button class="btn btn-ghost" onclick="toggleReplyBox('${parentId}')">Cancel</button>
+      </div>
+    </div>`;
+    const ta = document.getElementById('reply-input-' + parentId); if (ta) ta.focus();
+  }
+
+  async function postComment(parentId) {
+    if (commentsBusy || !currentUser || !supa || !currentDeck) return;
+    const ta = document.getElementById(parentId ? 'reply-input-' + parentId : 'comment-new');
+    if (!ta) return;
+    const body = ta.value.trim();
+    if (!body) { toast('Write something first'); return; }
+    commentsBusy = true;
+    try {
+      const { error } = await supa.from('deck_comments').insert({
+        deck_id: currentDeck.id, user_id: currentUser.id, parent_id: parentId || null, body
+      });
+      if (error) throw error;
+      toast('Comment posted');
+      await renderComments();
+    } catch(e) { console.warn(e); toast('Could not post comment — is the comments table set up?'); }
+    commentsBusy = false;
+  }
+
+  async function deleteComment(id) {
+    if (commentsBusy || !currentUser || !supa) return;
+    if (!confirm('Delete this comment?')) return;
+    commentsBusy = true;
+    try {
+      const { error } = await supa.from('deck_comments').delete().eq('id', id);
+      if (error) throw error;
+      await renderComments();
+    } catch(e) { console.warn(e); toast('Could not delete comment'); }
+    commentsBusy = false;
+  }
+
+  function timeAgo(ts) {
+    const d = new Date(ts), now = new Date();
+    const s = Math.floor((now - d) / 1000);
+    if (s < 60) return 'just now';
+    const m = Math.floor(s/60); if (m < 60) return m + 'm ago';
+    const h = Math.floor(m/60); if (h < 24) return h + 'h ago';
+    const days = Math.floor(h/24); if (days < 30) return days + 'd ago';
+    return d.toLocaleDateString();
+  }
+
   // ── utils ──
   function escHtml(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
   function escAttr(s){ return String(s==null?'':s).replace(/'/g,"\\'").replace(/"/g,'&quot;'); }
@@ -1287,7 +1449,7 @@
     await Promise.all([loadCards(), refreshUser()]);
     renderAuthBar();
     await loadDeck();
-    if (supa) supa.auth.onAuthStateChange((ev) => { if (ev==='SIGNED_IN'||ev==='SIGNED_OUT') refreshUser().then(()=>{renderAuthBar(); if(currentDeck) renderHero();}); });
+    if (supa) supa.auth.onAuthStateChange((ev) => { if (ev==='SIGNED_IN'||ev==='SIGNED_OUT') refreshUser().then(()=>{renderAuthBar(); if(currentDeck){ renderHero(); renderComments(); }}); });
   })();
 </script>
 </body>

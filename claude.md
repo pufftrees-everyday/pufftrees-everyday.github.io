@@ -41,6 +41,10 @@ push happen directly, no manual upload.
 - **profiles**: id (→auth.users), username, bio, created_at
 - **collections**: user_id (pk), data (jsonb)
 - **deck_likes**: id, deck_id, user_id, created_at (unique deck_id+user_id)
+- **deck_comments**: id, deck_id (→decks, cascade), user_id (→auth.users), parent_id
+  (→deck_comments, nullable for one-level replies), body (1–2000 chars), created_at.
+  RLS: read on public decks (anyone), insert own on public decks (logged-in), delete own
+  OR as deck owner. Shown on deck.html under the deck; owner's posts badged "Author".
 - **VIEW public_decks_with_likes**: public decks + like counts
 
 **deck_data jsonb shape:** `{ n:name, a:[[cardName,qty]...avatar], t:[...atlas/sites],
@@ -74,8 +78,9 @@ then variant where `finish==='Standard' && product==='Booster'`. Example real sl
 - **decks.html** — "My Workshop" (user's own decks).
 - **deckbuilder.html** — deck building interface.
 - **deck.html** — read-only deck view (?d=CODE). Stats panel, 4 views, like button, share.
-  View counter (👁) next to the like button; increments once per session per fresh viewer
-  (owners excluded) via the `increment_deck_views` RPC — see gotcha below.
+  View counter (👁) next to the like button; increments once per browser session per deck
+  via the `increment_deck_views` RPC — see gotcha below. Comments section under the deck
+  (deck_comments table): logged-in users post + reply (one level); owner posts badged "Author".
 - **avatar.html** — avatar detail (?a=Name). Uses real rulesText only (no copyrighted flavor).
 - **profile.html** — user profile (?u=username). Bio, public decks, total likes.
 - **tracker.html** — life tracker PWA (service worker tracker-sw.js, cache versioned).
@@ -127,6 +132,31 @@ NO blur/glow. Element symbols + moon are loaded as real PNGs from the site.
   grant execute on function public.increment_deck_views(text) to anon, authenticated;
   ```
   Without it, counts still display but won't increment.
+- **Deck comments** need the `deck_comments` table + RLS (deck.html degrades gracefully without it).
+  Run once in the SQL editor:
+  ```sql
+  create table if not exists public.deck_comments (
+    id uuid primary key default gen_random_uuid(),
+    deck_id uuid not null references public.decks(id) on delete cascade,
+    user_id uuid not null references auth.users(id) on delete cascade,
+    parent_id uuid references public.deck_comments(id) on delete cascade,
+    body text not null check (char_length(body) between 1 and 2000),
+    created_at timestamptz not null default now()
+  );
+  create index if not exists deck_comments_deck_idx on public.deck_comments(deck_id, created_at);
+  alter table public.deck_comments enable row level security;
+  drop policy if exists "read comments on public decks" on public.deck_comments;
+  create policy "read comments on public decks" on public.deck_comments for select
+    using (exists (select 1 from public.decks d where d.id = deck_id and d.is_public = true));
+  drop policy if exists "insert own comment on public deck" on public.deck_comments;
+  create policy "insert own comment on public deck" on public.deck_comments for insert
+    with check (auth.uid() = user_id and exists (select 1 from public.decks d where d.id = deck_id and d.is_public = true));
+  drop policy if exists "delete own comment or as deck owner" on public.deck_comments;
+  create policy "delete own comment or as deck owner" on public.deck_comments for delete
+    using (auth.uid() = user_id or exists (select 1 from public.decks d where d.id = deck_id and d.owner_id = auth.uid()));
+  grant select on public.deck_comments to anon;
+  grant select, insert, delete on public.deck_comments to authenticated;
+  ```
 
 ## Open / future ideas
 - Swap permanent Discord invite when available.
