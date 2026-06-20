@@ -566,6 +566,10 @@
   }
   .section-req.ok { color: #7ab88a; }
   .section-req.warn { color: var(--ember); }
+  /* Spellbook TYPE grouping toggle */
+  .db-type-toggle { margin-left: 4px; font-family: 'Cinzel', serif; font-size: 0.56rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--rune); background: transparent; border: 1px solid var(--border-strong); border-radius: 4px; padding: 3px 9px; cursor: pointer; transition: all 0.15s; }
+  .db-type-toggle:hover { color: var(--arcane); border-color: var(--arcane); }
+  .db-type-toggle.active { background: var(--gold); border-color: var(--gold); color: #1a1410; }
 
   /* Sub-section headers (Minion, Magic, etc) — match deck section style */
   .sub-section-header {
@@ -1473,6 +1477,7 @@ let activeDeckPublic = false; // whether the current saved deck is public
 let readOnly = false;         // true when viewing a deck you don't own
 let viewDeckAuthor = null;    // author name when viewing someone's deck
 let deckViewMode = localStorage.getItem('grimoire_deck_view') || 'grid'; // grid | list (deck panel display)
+let spellTypeGroup = localStorage.getItem('grimoire_spell_typegroup') === '1'; // group spellbook by card type
 
 const IMAGE_BASE = 'https://pub-5999238092ad418ca60e7a9ad641cf57.r2.dev/';
 
@@ -1636,6 +1641,12 @@ function toggleDeckSection(section) {
   sectionCollapsed[section] = !sectionCollapsed[section];
   const el = document.getElementById('deck-section-' + section);
   if (el) el.classList.toggle('collapsed', sectionCollapsed[section]);
+}
+
+function toggleSpellTypeGroup() {
+  spellTypeGroup = !spellTypeGroup;
+  localStorage.setItem('grimoire_spell_typegroup', spellTypeGroup ? '1' : '0');
+  renderDeck();
 }
 
 function toggleSubSection(section, type) {
@@ -2193,8 +2204,8 @@ function renderDeck() {
   // Atlas section — all Atlas cards are Sites, so no sub-grouping needed
   body.innerHTML += renderSection('Atlas', 'atlas', atlasEntries, atlasOk ? '' : `${atlasCount}/30 Sites (need ${Math.max(0,30-atlasCount)} more)`, atlasOk, '30+');
 
-  // Spellbook section
-  const spellbookByType = groupByType(spellbookEntries);
+  // Spellbook section — grouped by card type only when the TYPE toggle is on
+  const spellbookByType = spellTypeGroup ? groupByType(spellbookEntries) : null;
   body.innerHTML += renderSection('Spellbook', 'spellbook', spellbookEntries, spellbookOk ? '' : `${spellbookCount}/60 Spells (need ${Math.max(0,60-spellbookCount)} more)`, spellbookOk, '60+', spellbookByType);
 
   // Deck Collection section (Sorcery's 10-card toolbox/sideboard) — always shown so it's discoverable
@@ -2559,6 +2570,7 @@ function renderSection(title, section, entries, reqMsg, isOk, req, groups) {
         <div class="deck-section-header-left">
           <span class="deck-section-arrow">▼</span>
           <span>${title} <span class="section-count">${count}</span></span>
+          ${section === 'spellbook' ? `<button class="db-type-toggle${spellTypeGroup ? ' active' : ''}" onclick="event.stopPropagation();toggleSpellTypeGroup()" title="Group the spellbook by card type">Type</button>` : ''}
         </div>
         <span class="section-req ${reqClass}">${req} ${reqMsg ? '— ' + reqMsg : (isOk ? '✓' : '')}</span>
       </div>

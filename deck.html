@@ -127,6 +127,15 @@
   body.show-thresholds .th-toggle-track { background: rgba(200,169,110,0.25); border-color: var(--gold); }
   body.show-thresholds .th-toggle-knob { transform: translateX(20px); background: var(--gold); }
 
+  /* Spellbook TYPE grouping toggle */
+  .type-toggle { margin-left: auto; flex-shrink: 0; font-family: 'Cinzel', serif; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--rune); background: transparent; border: 1px solid var(--border-strong); border-radius: 4px; padding: 4px 12px; cursor: pointer; transition: all 0.15s; }
+  .type-toggle:hover { color: var(--arcane); border-color: var(--arcane); }
+  .type-toggle.active { background: var(--gold); border-color: var(--gold); color: #1a1410; }
+  .type-group { margin-bottom: 18px; }
+  .type-group:last-child { margin-bottom: 0; }
+  .type-group-head { font-family: 'Cinzel', serif; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--arcane); margin: 2px 0 9px; padding-bottom: 5px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
+  .type-group-head .tg-count { color: var(--rune); font-family: 'Crimson Pro', serif; font-weight: 400; font-size: 0.85rem; }
+
   /* ── SCROLL (deck description) ── */
   .scroll-tab-btn {
     display: inline-flex; align-items: center; gap: 6px;
@@ -506,6 +515,7 @@
   let currentDeck = null;  // the loaded deck row
   let currentUser = null;
   let deckView = localStorage.getItem('grimoire_deckview_mode') || 'grid';
+  let spellTypeGroup = localStorage.getItem('grimoire_spell_typegroup') === '1';
 
   // ── Load card data ──
   async function loadCards() {
@@ -740,19 +750,47 @@
     if (el) el.classList.toggle('collapsed', collapsedSections[title]);
   }
 
+  // Render a flat list of entries in the active view mode (list / details / grid).
+  function renderEntriesInner(entries) {
+    const sorted = sortEntries(entries);
+    if (deckView === 'list') return `<div class="deck-list">${sorted.map(renderEntryRow).join('')}</div>`;
+    if (deckView === 'details') return `<div class="deck-details">${sorted.map(renderEntryDetail).join('')}</div>`;
+    const gridClass = deckView === 'large' ? 'deck-grid large' : 'deck-grid';
+    return `<div class="${gridClass}">${sorted.map(renderEntryCell).join('')}</div>`;
+  }
+  // Type grouping for the spellbook (Minions / Magics / Artifacts / Auras …)
+  const SPELL_TYPE_ORDER = ['Minion','Magic','Artifact','Aura','Avatar','Site','Other'];
+  const SPELL_TYPE_PLURAL = { Minion:'Minions', Magic:'Magics', Artifact:'Artifacts', Aura:'Auras', Avatar:'Avatars', Site:'Sites', Other:'Other' };
+  function groupEntriesByType(entries) {
+    const groups = {};
+    entries.forEach(e => {
+      const c = cardMap[(e[0]||'').toLowerCase()];
+      let t = (c && c.type) ? c.type : 'Other';
+      if (!SPELL_TYPE_PLURAL[t]) t = 'Other';
+      (groups[t] = groups[t] || []).push(e);
+    });
+    return Object.keys(groups)
+      .sort((a,b) => (SPELL_TYPE_ORDER.indexOf(a)+1||99) - (SPELL_TYPE_ORDER.indexOf(b)+1||99))
+      .map(t => ({ label: SPELL_TYPE_PLURAL[t], entries: groups[t], count: groups[t].reduce((s,[,q])=>s+(q||0),0) }));
+  }
+  function toggleSpellTypeGroup() {
+    spellTypeGroup = !spellTypeGroup;
+    localStorage.setItem('grimoire_spell_typegroup', spellTypeGroup ? '1' : '0');
+    renderSections();
+  }
+
   function renderSectionBlock(title, entries, opts = {}) {
     if (!entries || !entries.length) {
       if (!opts.showEmpty) return '';
     }
     const count = entries.reduce((s,[,q])=>s+(q||0),0);
     let inner = '';
-    if (deckView === 'list') {
-      inner = `<div class="deck-list">${sortEntries(entries).map(renderEntryRow).join('')}</div>`;
-    } else if (deckView === 'details') {
-      inner = `<div class="deck-details">${sortEntries(entries).map(renderEntryDetail).join('')}</div>`;
+    if (opts.typeToggle && spellTypeGroup && entries.length) {
+      inner = groupEntriesByType(entries).map(g =>
+        `<div class="type-group"><div class="type-group-head">${g.label} <span class="tg-count">${g.count}</span></div>${renderEntriesInner(g.entries)}</div>`
+      ).join('');
     } else {
-      const gridClass = deckView === 'large' ? 'deck-grid large' : 'deck-grid';
-      inner = `<div class="${gridClass}">${sortEntries(entries).map(renderEntryCell).join('')}</div>`;
+      inner = renderEntriesInner(entries);
     }
     const sid = 'section-' + title.replace(/\s+/g,'-');
     const collapsed = collapsedSections[title] ? ' collapsed' : '';
@@ -775,10 +813,14 @@
     } else if (opts.limit) {
       suffix = ` · ${opts.limit}`;
     }
+    const typeBtn = opts.typeToggle
+      ? `<button class="type-toggle${spellTypeGroup?' active':''}" onclick="event.stopPropagation();toggleSpellTypeGroup()" title="Group the spellbook by card type">Type</button>`
+      : '';
     return `<div class="deck-section${collapsed}" id="${sid}">
       <div class="deck-section-head" onclick="toggleSection('${title}')">
         <span class="deck-section-title"><span class="deck-section-caret">▾</span>${title}</span>
         <span class="deck-section-count">${count} card${count===1?'':'s'}${suffix}</span>
+        ${typeBtn}
       </div>
       <div class="deck-section-body">
         ${entries.length ? inner : '<div style="color:var(--rune);font-style:italic;padding:8px 0;">None</div>'}
@@ -974,7 +1016,7 @@
     const atlasCount = (dd.t || []).reduce((s,[,q]) => s + (q||0), 0);
     html += renderSectionBlock('Atlas', dd.t || [], { paren: `${atlasCount} site${atlasCount===1?'':'s'}` });
     // Spellbook — break down by type, e.g. "60 cards (38 minions, 18 magics, 4 artifacts)"
-    html += renderSectionBlock('Spellbook', dd.s || [], { breakdown: 'type' });
+    html += renderSectionBlock('Spellbook', dd.s || [], { breakdown: 'type', typeToggle: true });
     // Deck Collection (only if present)
     if ((dd.c || []).length) {
       html += renderSectionBlock('Collection', dd.c || [], { limit: 'sideboard, up to 10' });
