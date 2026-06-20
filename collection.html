@@ -467,6 +467,9 @@
   .price-market { font-family: 'Cinzel', serif; font-size: 0.75rem; font-weight: 600; color: var(--gold); }
   .price-foil { font-size: 0.7rem; color: var(--arcane); font-style: italic; }
 
+  .price-source-note { font-family: 'Crimson Pro', serif; font-size: 0.8rem; font-style: italic; color: var(--rune); margin: 14px 0 0; line-height: 1.4; }
+  .price-source-note b { color: var(--gold); font-style: normal; font-weight: 600; }
+
   .qty-have, .qty-want, .qty-trade { display: flex; gap: 3px; margin-top: 4px; }
   .qty-mini { width: 24px; height: 24px; border-radius: 3px; border: 1px solid var(--border-strong); background: rgba(11,10,15,0.8); color: var(--shimmer); font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.15s; }
   .qty-mini:hover { background: var(--rune); color: #fff; }
@@ -793,6 +796,7 @@
   </div>
 
   <div id="result-count" class="result-count" style="margin-top:16px;"></div>
+  <div id="price-source-note" class="price-source-note" style="display:none;"></div>
   <div id="card-grid" class="card-grid">
     <div class="status"><span class="loading-rune"></span>Consulting the arcane archives…</div>
   </div>
@@ -1081,6 +1085,13 @@ async function loadCards() {
         foilPrices = pdata.foils || {};
         priceSource = pdata.source || 'JustTCG';
         priceDate = pdata.generated ? new Date(pdata.generated).toLocaleDateString() : null;
+        // Always-visible price attribution line
+        const psNote = document.getElementById('price-source-note');
+        if (psNote && pdata.generated) {
+          const when = new Date(pdata.generated).toLocaleString();
+          psNote.innerHTML = `Card prices: <b>TCGplayer Market</b> via JustTCG · updated ${when}`;
+          psNote.style.display = '';
+        }
       }
     } catch(e) { /* prices.json not found, that's fine */ }
 
