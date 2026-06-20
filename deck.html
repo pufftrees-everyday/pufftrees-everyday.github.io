@@ -218,8 +218,8 @@
   .cell-img-wrap { position: relative; width: 100%; aspect-ratio: 5/7; overflow: hidden; }
   .deck-card-cell > .cell-img-wrap > img.card-art { width: 100%; height: 100%; display: block; object-fit: cover; background: #0b0a0f; }
   /* Site cards rendered landscape with the image rotated 90° (full card visible) */
-  .deck-card-cell.is-site .cell-img-wrap { aspect-ratio: 4/3; display: flex; align-items: center; justify-content: center; background: #0b0a0f; overflow: hidden; }
-  .deck-card-cell.is-site > .cell-img-wrap > img.card-art { position: absolute; width: 75%; height: auto; aspect-ratio: 5/7; transform: rotate(90deg); object-fit: contain; }
+  .deck-card-cell.is-site .cell-img-wrap { aspect-ratio: 7/5; display: flex; align-items: center; justify-content: center; background: #0b0a0f; overflow: hidden; }
+  .deck-card-cell.is-site > .cell-img-wrap > img.card-art { position: absolute; width: 71%; height: auto; aspect-ratio: 5/7; transform: rotate(90deg); object-fit: contain; }
   .deck-card-cell .qty-chip { position: absolute; top: 7px; right: 7px; background: rgba(11,10,15,0.9); border: 1.5px solid var(--gold); color: var(--gold); font-family: 'Cinzel', serif; font-weight: 700; font-size: 1.4rem; line-height: 1; padding: 5px 11px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.5); z-index: 3; }
   .deck-card-cell .qty-chip .qty-x { font-size: 0.85rem; opacity: 0.8; margin-left: 1px; }
   .deck-grid.large .deck-card-cell .qty-chip { font-size: 1.7rem; padding: 6px 13px; }
@@ -1009,7 +1009,10 @@
   }
 
   function copyDeckLink() {
-    const url = `${window.location.origin}/deck.html?d=${currentDeck.short_code}`;
+    // Share via the Worker host so social platforms (Discord, etc.) get a per-deck
+    // preview. The Worker shows the preview to crawlers and redirects people to the
+    // real deck page. Everything else on the site keeps using cursedrealm.org.
+    const url = `https://cursed-realm-og.pufftreees.workers.dev/d/${currentDeck.short_code}`;
     navigator.clipboard.writeText(url).then(() => toast('Link copied!'), () => window.prompt('Copy link:', url));
   }
 
