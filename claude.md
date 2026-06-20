@@ -44,7 +44,10 @@ push happen directly, no manual upload.
 - **VIEW public_decks_with_likes**: public decks + like counts
 
 **deck_data jsonb shape:** `{ n:name, a:[[cardName,qty]...avatar], t:[...atlas/sites],
-s:[...spellbook], c:[...collection/sideboard] }`
+s:[...spellbook], c:[...collection/sideboard], d:"Scroll" }`
+- `d` = the deck's **Scroll** (free-text description / strategy notes; omitted when empty).
+  Edited in deckbuilder.html (📜 Scroll button turns the left explorer into a textarea);
+  shown on deck.html (Scroll tab swaps deck content on desktop, sits inline below on mobile).
 
 ## Card data (cards.json)
 From `api.sorcerytcg.com/api/cards`, hosted on the site as `cards.json`.
