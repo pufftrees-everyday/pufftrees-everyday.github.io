@@ -547,8 +547,17 @@
   }
   .deck-section-header:hover { color: var(--gold-bright, #e8c87a); }
 
-  .deck-section-header-left { display: flex; align-items: center; gap: 8px; }
-  .deck-section-arrow { font-size: 0.6rem; color:var(--rune); transition: transform 0.2s; }
+  .deck-section-header-left { display: flex; align-items: center; gap: 9px; }
+  /* Clear, button-style collapse toggle so it's obvious sections collapse */
+  .deck-section-arrow {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 22px; height: 22px; flex-shrink: 0;
+    border: 1px solid var(--border-strong); border-radius: 6px;
+    background: rgba(155,135,212,0.1); color: var(--arcane);
+    font-size: 0.6rem; line-height: 1;
+    transition: transform 0.2s, background 0.15s, border-color 0.15s;
+  }
+  .deck-section-header:hover .deck-section-arrow { background: rgba(155,135,212,0.22); border-color: var(--arcane); color: var(--shimmer); }
   .deck-section.collapsed .deck-section-arrow { transform: rotate(-90deg); }
 
   .deck-section-body { padding: 10px 0 14px; }
@@ -2566,9 +2575,9 @@ function renderSection(title, section, entries, reqMsg, isOk, req, groups) {
 
   return `
     <div class="deck-section ${collapsed}" id="deck-section-${section}">
-      <div class="deck-section-header" onclick="toggleDeckSection('${section}')">
+      <div class="deck-section-header" onclick="toggleDeckSection('${section}')" title="Show or hide this section">
         <div class="deck-section-header-left">
-          <span class="deck-section-arrow">▼</span>
+          <span class="deck-section-arrow" aria-hidden="true">▼</span>
           <span>${title} <span class="section-count">${count}</span></span>
           ${(section === 'spellbook' || section === 'collection') ? `<button class="db-type-toggle${spellTypeGroup ? ' active' : ''}" onclick="event.stopPropagation();toggleSpellTypeGroup()" title="Group cards by type">Type</button>` : ''}
         </div>

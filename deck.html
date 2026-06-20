@@ -245,7 +245,16 @@
   /* collapsible section heads */
   .deck-section-head { cursor: pointer; user-select: none; }
   .deck-section-head:hover .deck-section-title { color: var(--shimmer); }
-  .deck-section-caret { display: inline-block; color: var(--rune); font-size: 0.8rem; margin-right: 8px; transition: transform 0.18s; }
+  /* Clear, button-style collapse toggle so it's obvious sections collapse */
+  .deck-section-caret {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 24px; height: 24px; flex-shrink: 0; margin-right: 10px;
+    border: 1px solid var(--border-strong); border-radius: 6px;
+    background: rgba(155,135,212,0.1); color: var(--arcane);
+    font-size: 0.78rem; line-height: 1;
+    transition: transform 0.18s, background 0.15s, border-color 0.15s;
+  }
+  .deck-section-head:hover .deck-section-caret { background: rgba(155,135,212,0.22); border-color: var(--arcane); color: var(--shimmer); }
   .deck-section.collapsed .deck-section-caret { transform: rotate(-90deg); }
   .deck-section.collapsed .deck-section-body { display: none; }
   .deck-section-count { font-family: 'Crimson Pro', serif; font-size: 0.9rem; color: var(--rune); }
@@ -822,8 +831,8 @@
       ? `<button class="type-toggle${spellTypeGroup?' active':''}" onclick="event.stopPropagation();toggleSpellTypeGroup()" title="Group the spellbook by card type">Type</button>`
       : '';
     return `<div class="deck-section${collapsed}" id="${sid}">
-      <div class="deck-section-head" onclick="toggleSection('${title}')">
-        <span class="deck-section-title"><span class="deck-section-caret">▾</span>${title}</span>
+      <div class="deck-section-head" onclick="toggleSection('${title}')" title="Show or hide this section">
+        <span class="deck-section-title"><span class="deck-section-caret" aria-hidden="true">▾</span>${title}</span>
         <span class="deck-section-count">${count} card${count===1?'':'s'}${suffix}</span>
         ${typeBtn}
       </div>
@@ -980,8 +989,8 @@
 
     const collapsed = collapsedSections['Deck Stats'] ? ' collapsed' : '';
     panel.innerHTML = `<div class="deck-section deck-stats-section${collapsed}" id="section-Deck-Stats">
-      <div class="deck-section-head" onclick="toggleSection('Deck Stats')">
-        <span class="deck-section-title"><span class="deck-section-caret">▾</span>Deck Stats</span>
+      <div class="deck-section-head" onclick="toggleSection('Deck Stats')" title="Show or hide Deck Stats">
+        <span class="deck-section-title"><span class="deck-section-caret" aria-hidden="true">▾</span>Deck Stats</span>
       </div>
       <div class="deck-section-body">
         <div class="deck-stats-panel">
