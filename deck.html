@@ -115,6 +115,21 @@
   body.show-thresholds .th-toggle-track { background: rgba(200,169,110,0.25); border-color: var(--gold); }
   body.show-thresholds .th-toggle-knob { transform: translateX(20px); background: var(--gold); }
 
+  /* ── SCROLL (deck description) ── */
+  .scroll-tab-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: 'Cinzel', serif; font-size: 0.7rem; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase; color: var(--rune);
+    background: transparent; border: 1px solid var(--border-strong); border-radius: 4px;
+    padding: 6px 13px; cursor: pointer; transition: all 0.15s;
+  }
+  .scroll-tab-btn:hover { color: var(--arcane); border-color: var(--arcane); }
+  .scroll-tab-btn.active { background: var(--gold); border-color: var(--gold); color: #1a1410; }
+  .deck-scroll-box { background: var(--abyss); border: 1px solid var(--border); border-left: 3px solid var(--gold); border-radius: 10px; padding: 20px 24px; }
+  .deck-scroll-title { font-family: 'Cinzel', serif; font-size: 0.95rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold); margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+  .deck-scroll-text { font-family: 'Crimson Pro', serif; font-size: 1.06rem; line-height: 1.75; color: var(--parchment); white-space: pre-wrap; word-wrap: break-word; }
+  #deck-scroll-panel { margin-top: 8px; }
+
   /* ── DECK SECTIONS ── */
   .deck-section { margin-bottom: 26px; }
   .deck-section-head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; padding-bottom: 7px; border-bottom: 1px solid var(--border); }
@@ -360,6 +375,7 @@
             <button class="viewmode-btn" id="vm-large" onclick="setDeckView('large')" title="Large view">⊡</button>
           </div>
         </div>
+        <button class="scroll-tab-btn" id="scroll-tab" onclick="scrollBtnClick()" title="Read this deck's Scroll" style="display:none;">📜 Scroll</button>
         <div class="viewmode-wrap">
           <span class="viewmode-label">Threshold</span>
           <button class="threshold-toggle" id="threshold-toggle" onclick="toggleThresholds()" title="Show threshold requirements on cards">
@@ -375,6 +391,9 @@
 
     <!-- SECTIONS -->
     <div id="deck-sections"></div>
+
+    <!-- SCROLL (deck description) -->
+    <div id="deck-scroll-panel" style="display:none;"></div>
   </div>
 </div>
 
@@ -494,8 +513,63 @@
       const btn = document.getElementById('vm-' + m);
       if (btn) btn.classList.toggle('active', mode === m);
     });
+    // Picking a card layout exits the Scroll view (on desktop)
+    scrollMode = false;
     renderSections();
+    applyScrollLayout();
   }
+
+  // ── Scroll (deck description) ──
+  let scrollMode = false;
+  function deckScrollText() {
+    const dd = (currentDeck && currentDeck.deck_data) || {};
+    return (dd.d || '').trim();
+  }
+  function renderScrollPanel() {
+    const panel = document.getElementById('deck-scroll-panel');
+    const txt = deckScrollText();
+    if (!txt) { panel.innerHTML = ''; return; }
+    panel.innerHTML = '<div class="deck-scroll-box"><div class="deck-scroll-title">📜 Scroll</div><div class="deck-scroll-text"></div></div>';
+    panel.querySelector('.deck-scroll-text').textContent = txt;
+  }
+  function applyScrollLayout() {
+    const panel = document.getElementById('deck-scroll-panel');
+    const stats = document.getElementById('deck-stats-panel');
+    const sections = document.getElementById('deck-sections');
+    const tab = document.getElementById('scroll-tab');
+    const has = !!deckScrollText();
+    tab.style.display = has ? '' : 'none';
+    if (!has) { panel.style.display = 'none'; scrollMode = false; tab.classList.remove('active'); return; }
+    const isMobile = window.matchMedia('(max-width: 720px)').matches;
+    if (isMobile) {
+      // Mobile: Scroll always sits inline below the deck; tab is a jump button
+      panel.style.display = 'block';
+      stats.style.display = '';
+      sections.style.display = '';
+      tab.classList.remove('active');
+    } else if (scrollMode) {
+      // Desktop: Scroll replaces the deck content
+      panel.style.display = 'block';
+      stats.style.display = 'none';
+      sections.style.display = 'none';
+      tab.classList.add('active');
+    } else {
+      panel.style.display = 'none';
+      stats.style.display = '';
+      sections.style.display = '';
+      tab.classList.remove('active');
+    }
+  }
+  function scrollBtnClick() {
+    if (window.matchMedia('(max-width: 720px)').matches) {
+      applyScrollLayout();
+      document.getElementById('deck-scroll-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      scrollMode = !scrollMode;
+      applyScrollLayout();
+    }
+  }
+  window.addEventListener('resize', () => { if (currentDeck) applyScrollLayout(); });
 
   let showThresholds = localStorage.getItem('grimoire_deckview_thresholds') === '1';
   function toggleThresholds() {
@@ -1112,6 +1186,8 @@
       document.title = `${currentDeck.name || 'Deck'} — Cursed Realm`;
       renderHero();
       renderSections();
+      renderScrollPanel();
+      applyScrollLayout();
       statusEl.style.display = 'none';
       document.getElementById('deck-content').style.display = '';
       wireHover();

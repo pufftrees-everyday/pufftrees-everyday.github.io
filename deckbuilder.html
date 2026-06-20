@@ -143,6 +143,18 @@
     background: var(--abyss);
   }
 
+  /* SCROLL EDITOR — takes over the explorer panel while writing the deck's Scroll */
+  .scroll-editor { display: none; flex: 1; flex-direction: column; gap: 12px; padding: 16px; overflow: hidden; }
+  .explorer.scroll-mode > :not(.scroll-editor) { display: none; }
+  .explorer.scroll-mode .scroll-editor { display: flex; }
+  .scroll-editor-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .scroll-editor-title { font-family: 'Cinzel', serif; font-size: 0.92rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold); }
+  .scroll-editor-hint { font-size: 0.86rem; color: var(--rune); font-style: italic; line-height: 1.45; }
+  .scroll-textarea { flex: 1; min-height: 300px; width: 100%; resize: none; background: #0b0a0f; border: 2px solid #2a2640; border-radius: 6px; color: var(--parchment); font-family: 'Crimson Pro', serif; font-size: 1.02rem; line-height: 1.6; padding: 12px 14px; outline: none; box-shadow: inset 2px 2px 6px rgba(0,0,0,0.5); }
+  .scroll-textarea:focus { border-color: var(--rune); }
+  .scroll-textarea::placeholder { color: #3a3658; font-style: italic; }
+  #scroll-btn.active { background: var(--gold); border-color: var(--gold); color: #1a1410; }
+
   .explorer-search {
     padding: 12px 12px 0;
     background: #13111e;
@@ -1155,6 +1167,16 @@
         <div class="status"><span class="loading-rune">⧫</span>Loading cards…</div>
       </div>
     </div>
+
+    <!-- SCROLL EDITOR (replaces the explorer when writing the deck's Scroll) -->
+    <div class="scroll-editor" id="scroll-editor">
+      <div class="scroll-editor-head">
+        <span class="scroll-editor-title">📜 Deck Scroll</span>
+        <button class="btn btn-ghost" onclick="toggleScrollEditor()">Done</button>
+      </div>
+      <div class="scroll-editor-hint">Write a description, strategy notes, mulligan guide, or play tips. Readers see this as the deck's “Scroll” on the deck page.</div>
+      <textarea id="scroll-textarea" class="scroll-textarea" maxlength="6000" placeholder="Describe your deck's game plan…" oninput="deckScroll = this.value;"></textarea>
+    </div>
   </div>
 
   <!-- DRAGGABLE DIVIDER -->
@@ -1199,6 +1221,7 @@
           <button class="btn btn-ghost" onclick="saveDeck()">Save</button>
           <button class="btn btn-primary" onclick="shareDeck()">Share</button>
           <button class="btn btn-ghost" onclick="openDeckStats()">Stats</button>
+          <button class="btn btn-ghost" id="scroll-btn" onclick="toggleScrollEditor()">📜 Scroll</button>
           <button class="btn btn-ghost" onclick="openImport()">Import</button>
           <button class="btn btn-ghost" onclick="exportDeck()">Export</button>
           <button class="btn btn-danger" onclick="clearDeck()">Clear</button>
@@ -1384,6 +1407,26 @@ let lastSharedCode = null; // short code of the most recently shared deck (for p
 
 // deck: { atlas: {key: {card, qty}}, spellbook: {key: {card, qty}}, avatar: {key: {card, qty}} }
 let deck = { avatar: {}, atlas: {}, spellbook: {}, collection: {} };
+let deckScroll = ''; // the deck's "Scroll" (free-text description / strategy notes)
+
+// Toggle the Scroll editor — converts the left explorer panel into a text editor
+function toggleScrollEditor() {
+  const exp = document.querySelector('.explorer');
+  const btn = document.getElementById('scroll-btn');
+  const on = !exp.classList.contains('scroll-mode');
+  exp.classList.toggle('scroll-mode', on);
+  if (btn) btn.classList.toggle('active', on);
+  if (on) {
+    const ta = document.getElementById('scroll-textarea');
+    ta.value = deckScroll || '';
+    if (window.matchMedia('(max-width: 760px)').matches) exp.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    ta.focus();
+  }
+}
+function syncScrollEditor() {
+  const ta = document.getElementById('scroll-textarea');
+  if (ta) ta.value = deckScroll || '';
+}
 let currentModalCard = null;
 let addQty = 1;
 let activeDeckId = null;
@@ -2665,7 +2708,7 @@ async function saveDeck() {
   const saved = getSavedDecks();
   const id = activeDeckId || ('deck_' + Date.now());
   activeDeckId = id;
-  saved[id] = { name, deck: JSON.parse(JSON.stringify(deck)), savedAt: new Date().toISOString() };
+  saved[id] = { name, deck: JSON.parse(JSON.stringify(deck)), scroll: (deckScroll || '').trim(), savedAt: new Date().toISOString() };
   localStorage.setItem('grimoire_decks', JSON.stringify(saved));
   toast(currentUser ? `"${name}" saved locally` : `"${name}" saved!`);
 }
@@ -2674,6 +2717,8 @@ function loadDeck(id) {
   const saved = getSavedDecks();
   if (!saved[id]) return;
   const { name, deck: d } = saved[id];
+  deckScroll = saved[id].scroll || '';
+  syncScrollEditor();
   deck = { avatar: {}, atlas: {}, spellbook: {}, collection: {} };
   // Support old flat format and new sectioned format
   if (d.avatar !== undefined) {
@@ -2761,7 +2806,10 @@ function downloadDeckText() {
 function buildDeckPayload() {
   const name = document.getElementById('deck-name-input').value.trim() || 'Shared Deck';
   const pack = section => Object.values(deck[section]).map(({card, qty}) => [card.name, qty]);
-  return { n: name, a: pack('avatar'), t: pack('atlas'), s: pack('spellbook'), c: pack('collection') };
+  const payload = { n: name, a: pack('avatar'), t: pack('atlas'), s: pack('spellbook'), c: pack('collection') };
+  const scroll = (deckScroll || '').trim();
+  if (scroll) payload.d = scroll;
+  return payload;
 }
 
 function encodeDeck() {
@@ -3067,7 +3115,7 @@ async function maybeMigrateDecks() {
     let migrated = 0;
     for (const id of ids) {
       const entry = local[id];
-      const payload = deckToPayload(entry.deck, entry.name);
+      const payload = deckToPayload(entry.deck, entry.name, entry.scroll);
       for (let attempt = 0; attempt < 5; attempt++) {
         const code = genShortCode();
         const { error } = await supa.from('decks').insert({
@@ -3084,9 +3132,11 @@ async function maybeMigrateDecks() {
 }
 
 // Convert a stored deck object {avatar,atlas,spellbook} into share payload form
-function deckToPayload(d, name) {
+function deckToPayload(d, name, scroll) {
   const pack = sec => Object.values(d[sec] || {}).map(({card, qty}) => [card.name, qty]);
-  return { n: name || 'Unnamed Deck', a: pack('avatar'), t: pack('atlas'), s: pack('spellbook'), c: pack('collection') };
+  const payload = { n: name || 'Unnamed Deck', a: pack('avatar'), t: pack('atlas'), s: pack('spellbook'), c: pack('collection') };
+  if (scroll && scroll.trim()) payload.d = scroll.trim();
+  return payload;
 }
 
 function renderAuthBar() {
@@ -3155,6 +3205,8 @@ function applyDeckPayload(payload) {
   place(payload.c, 'collection');
   if (matched === 0) { toast('Shared deck had no matching cards'); return false; }
   deck = newDeck;
+  deckScroll = payload.d || '';
+  syncScrollEditor();
   // A loaded shared deck is someone else's (or a fresh copy) — saving should
   // create the current user's OWN deck, never overwrite the original.
   activeDeckCode = null;
@@ -3335,6 +3387,10 @@ function syncDeckViewToggle() {
 // ── CLEAR ──
 function clearDeck() {
   deck = { avatar: {}, atlas: {}, spellbook: {}, collection: {} };
+  deckScroll = '';
+  syncScrollEditor();
+  const exp = document.querySelector('.explorer');
+  if (exp && exp.classList.contains('scroll-mode')) toggleScrollEditor();
   activeDeckCode = null;
   activeDeckId = null;
   activeDeckPublic = false;
