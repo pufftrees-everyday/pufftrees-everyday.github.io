@@ -669,13 +669,35 @@
   .pc-note { color: var(--rune); font-style: italic; }
 
   @media (max-width: 680px) {
-    .cm-overlay { padding: 0; align-items: stretch; }
-    .cm-modal, .cm-modal.site-modal { grid-template-columns: 1fr; max-height: 100vh; height: 100vh; border-radius: 0; overflow-y: auto; }
-    .cm-img { padding: 18px 18px 8px; }
-    .cm-img img { max-width: 190px; }
-    .cm-img.site-img img { max-width: 230px; }
-    .cm-body { padding: 16px 18px 28px; }
-    .cm-name { font-size: 1.35rem; }
+    /* Centered sheet, sized to content up to 90dvh. dvh keeps the iOS address
+       bar from clipping the bottom. Image is a pinned header; only the body
+       scrolls, so the close button (absolute) is always reachable. */
+    .cm-overlay { padding: 14px; align-items: center; }
+    .cm-modal, .cm-modal.site-modal {
+      display: flex; flex-direction: column;
+      grid-template-columns: none;
+      width: 100%; max-width: 440px;
+      max-height: 90vh; max-height: 90dvh;
+      border-radius: 14px;
+      overflow: hidden;
+    }
+    .cm-img { flex-shrink: 0; padding: 20px 18px 8px; }
+    .cm-img img { max-width: 200px; }
+    /* Sites render landscape (rotated); fix the header height so the rotated
+       image doesn't reserve a tall whitespace box. */
+    .cm-img.site-img { height: 190px; padding: 12px; overflow: hidden; }
+    .cm-img.site-img img { max-width: 148px; }
+    .cm-body {
+      flex: 1 1 auto; min-height: 0;
+      overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
+      padding: 14px 18px 22px; gap: 12px;
+    }
+    .cm-name { font-size: 1.3rem; padding-right: 36px; }
+    .cm-text { font-size: 0.95rem; }
+  }
+  @media (max-width: 360px) {
+    .cm-img img { max-width: 168px; }
+    .cm-flag { font-size: 0.68rem; padding: 9px 11px; }
   }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
