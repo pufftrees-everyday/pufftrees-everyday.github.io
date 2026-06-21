@@ -940,7 +940,7 @@ function binderCardCount(binder) {
 
 // ── BINDER UI ──
 function bEsc(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-const binderUI = { collapsed: {}, addFinish: {} }; // transient per-binder UI state
+const binderUI = { collapsed: {}, addFinish: {}, addRarity: {} }; // transient per-binder UI state
 const MASTER_COUNTS = { Unique: 1, Elite: 2, Exceptional: 3, Ordinary: 4 };
 
 function currentBinderParent() {
@@ -948,10 +948,14 @@ function currentBinderParent() {
 }
 function buildCardDatalist() {
   if (document.getElementById('binder-cardlist')) return;
-  const dl = document.createElement('datalist');
-  dl.id = 'binder-cardlist';
-  dl.innerHTML = allCards.map(c => `<option value="${bEsc(c.name)}"></option>`).join('');
-  document.body.appendChild(dl);
+  const make = (suffix, cards) => {
+    const dl = document.createElement('datalist');
+    dl.id = 'binder-cardlist' + (suffix ? '-' + suffix : '');
+    dl.innerHTML = cards.map(c => `<option value="${bEsc(c.name)}"></option>`).join('');
+    document.body.appendChild(dl);
+  };
+  make('', allCards);
+  ['Ordinary','Exceptional','Elite','Unique'].forEach(r => make(r, allCards.filter(c => c.rarity === r)));
 }
 
 function renderBinders() {
@@ -977,6 +981,8 @@ function renderBinders() {
 function renderBinderCard(b) {
   const collapsed = binderUI.collapsed[b.id];
   const addFinish = binderUI.addFinish[b.id] || 'std';
+  const addRarity = binderUI.addRarity[b.id] || '';
+  const listId = addRarity ? 'binder-cardlist-' + addRarity : 'binder-cardlist';
   const count = binderCardCount(b);
   const val = binderValue(b);
   const setOpts = ALL_SETS.map(s => `<option value="${bEsc(s)}">${bEsc(s)}</option>`).join('');
@@ -1010,10 +1016,18 @@ function renderBinderCard(b) {
         <select class="binder-set-select" id="bset-${b.id}">${setOpts}</select>
         <button class="binder-btn" onclick="binderAddSet('${b.id}','std')" title="Add 1 standard of each card in the chosen set">+1 of each</button>
         <button class="binder-btn" onclick="binderAddSet('${b.id}','foil')" title="Add 1 foil of each card in the chosen set">+1 foil of each</button>
-        <button class="binder-btn" onclick="binderAddMaster('${b.id}')" title="Master Set: 1× Unique, 2× Elite, 3× Exceptional, 4× Ordinary (standard)">Master Set</button>
+        <button class="binder-btn" onclick="binderAddMaster('${b.id}','std')" title="Master Set: 1× Unique, 2× Elite, 3× Exceptional, 4× Ordinary (standard)">Master Set</button>
+        <button class="binder-btn" onclick="binderAddMaster('${b.id}','foil')" title="Foil Master Set: 1× Unique, 2× Elite, 3× Exceptional, 4× Ordinary (foil)">Foil Master Set</button>
       </div>
       <div class="binder-add-row">
-        <input class="binder-add-input" list="binder-cardlist" id="badd-${b.id}" placeholder="Add a card by name…" onkeydown="if(event.key==='Enter'){event.preventDefault();binderAddManual('${b.id}');}">
+        <select class="binder-set-select" id="brar-${b.id}" title="Filter the card search by rarity" onchange="setBinderAddRarity('${b.id}', this.value)">
+          <option value="" ${addRarity===''?'selected':''}>All rarities</option>
+          <option value="Ordinary" ${addRarity==='Ordinary'?'selected':''}>Ordinary</option>
+          <option value="Exceptional" ${addRarity==='Exceptional'?'selected':''}>Exceptional</option>
+          <option value="Elite" ${addRarity==='Elite'?'selected':''}>Elite</option>
+          <option value="Unique" ${addRarity==='Unique'?'selected':''}>Unique</option>
+        </select>
+        <input class="binder-add-input" list="${listId}" id="badd-${b.id}" placeholder="Add a card by name…" onkeydown="if(event.key==='Enter'){event.preventDefault();binderAddManual('${b.id}');}">
         <div class="binder-finish-toggle">
           <button class="${addFinish==='std'?'active':''}" onclick="setBinderAddFinish('${b.id}','std')">Std</button>
           <button class="${addFinish==='foil'?'active':''}" onclick="setBinderAddFinish('${b.id}','foil')">Foil</button>
@@ -1053,6 +1067,11 @@ function toggleBinderCollapse(id) {
   if (el) el.classList.toggle('collapsed', binderUI.collapsed[id]);
 }
 function setBinderAddFinish(id, finish) { binderUI.addFinish[id] = finish; renderBinders(); }
+function setBinderAddRarity(id, rarity) {
+  binderUI.addRarity[id] = rarity;
+  const inp = document.getElementById('badd-' + id);
+  if (inp) inp.setAttribute('list', rarity ? 'binder-cardlist-' + rarity : 'binder-cardlist');
+}
 function binderEnsureCard(b, name) {
   if (!b.cards) b.cards = {};
   if (!b.cards[name]) b.cards[name] = { std: 0, foil: 0 };
@@ -1075,9 +1094,11 @@ function binderAddManual(id) {
   const input = document.getElementById('badd-' + id);
   const val = (input.value || '').trim();
   if (!val) return;
-  const card = allCards.find(c => c.name.toLowerCase() === val.toLowerCase())
-            || allCards.find(c => c.name.toLowerCase().startsWith(val.toLowerCase()));
-  if (!card) { toast(`No card named “${val}”`); return; }
+  const rar = binderUI.addRarity[id] || '';
+  const pool = rar ? allCards.filter(c => c.rarity === rar) : allCards;
+  const card = pool.find(c => c.name.toLowerCase() === val.toLowerCase())
+            || pool.find(c => c.name.toLowerCase().startsWith(val.toLowerCase()));
+  if (!card) { toast(`No ${rar ? rar + ' ' : ''}card named “${val}”`); return; }
   const finish = binderUI.addFinish[id] || 'std';
   binderEnsureCard(b, card.name)[finish] += 1;
   input.value = '';
@@ -1094,14 +1115,15 @@ function binderAddSet(id, finish) {
   saveBinders(); renderBinders(); updateStats();
   toast(`Added 1 ${finish === 'foil' ? 'foil' : 'standard'} of ${cards.length} ${set} cards to ${b.name}`);
 }
-function binderAddMaster(id) {
+function binderAddMaster(id, finish) {
+  finish = finish === 'foil' ? 'foil' : 'std';
   const b = findBinder(id); if (!b) return;
   const set = binderSelectedSet(id); if (!set) return;
   const cards = allCards.filter(c => c.setNames.includes(set) && MASTER_COUNTS[c.rarity]);
   if (!cards.length) { toast(`No cards found in ${set}`); return; }
-  cards.forEach(c => { binderEnsureCard(b, c.name).std += MASTER_COUNTS[c.rarity]; });
+  cards.forEach(c => { binderEnsureCard(b, c.name)[finish] += MASTER_COUNTS[c.rarity]; });
   saveBinders(); renderBinders(); updateStats();
-  toast(`Master Set added: ${cards.length} ${set} cards (1× Unique, 2× Elite, 3× Exceptional, 4× Ordinary)`);
+  toast(`${finish === 'foil' ? 'Foil ' : ''}Master Set added: ${cards.length} ${set} cards (1× Unique, 2× Elite, 3× Exceptional, 4× Ordinary)`);
 }
 
 function getLocalCollection() {
