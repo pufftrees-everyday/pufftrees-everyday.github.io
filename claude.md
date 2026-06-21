@@ -70,28 +70,51 @@ then variant where `finish==='Standard' && product==='Booster'`. Example real sl
 
 ---
 
+> **Change View (standardized site-wide):** every card list — index Explorer, collection Vault,
+> deckbuilder (left explorer + right deck panel), deck.html — offers the same 4 views: **Text** (☰),
+> **Detailed** (▤), **Card** (⊞), **Large** (⊡). **Text** is a clean compact row — mana cost · count ·
+> name · threshold-pip symbols (element PNGs) — modeled on the deck viewer; it auto-flows into 3–4
+> columns to fill width (Detailed stays 2). **Detailed** is the full columned row (set/rarity/type/
+> price/flags). **Card/Large** are the image grid (Large = bigger cells). Implementation: each page has
+> a dedicated `renderCardTextRow`/`renderDbCardTextRow`; the container gets `list-view` (Text+Detailed)
+> + `text-view` (Text) + `large-view`. **Text-view quick −/+ steppers** exist where there's a quantity:
+> the **Vault** (adjusts Have/Trade/Want for the active section, finish-aware; row also shows price) and
+> the **deckbuilder explorer** (in-deck count via `quickAddToDeck` / `quickRemoveFromDeck`). The index
+> Explorer is browse-only, so its Text view has **no** steppers.
+
 ## Pages (all in repo root)
-- **index.html** — Card Explorer homepage. 2 card views: **grid** (thumbnails) and **list**
-  (text rows), toggled by the "Change View" button. Stone filters (Type/Set/Rarity/Element +
-  Element-Lock), advanced filters (subtypes/keyword/cost/power), sorting (Random/A–Z/Mana), and
-  the **"Invoke"** advanced-search query language. No deck-building here (builder is on deckbuilder.html).
+- **index.html** — Card Explorer homepage. 4 standardized card views (see Change View note above).
+  Stone filters (Type/Set/Rarity/Element + Element-Lock), advanced filters (subtypes/keyword/cost/
+  power), sorting (Random/A–Z/Mana), and the **"Invoke"** advanced-search query language. No
+  deck-building here (builder is on deckbuilder.html).
 - **collection.html** — "My Vault." Foil/Standard toggle + prices (only page with prices via prices.json).
-  Sections (in order): Card Search, **Vault** (owned), **Trades**, **Wants**.
+  Sections (in order): Card Search, **Vault** (owned), **Trades**, **Wants**. 4 standardized card views;
+  the **Text** view shows count + price and has quick −/+ steppers (see Change View note).
   Data: `collection[cardId] = {have,want,trade,haveFoil,wantFoil,tradeFoil}` (cloud + localStorage `grimoire_collection`).
   Vault = `have`; Trades = `trade`. **Vault and Trades are mutually exclusive** per card: flagging
   Trade moves the card (and its qty) out of the Vault into Trades; un-flagging returns it. `want` is
-  independent. "Total Collection Value" = Vault value + Trades value (both finishes).
+  independent. "Total Collection Value" = Vault value + Trades value (both finishes) + all binder values.
+  **Binders:** the Vault and Trades tabs each have a "Create Binder" button — named, collapsible
+  (collapsed by default), isolated card containers with std/foil quantities. Per-card add and bulk
+  "add 1 of each / +1 foil each / Master Set / Foil Master Set" from a chosen set (Master Set = 1×
+  Unique, 2× Elite, 3× Exceptional, 4× Ordinary), a rarity filter on the add-search, and per-binder
+  value that rolls into the total. Stored under a reserved `__binders__` key inside the collection
+  object (rides the same localStorage + cloud sync).
 - **archive.html** — "The Archive" public deck gallery. Loads from the **public_decks_with_likes**
   view (has `like_count`, `views`); author usernames are fetched separately from **profiles** by
   `owner_id` (the view has no `author` column). Sort: Newest / Most Viewed / Most Liked. Each card
   shows 👁 views, ♥ likes (rendered on the card), 💬 comments (counted client-side from
   deck_comments), and a 📜 icon when the deck's Scroll (deck_data.d) is non-empty.
 - **decks.html** — "My Workshop" (user's own decks).
-- **deckbuilder.html** — deck building interface. Spellbook **and** Collection have a **TYPE**
-  toggle (top of the section) that groups cards by type into Minion/Magic/Artifact/Aura (+ an
-  "Other" bucket); off = flat list. One shared preference across both sections and deck.html via
-  localStorage `grimoire_spell_typegroup` (default off).
-- **deck.html** — read-only deck view (?d=CODE). Stats panel, 4 views, like button, share.
+- **deckbuilder.html** — deck building interface. Two "Change View" toggles (left explorer + right
+  deck panel), both with the standard 4 views; the explorer **Text** view has in-deck −/+ steppers
+  (see Change View note). Spellbook **and** Collection have a **TYPE** toggle (top of the section)
+  that groups cards by type into Minion/Magic/Artifact/Aura (+ an "Other" bucket); off = flat list.
+  One shared preference across both sections and deck.html via localStorage `grimoire_spell_typegroup`
+  (default off).
+- **deck.html** — read-only deck view (?d=CODE). Stats panel, the standard 4 views, like button, share.
+  **Threshold** toggle and a **Price** toggle (next to it) — Price shows per-card line prices across
+  the views + a "Deck Value" total (avatar+atlas+spellbook; loads prices.json, hidden if unavailable).
   View counter (👁) next to the like button; increments once per browser session per deck
   via the `increment_deck_views` RPC — see gotcha below. Comments section under the deck
   (deck_comments table): logged-in users post + reply (one level); owner posts badged "Author".
