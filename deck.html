@@ -127,6 +127,20 @@
   .th-toggle-knob { position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: var(--rune); transition: transform 0.2s, background 0.2s; }
   body.show-thresholds .th-toggle-track { background: rgba(200,169,110,0.25); border-color: var(--gold); }
   body.show-thresholds .th-toggle-knob { transform: translateX(20px); background: var(--gold); }
+  /* Price toggle switch */
+  .price-toggle { background: none; border: none; cursor: pointer; padding: 0; display: inline-flex; align-items: center; }
+  .pr-toggle-track { width: 42px; height: 22px; border-radius: 11px; background: var(--twilight); border: 1px solid var(--border-strong); position: relative; transition: background 0.2s, border-color 0.2s; display: inline-block; }
+  .pr-toggle-knob { position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: var(--rune); transition: transform 0.2s, background 0.2s; }
+  body.show-prices .pr-toggle-track { background: rgba(90,138,106,0.25); border-color: var(--sage); }
+  body.show-prices .pr-toggle-knob { transform: translateX(20px); background: var(--sage); }
+  /* Deck value total + per-card prices */
+  .deck-price-total { font-family: 'Cinzel', serif; font-size: 0.78rem; color: var(--sage); white-space: nowrap; }
+  .deck-price-total b { color: var(--gold); font-size: 0.95rem; }
+  .deck-price-total .dpt-date { color: var(--rune); font-style: italic; font-weight: 400; }
+  .card-price { display: none; color: var(--sage); font-variant-numeric: tabular-nums; }
+  body.show-prices .deck-list-row .card-price, body.show-prices .deck-detail-row .card-price { display: inline-block; margin-left: 10px; min-width: 56px; text-align: right; }
+  .cell-price { display: none; }
+  body.show-prices .cell-price { display: block; position: absolute; left: 6px; bottom: 6px; background: rgba(11,10,15,0.85); color: var(--sage); font-size: 0.72rem; font-weight: 700; padding: 2px 6px; border-radius: 5px; border: 1px solid var(--border-strong); }
 
   /* Spellbook TYPE grouping toggle */
   .type-toggle { flex-shrink: 0; font-family: 'Cinzel', serif; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--rune); background: transparent; border: 1px solid var(--border-strong); border-radius: 4px; padding: 4px 12px; cursor: pointer; transition: all 0.15s; }
@@ -460,6 +474,13 @@
             <span class="th-toggle-track"><span class="th-toggle-knob"></span></span>
           </button>
         </div>
+        <div class="viewmode-wrap" id="price-control" style="display:none;">
+          <span class="viewmode-label">Price</span>
+          <button class="price-toggle" id="price-toggle" onclick="togglePrices()" title="Show card prices and total deck value">
+            <span class="pr-toggle-track"><span class="pr-toggle-knob"></span></span>
+          </button>
+          <span class="deck-price-total" id="deck-price-total"></span>
+        </div>
       </div>
       <button class="btn btn-ghost" onclick="downloadDeckText()">⬇ Download .txt</button>
     </div>
@@ -534,6 +555,8 @@
   let spellTypeGroup = localStorage.getItem('grimoire_spell_typegroup') === '1';
 
   // ── Load card data ──
+  let prices = {};        // card name → { market } (standard, from prices.json)
+  let priceDate = null;
   async function loadCards() {
     try {
       const res = await fetch('cards.json');
@@ -563,6 +586,27 @@
         };
       });
     } catch (e) { console.warn('cards.json failed', e); }
+    // Prices (optional — silently skip if missing). Standard market price by card name.
+    try {
+      const pres = await fetch('prices.json');
+      if (pres.ok) {
+        const pdata = await pres.json();
+        prices = pdata.prices || {};
+        priceDate = pdata.generated ? new Date(pdata.generated).toLocaleDateString() : null;
+      }
+    } catch (e) { /* prices optional */ }
+  }
+
+  function cardPrice(name) { return (prices[name] && prices[name].market) || 0; }
+  function deckTotalPrice() {
+    const dd = (currentDeck && currentDeck.deck_data) || {};
+    let t = 0;
+    ['a','t','s'].forEach(k => (dd[k]||[]).forEach(([n,q]) => { t += cardPrice(n) * (q||0); }));
+    return t;
+  }
+  function priceSpan(name, qty) {
+    const v = cardPrice(name) * (qty||0);
+    return `<span class="card-price">${v>0 ? '$'+v.toFixed(2) : '—'}</span>`;
   }
 
   function imgUrl(name) {
@@ -660,6 +704,29 @@
     document.body.classList.toggle('show-thresholds', showThresholds);
   }
 
+  let showPrices = localStorage.getItem('grimoire_deckview_prices') === '1';
+  function togglePrices() {
+    showPrices = !showPrices;
+    localStorage.setItem('grimoire_deckview_prices', showPrices ? '1' : '0');
+    document.body.classList.toggle('show-prices', showPrices);
+    updateDeckPriceTotal();
+  }
+  function updateDeckPriceTotal() {
+    const el = document.getElementById('deck-price-total');
+    if (!el) return;
+    const total = deckTotalPrice();
+    el.innerHTML = `Deck Value: <b>$${total.toFixed(2)}</b>` +
+      (priceDate ? ` <span class="dpt-date">· ${priceDate}</span>` : '');
+  }
+  // Show the price control only when price data is available
+  function enablePriceUI() {
+    const ctrl = document.getElementById('price-control');
+    if (!ctrl) return;
+    const hasPrices = Object.keys(prices).length > 0;
+    ctrl.style.display = hasPrices ? '' : 'none';
+    if (hasPrices) { document.body.classList.toggle('show-prices', showPrices); updateDeckPriceTotal(); }
+  }
+
   function cardCost(name) { const c = cardMap[(name||'').toLowerCase()]; return c && c.cost != null ? c.cost : ''; }
   function cardRarityRank(name) { const c = cardMap[(name||'').toLowerCase()]; return c ? (RARITY_ORDER[c.rarity] ?? 9) : 9; }
   function cardType(name) { const c = cardMap[(name||'').toLowerCase()]; return c ? c.type : ''; }
@@ -727,6 +794,7 @@
       <span class="deck-list-qty">${qty}×</span>
       <span class="deck-list-name">${escHtml(name)}</span>
       <span class="deck-list-th">${thStr}</span>
+      ${priceSpan(name, qty)}
     </div>`;
   }
 
@@ -744,6 +812,7 @@
       <span class="dd-set">${setBadge(cardSet(name))}</span>
       <span class="dd-rarity ${(rarity||'').toLowerCase()}">${rarityAbbr(rarity)}</span>
       <span class="dd-type">${escHtml(type)}</span>
+      ${priceSpan(name, qty)}
     </div>`;
   }
 
@@ -753,6 +822,7 @@
       <div class="cell-img-wrap">
         <img class="card-art" src="${imgUrl(name)}" alt="${escHtml(name)}" loading="lazy" onerror="this.style.opacity='0.2'">
         ${thresholdOverlayHtml(name)}
+        ${cardPrice(name) > 0 ? `<span class="cell-price">$${(cardPrice(name)*qty).toFixed(2)}</span>` : ''}
       </div>
       <div class="qty-chip">${qty}<span class="qty-x">×</span></div>
       <div class="cell-name">${escHtml(name)}</div>
@@ -1613,6 +1683,7 @@
     await Promise.all([loadCards(), refreshUser()]);
     renderAuthBar();
     await loadDeck();
+    enablePriceUI();
     if (supa) supa.auth.onAuthStateChange((ev) => { if (ev==='SIGNED_IN'||ev==='SIGNED_OUT') refreshUser().then(()=>{renderAuthBar(); if(currentDeck){ renderHero(); renderComments(); }}); });
   })();
 </script>
