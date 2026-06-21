@@ -114,35 +114,9 @@
     .hamburger { display: block; }
     header { padding: 0 16px; }
   }
-
-  /* Tablet & phone — filters stack, grid reflows */
-  @media (max-width: 700px) {
-    .page { padding: 14px; }
-    .filter-stones { flex-wrap: wrap; }
-    .filter-stone { flex: 1 1 45%; min-width: 0; border-right: 3px solid #2a2640; border-bottom: 3px solid #2a2640; }
-    .filter-stone + .filter-stone::before { display: none; }
-    .card-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
-    .card-grid.sites-only { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
-    .search-row { flex-wrap: wrap; }
-    .sort-bar { flex-wrap: wrap; }
-  }
-
-  /* Phone — modal goes full-screen vertical, single column */
-  @media (max-width: 600px) {
-    .modal { grid-template-columns: 1fr; width: 96vw; max-height: 92vh; overflow-y: auto; }
-    .modal-img { width: 100% !important; min-height: auto !important; padding: 16px 0; }
-    .modal-img img { width: 70% !important; height: auto !important; max-width: 300px; }
-    .modal-img.site-img img { width: 90% !important; max-width: none; }
-    .modal-body { padding: 18px !important; }
-    .modal-name { font-size: 1.5rem !important; }
-    .modal-text { font-size: 1.05rem !important; }
-    .card-grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; }
-  }
-
-  @media (max-width: 400px) {
-    .filter-stone { flex: 1 1 100%; }
-    .card-grid { grid-template-columns: repeat(2, 1fr); }
-  }
+  /* NOTE: the tablet/phone reflow rules live at the END of this stylesheet so
+     they override the desktop base rules (.filter-stones, .card-grid, etc.),
+     which are defined further down. Keep responsive overrides last. */
 
   /* BUTTONS */
   .btn { padding: 7px 16px; font-family: 'Cinzel', serif; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; border-radius: 4px; cursor: pointer; border: 1px solid transparent; transition: background 0.2s, border-color 0.2s, color 0.2s; }
@@ -781,6 +755,41 @@
   .more-discord { color: #b9c0ff !important; font-weight: 600; }
   .more-discord:hover { color: #d4d8ff !important; }
   .mobile-discord { color: #b9c0ff !important; font-weight: 600; }
+
+  /* Never let the page scroll sideways (a single overflowing child shouldn't
+     widen the whole document / push the fixed modal off-screen). */
+  html, body { overflow-x: clip; max-width: 100%; }
+
+  /* ── RESPONSIVE OVERRIDES (kept last so they beat the desktop base rules) ── */
+  /* Tablet & phone — filters stack, grid reflows */
+  @media (max-width: 700px) {
+    .page { padding: 14px; }
+    .filter-stones { flex-wrap: wrap; }
+    .filter-stone { flex: 1 1 45%; min-width: 0; border-right: 3px solid #2a2640; border-bottom: 3px solid #2a2640; }
+    .filter-stone:last-child { border-right: 3px solid #2a2640; }
+    .filter-stone + .filter-stone::before { display: none; }
+    .card-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
+    .card-grid.sites-only { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+    .search-row { flex-wrap: wrap; }
+    .sort-bar { flex-wrap: wrap; }
+  }
+
+  /* Phone — modal goes full-screen vertical, single column */
+  @media (max-width: 600px) {
+    .modal { grid-template-columns: 1fr; width: 96vw; max-width: 96vw; max-height: 92vh; overflow-y: auto; }
+    .modal-img { width: 100% !important; min-height: auto !important; padding: 16px 0; }
+    .modal-img img { width: 70% !important; height: auto !important; max-width: 300px; }
+    .modal-img.site-img img { width: 90% !important; max-width: none; }
+    .modal-body { padding: 18px !important; }
+    .modal-name { font-size: 1.5rem !important; }
+    .modal-text { font-size: 1.05rem !important; }
+    .card-grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; }
+  }
+
+  @media (max-width: 400px) {
+    .filter-stone { flex: 1 1 100%; }
+    .card-grid { grid-template-columns: repeat(2, 1fr); }
+  }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="cr-auth.js?v=12"></script>
