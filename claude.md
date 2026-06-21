@@ -268,9 +268,10 @@ NO blur/glow. Element symbols + moon are loaded as real PNGs from the site.
 ## Open / future ideas
 - ✅ **Daily price-history capture — DONE.** `record-price-history.js` appends a snapshot to the
   `price_history` table on every price Action run (twice/day). See the price-history gotcha for setup.
-- ✅ **Card price-over-time chart — DONE.** index.html card modal shows a dependency-free inline-SVG
-  line chart (standard + foil) from `price_history` (`loadPriceChart`/`renderPriceChartSVG`); graceful
-  empty state until rows accumulate. Still **to build:** collection/binder value over time.
+- ✅ **Card price-over-time chart — DONE.** index.html card modal **and** avatar.html show a
+  dependency-free inline-SVG line chart (standard + foil) from `price_history`
+  (`loadPriceChart`/`renderPriceChartSVG`, fetched via the public REST API); graceful empty state
+  until rows accumulate. Still **to build:** collection/binder value over time.
 - Swap permanent Discord invite when available.
 - Port "Invoke" feature to deckbuilder/vault.
 - Trade matching between collections.
