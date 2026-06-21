@@ -536,6 +536,58 @@
   .more-discord { color: #b9c0ff !important; font-weight: 600; }
   .more-discord:hover { color: #d4d8ff !important; }
   .mobile-discord { color: #b9c0ff !important; font-weight: 600; }
+
+  /* ── BINDERS ── */
+  .binders-panel { margin-top: 18px; }
+  .binders-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+  .binders-head-title { font-family: 'Cinzel', serif; font-size: 0.92rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold); }
+  .binders-head-title .bh-sub { color: var(--rune); font-size: 0.72rem; font-weight: 400; letter-spacing: 0; text-transform: none; font-style: italic; margin-left: 6px; }
+  .binder { background: linear-gradient(180deg, rgba(37,35,56,0.45), rgba(17,16,24,0.45)); border: 1px solid var(--border-strong); border-radius: 10px; margin-bottom: 14px; overflow: hidden; }
+  .binder-head { display: flex; align-items: center; gap: 10px; padding: 12px 14px; cursor: pointer; user-select: none; }
+  .binder-caret { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; flex-shrink: 0; border: 1px solid var(--border-strong); border-radius: 5px; background: rgba(155,135,212,0.1); color: var(--arcane); font-size: 0.7rem; transition: transform 0.18s; }
+  .binder.collapsed .binder-caret { transform: rotate(-90deg); }
+  .binder.collapsed .binder-body { display: none; }
+  .binder-name { font-family: 'Cinzel', serif; font-size: 1.02rem; font-weight: 700; color: var(--shimmer); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .binder-meta { font-size: 0.82rem; color: var(--rune); white-space: nowrap; }
+  .binder-meta b { color: var(--gold); }
+  .binder-head-actions { display: flex; gap: 6px; flex-shrink: 0; }
+  .binder-icon-btn { background: none; border: 1px solid transparent; color: var(--rune); cursor: pointer; font-size: 0.9rem; padding: 3px 7px; border-radius: 5px; line-height: 1; }
+  .binder-icon-btn:hover { color: var(--shimmer); border-color: var(--border-strong); }
+  .binder-icon-btn.danger:hover { color: var(--ember); border-color: var(--ember); }
+  .binder-body { padding: 0 14px 14px; }
+  .binder-tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 12px 0; border-top: 1px solid var(--border); margin-bottom: 6px; }
+  .binder-tools .bt-label { font-family: 'Cinzel', serif; font-size: 0.58rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--rune); }
+  .binder-set-select { background: var(--abyss); border: 1px solid var(--border-strong); color: var(--parchment); font-family: 'Crimson Pro', serif; font-size: 0.9rem; padding: 6px 9px; border-radius: 6px; }
+  .binder-set-select:focus { outline: none; border-color: var(--arcane); }
+  .binder-btn { font-family: 'Cinzel', serif; font-size: 0.6rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; padding: 7px 11px; border-radius: 6px; cursor: pointer; border: 1px solid var(--border-strong); background: var(--dusk); color: var(--shimmer); transition: border-color 0.15s, color 0.15s, background 0.15s; }
+  .binder-btn:hover { border-color: var(--arcane); color: var(--gold); }
+  .binder-btn.primary { background: var(--rune); border-color: var(--rune); color: #fff; }
+  .binder-btn.primary:hover { background: var(--arcane); border-color: var(--arcane); color: #fff; }
+  .binder-add-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 8px 0; }
+  .binder-add-input { flex: 1 1 220px; min-width: 0; background: var(--abyss); border: 1px solid var(--border-strong); color: var(--parchment); font-family: 'Crimson Pro', serif; font-size: 0.95rem; padding: 8px 11px; border-radius: 6px; }
+  .binder-add-input:focus { outline: none; border-color: var(--arcane); }
+  .binder-finish-toggle { display: inline-flex; border: 1px solid var(--border-strong); border-radius: 6px; overflow: hidden; }
+  .binder-finish-toggle button { background: var(--abyss); border: none; color: var(--rune); font-family: 'Cinzel', serif; font-size: 0.58rem; letter-spacing: 0.06em; text-transform: uppercase; padding: 7px 10px; cursor: pointer; }
+  .binder-finish-toggle button.active { background: var(--rune); color: #fff; }
+  .binder-cards { margin-top: 8px; display: flex; flex-direction: column; gap: 2px; }
+  .binder-card-row { display: grid; grid-template-columns: 1fr auto auto auto; align-items: center; gap: 10px; padding: 7px 8px; border-radius: 6px; }
+  .binder-card-row:nth-child(odd) { background: rgba(155,135,212,0.05); }
+  .bcr-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.95rem; }
+  .bcr-name .bcr-rarity { color: var(--rune); font-size: 0.74rem; margin-left: 6px; }
+  .bcr-qty { display: inline-flex; align-items: center; gap: 6px; }
+  .bcr-qty .bcr-lbl { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--rune); width: 30px; }
+  .bcr-qty .bcr-lbl.foil { color: var(--arcane); }
+  .bcr-step { width: 22px; height: 22px; border: 1px solid var(--border-strong); background: var(--dusk); color: var(--shimmer); border-radius: 5px; cursor: pointer; font-size: 0.9rem; line-height: 1; display: inline-flex; align-items: center; justify-content: center; }
+  .bcr-step:hover { border-color: var(--arcane); color: var(--gold); }
+  .bcr-num { min-width: 18px; text-align: center; font-variant-numeric: tabular-nums; }
+  .bcr-val { font-size: 0.85rem; color: var(--sage); text-align: right; white-space: nowrap; }
+  .bcr-remove { background: none; border: none; color: var(--rune); cursor: pointer; font-size: 0.9rem; padding: 2px 6px; }
+  .bcr-remove:hover { color: var(--ember); }
+  .binder-empty { color: var(--rune); font-style: italic; font-size: 0.9rem; padding: 10px 4px; }
+  @media (max-width: 560px) {
+    .binder-card-row { grid-template-columns: 1fr auto; gap: 6px; }
+    .bcr-val { grid-column: 1 / -1; text-align: left; }
+  }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="cr-auth.js?v=12"></script>
@@ -771,6 +823,9 @@
   <!-- Section statistics (Vault / Trades / Wants) -->
   <div id="section-stats" class="section-stats" style="display:none;"></div>
 
+  <!-- Binders (Vault / Trades tabs) -->
+  <div id="binders-panel" class="binders-panel" style="display:none;"></div>
+
   <!-- Card toolbar: sits right above the card grid -->
   <div class="vault-card-toolbar">
     <div class="vault-sort-row">
@@ -811,6 +866,7 @@
 <script>
 // ── STATE ──
 let allCards = [];
+let ALL_SETS = [];
 let currentCards = [];
 let visibleCount = 200;
 const PAGE_SIZE = 200;
@@ -840,13 +896,208 @@ const IMAGE_BASE = 'https://pub-5999238092ad418ca60e7a9ad641cf57.r2.dev/';
 let collectionCache = null;
 let cloudSaveTimer = null;
 
+// Binders live inside the collection object under this reserved key so they
+// ride along with the existing localStorage + cloud sync untouched.
+const BINDERS_KEY = '__binders__';
+
 function normalizeCollection(col) {
-  // Migrate old boolean values to numbers
+  // Migrate old boolean values to numbers (skip the reserved binders key)
   for (const key of Object.keys(col)) {
+    if (key === BINDERS_KEY) continue;
     if (typeof col[key].have === 'boolean') col[key].have = col[key].have ? 1 : 0;
     if (typeof col[key].want === 'boolean') col[key].want = col[key].want ? 1 : 0;
   }
   return col;
+}
+
+// ── BINDERS ──
+// binder = { id, name, parent:'vault'|'trade', cards:{ [cardName]:{std,foil} } }
+function getBinders() {
+  const col = getCollection();
+  if (!Array.isArray(col[BINDERS_KEY])) col[BINDERS_KEY] = [];
+  return col[BINDERS_KEY];
+}
+function saveBinders() {
+  const col = getCollection();
+  // Drop the key entirely if there are no binders, to keep the object tidy
+  if (Array.isArray(col[BINDERS_KEY]) && col[BINDERS_KEY].length === 0) delete col[BINDERS_KEY];
+  saveCollection(col);
+}
+function bindersFor(parent) { return getBinders().filter(b => b.parent === parent); }
+function findBinder(id) { return getBinders().find(b => b.id === id); }
+function binderValue(binder) {
+  let v = 0;
+  for (const [name, q] of Object.entries(binder.cards || {})) {
+    v += (prices[name]?.market || 0) * (q.std || 0) + (foilPrices[name]?.market || 0) * (q.foil || 0);
+  }
+  return v;
+}
+function binderCardCount(binder) {
+  let n = 0;
+  for (const q of Object.values(binder.cards || {})) n += (q.std || 0) + (q.foil || 0);
+  return n;
+}
+
+// ── BINDER UI ──
+function bEsc(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+const binderUI = { collapsed: {}, addFinish: {} }; // transient per-binder UI state
+const MASTER_COUNTS = { Unique: 1, Elite: 2, Exceptional: 3, Ordinary: 4 };
+
+function currentBinderParent() {
+  return currentView === 'trade' ? 'trade' : (currentView === 'all' ? 'vault' : null);
+}
+function buildCardDatalist() {
+  if (document.getElementById('binder-cardlist')) return;
+  const dl = document.createElement('datalist');
+  dl.id = 'binder-cardlist';
+  dl.innerHTML = allCards.map(c => `<option value="${bEsc(c.name)}"></option>`).join('');
+  document.body.appendChild(dl);
+}
+
+function renderBinders() {
+  const panel = document.getElementById('binders-panel');
+  if (!panel) return;
+  const parent = currentBinderParent();
+  if (!parent) { panel.style.display = 'none'; panel.innerHTML = ''; return; }
+  buildCardDatalist();
+  const list = bindersFor(parent);
+  const label = parent === 'trade' ? 'Trade Binders' : 'Vault Binders';
+  panel.style.display = '';
+  panel.innerHTML = `
+    <div class="binders-head">
+      <div class="binders-head-title">${label}${list.length ? `<span class="bh-sub">${list.length} binder${list.length===1?'':'s'}</span>` : ''}</div>
+      <button class="binder-btn primary" onclick="createBinder('${parent}')">+ Create Binder</button>
+    </div>
+    ${list.length ? list.map(renderBinderCard).join('') : `<div class="binder-empty">No binders yet. Create one to group cards — e.g. a full Beta set — and track its value alongside your collection.</div>`}
+  `;
+}
+
+function renderBinderCard(b) {
+  const collapsed = binderUI.collapsed[b.id];
+  const addFinish = binderUI.addFinish[b.id] || 'std';
+  const count = binderCardCount(b);
+  const val = binderValue(b);
+  const setOpts = ALL_SETS.map(s => `<option value="${bEsc(s)}">${bEsc(s)}</option>`).join('');
+  const names = Object.keys(b.cards || {}).filter(n => (b.cards[n].std||0)+(b.cards[n].foil||0) > 0).sort();
+  const rows = names.map(n => {
+    const q = b.cards[n];
+    const card = allCards.find(c => c.id === n);
+    const rarity = card ? card.rarity : '';
+    const rowVal = (prices[n]?.market||0)*(q.std||0) + (foilPrices[n]?.market||0)*(q.foil||0);
+    return `<div class="binder-card-row">
+      <div class="bcr-name">${bEsc(n)}${rarity?`<span class="bcr-rarity">${bEsc(rarity)}</span>`:''}</div>
+      <div class="bcr-qty"><span class="bcr-lbl">Std</span><button class="bcr-step" data-n="${bEsc(n)}" onclick="binderAdjust('${b.id}',this.dataset.n,'std',-1)">−</button><span class="bcr-num">${q.std||0}</span><button class="bcr-step" data-n="${bEsc(n)}" onclick="binderAdjust('${b.id}',this.dataset.n,'std',1)">+</button></div>
+      <div class="bcr-qty"><span class="bcr-lbl foil">Foil</span><button class="bcr-step" data-n="${bEsc(n)}" onclick="binderAdjust('${b.id}',this.dataset.n,'foil',-1)">−</button><span class="bcr-num">${q.foil||0}</span><button class="bcr-step" data-n="${bEsc(n)}" onclick="binderAdjust('${b.id}',this.dataset.n,'foil',1)">+</button></div>
+      <div class="bcr-val">${rowVal>0?'$'+rowVal.toFixed(2):'—'} <button class="bcr-remove" title="Remove from binder" data-n="${bEsc(n)}" onclick="binderRemove('${b.id}',this.dataset.n)">✕</button></div>
+    </div>`;
+  }).join('');
+
+  return `<div class="binder${collapsed?' collapsed':''}" id="binder-${b.id}">
+    <div class="binder-head" onclick="toggleBinderCollapse('${b.id}')">
+      <span class="binder-caret">▾</span>
+      <span class="binder-name">${bEsc(b.name)}</span>
+      <span class="binder-meta"><b>${count}</b> card${count===1?'':'s'} · <b>${val>0?'$'+val.toFixed(2):'$0.00'}</b></span>
+      <span class="binder-head-actions">
+        <button class="binder-icon-btn" title="Rename" onclick="event.stopPropagation();renameBinder('${b.id}')">✎</button>
+        <button class="binder-icon-btn danger" title="Delete binder" onclick="event.stopPropagation();deleteBinder('${b.id}')">🗑</button>
+      </span>
+    </div>
+    <div class="binder-body">
+      <div class="binder-tools">
+        <span class="bt-label">Bulk add from set</span>
+        <select class="binder-set-select" id="bset-${b.id}">${setOpts}</select>
+        <button class="binder-btn" onclick="binderAddSet('${b.id}','std')" title="Add 1 standard of each card in the chosen set">+1 of each</button>
+        <button class="binder-btn" onclick="binderAddSet('${b.id}','foil')" title="Add 1 foil of each card in the chosen set">+1 foil of each</button>
+        <button class="binder-btn" onclick="binderAddMaster('${b.id}')" title="Master Set: 1× Unique, 2× Elite, 3× Exceptional, 4× Ordinary (standard)">Master Set</button>
+      </div>
+      <div class="binder-add-row">
+        <input class="binder-add-input" list="binder-cardlist" id="badd-${b.id}" placeholder="Add a card by name…" onkeydown="if(event.key==='Enter'){event.preventDefault();binderAddManual('${b.id}');}">
+        <div class="binder-finish-toggle">
+          <button class="${addFinish==='std'?'active':''}" onclick="setBinderAddFinish('${b.id}','std')">Std</button>
+          <button class="${addFinish==='foil'?'active':''}" onclick="setBinderAddFinish('${b.id}','foil')">Foil</button>
+        </div>
+        <button class="binder-btn" onclick="binderAddManual('${b.id}')">Add</button>
+      </div>
+      <div class="binder-cards">${rows || `<div class="binder-empty">Empty binder — use “Bulk add from set” above, or add cards by name.</div>`}</div>
+    </div>
+  </div>`;
+}
+
+function createBinder(parent) {
+  const name = (prompt('Name this binder:', parent === 'trade' ? 'New Trade Binder' : 'New Binder') || '').trim();
+  if (!name) return;
+  const binders = getBinders();
+  binders.push({ id: 'b' + Date.now().toString(36) + Math.floor(Math.random()*1e4).toString(36), parent, name, cards: {} });
+  saveBinders(); renderBinders(); updateStats();
+}
+function renameBinder(id) {
+  const b = findBinder(id); if (!b) return;
+  const name = (prompt('Rename binder:', b.name) || '').trim();
+  if (!name) return;
+  b.name = name; saveBinders(); renderBinders();
+}
+function deleteBinder(id) {
+  const b = findBinder(id); if (!b) return;
+  if (!confirm(`Delete binder “${b.name}”? This can't be undone.`)) return;
+  const binders = getBinders(); const i = binders.indexOf(b);
+  if (i >= 0) binders.splice(i, 1);
+  saveBinders(); renderBinders(); updateStats();
+}
+function toggleBinderCollapse(id) {
+  binderUI.collapsed[id] = !binderUI.collapsed[id];
+  const el = document.getElementById('binder-' + id);
+  if (el) el.classList.toggle('collapsed', binderUI.collapsed[id]);
+}
+function setBinderAddFinish(id, finish) { binderUI.addFinish[id] = finish; renderBinders(); }
+function binderEnsureCard(b, name) {
+  if (!b.cards) b.cards = {};
+  if (!b.cards[name]) b.cards[name] = { std: 0, foil: 0 };
+  return b.cards[name];
+}
+function binderAdjust(id, name, finish, delta) {
+  const b = findBinder(id); if (!b) return;
+  const q = binderEnsureCard(b, name);
+  q[finish] = Math.max(0, (q[finish] || 0) + delta);
+  if ((q.std || 0) === 0 && (q.foil || 0) === 0) delete b.cards[name];
+  saveBinders(); renderBinders(); updateStats();
+}
+function binderRemove(id, name) {
+  const b = findBinder(id); if (!b) return;
+  delete b.cards[name];
+  saveBinders(); renderBinders(); updateStats();
+}
+function binderAddManual(id) {
+  const b = findBinder(id); if (!b) return;
+  const input = document.getElementById('badd-' + id);
+  const val = (input.value || '').trim();
+  if (!val) return;
+  const card = allCards.find(c => c.name.toLowerCase() === val.toLowerCase())
+            || allCards.find(c => c.name.toLowerCase().startsWith(val.toLowerCase()));
+  if (!card) { toast(`No card named “${val}”`); return; }
+  const finish = binderUI.addFinish[id] || 'std';
+  binderEnsureCard(b, card.name)[finish] += 1;
+  input.value = '';
+  saveBinders(); renderBinders(); updateStats();
+  toast(`Added ${card.name} (${finish === 'foil' ? 'foil' : 'std'}) to ${b.name}`);
+}
+function binderSelectedSet(id) { const sel = document.getElementById('bset-' + id); return sel ? sel.value : null; }
+function binderAddSet(id, finish) {
+  const b = findBinder(id); if (!b) return;
+  const set = binderSelectedSet(id); if (!set) return;
+  const cards = allCards.filter(c => c.setNames.includes(set));
+  if (!cards.length) { toast(`No cards found in ${set}`); return; }
+  cards.forEach(c => { binderEnsureCard(b, c.name)[finish] += 1; });
+  saveBinders(); renderBinders(); updateStats();
+  toast(`Added 1 ${finish === 'foil' ? 'foil' : 'standard'} of ${cards.length} ${set} cards to ${b.name}`);
+}
+function binderAddMaster(id) {
+  const b = findBinder(id); if (!b) return;
+  const set = binderSelectedSet(id); if (!set) return;
+  const cards = allCards.filter(c => c.setNames.includes(set) && MASTER_COUNTS[c.rarity]);
+  if (!cards.length) { toast(`No cards found in ${set}`); return; }
+  cards.forEach(c => { binderEnsureCard(b, c.name).std += MASTER_COUNTS[c.rarity]; });
+  saveBinders(); renderBinders(); updateStats();
+  toast(`Master Set added: ${cards.length} ${set} cards (1× Unique, 2× Elite, 3× Exceptional, 4× Ordinary)`);
 }
 
 function getLocalCollection() {
@@ -978,6 +1229,7 @@ function updateStats() {
   // Foil totals
   let foilHaveQty = 0, foilWantQty = 0, foilHaveVal = 0, foilWantVal = 0, foilTradeQty = 0, foilTradeVal = 0;
   for (const [name, v] of entries) {
+    if (name === BINDERS_KEY) continue; // reserved key, not a card
     const sp = prices[name]?.market || 0;
     const fp = foilPrices[name]?.market || 0;
     stdHaveQty += v.have || 0;
@@ -1020,17 +1272,22 @@ function updateStats() {
     const statsBar = document.querySelector('.collection-stats');
     if (statsBar) statsBar.appendChild(totalEl);
   }
-  const vaultVal = stdHaveVal + foilHaveVal;
-  const tradesVal = stdTradeVal + foilTradeVal;
+  // Binders add to the total (vault binders → Vault value, trade binders → Trades value)
+  let binderVaultVal = 0, binderTradeVal = 0;
+  getBinders().forEach(b => { if (b.parent === 'trade') binderTradeVal += binderValue(b); else binderVaultVal += binderValue(b); });
+  const vaultVal = stdHaveVal + foilHaveVal + binderVaultVal;
+  const tradesVal = stdTradeVal + foilTradeVal + binderTradeVal;
+  const binderVal = binderVaultVal + binderTradeVal;
   const totalCollectionVal = vaultVal + tradesVal;
   if (totalEl) {
     const priceNote = priceDate
       ? ` <span style="color:var(--rune);font-size:0.72rem;font-style:italic;">· TCG market, ${priceDate}</span>`
       : ` <span style="color:var(--rune);font-size:0.72rem;font-style:italic;">· TCG market price</span>`;
+    const breakdown = (tradesVal > 0 || binderVal > 0)
+      ? ` <span style="color:var(--rune);font-size:0.74rem;">(Vault $${vaultVal.toFixed(2)} · Trades $${tradesVal.toFixed(2)}${binderVal > 0 ? ` · incl. Binders $${binderVal.toFixed(2)}` : ''})</span>`
+      : '';
     totalEl.innerHTML = totalCollectionVal > 0
-      ? `Total Collection Value: <b style="color:var(--gold)">$${totalCollectionVal.toFixed(2)}</b>` +
-        (tradesVal > 0 ? ` <span style="color:var(--rune);font-size:0.74rem;">(Vault $${vaultVal.toFixed(2)} · Trades $${tradesVal.toFixed(2)})</span>` : '') +
-        priceNote
+      ? `Total Collection Value: <b style="color:var(--gold)">$${totalCollectionVal.toFixed(2)}</b>` + breakdown + priceNote
       : '';
     totalEl.style.display = totalCollectionVal > 0 ? '' : 'none';
   }
@@ -1071,10 +1328,14 @@ async function loadCards() {
         element: Array.isArray(card.elements) ? card.elements.join(', ') : (card.elements || ''),
         subTypes: card.subTypes || '',
         set: firstSet ? firstSet.name : '',
+        setNames: sets.map(s => s.name).filter(Boolean),
         slug: firstVariant ? firstVariant.slug : null,
         foilSlug: foilVariant ? foilVariant.slug : null,
       };
     }).sort((a, b) => a.name.localeCompare(b.name));
+
+    // Distinct set names (for the binder bulk-add set picker)
+    ALL_SETS = [...new Set(allCards.flatMap(c => c.setNames))].sort();
 
     // Try to load prices.json (optional — silently skip if not found)
     try {
@@ -1329,6 +1590,7 @@ function setView(view) {
   const inVaultSection = (view !== 'search');
   document.body.classList.toggle('in-vault-section', inVaultSection);
   renderSectionStats(view);
+  renderBinders();
   filterCards();
 }
 
@@ -1662,7 +1924,7 @@ async function handleAuthChange(kind) {
   } else {
     // logged out → revert to local
     collectionCache = getLocalCollection();
-    updateStats(); filterCards();
+    updateStats(); renderBinders(); filterCards();
   }
 }
 
@@ -1680,7 +1942,7 @@ async function hydrateCollection() {
   } else {
     collectionCache = getLocalCollection();
   }
-  updateStats(); filterCards();
+  updateStats(); renderBinders(); filterCards();
 }
 
 // On first login, offer to push local collection to the cloud (local wins)
