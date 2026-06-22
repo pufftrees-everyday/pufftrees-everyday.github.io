@@ -82,7 +82,10 @@ then variant where `finish==='Standard' && product==='Booster'`. Example real sl
 > + `text-view` (Text) + `large-view`. **Text-view quick −/+ steppers** exist where there's a quantity:
 > the **Vault** (adjusts Have/Trade/Want for the active section, finish-aware; row also shows price) and
 > the **deckbuilder explorer** (in-deck count via `quickAddToDeck` / `quickRemoveFromDeck`). The index
-> Explorer is browse-only, so its Text view has **no** steppers.
+> Explorer is browse-only, so its Text view has **no** steppers. In the Vault's **Card Search**, the Text
+> row adds a "Vault" label on the stepper plus a quick **♡ Want** toggle so cards go to either section
+> from the text view; the **Card/Large** flag buttons (hover-revealed on desktop) are always shown on
+> touch devices (`@media (hover: none)`), and flag/qty edits refresh the Detailed view in place too.
 
 ## Pages (all in repo root)
 - **index.html** — Card Explorer homepage. 4 standardized card views (see Change View note above).
