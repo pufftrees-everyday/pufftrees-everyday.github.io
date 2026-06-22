@@ -2334,16 +2334,22 @@ function vhRender() {
   let html = '<button class="vh-refresh" onclick="vhRefresh()">↻ Refresh</button>';
   html += `<div class="vh-current"><span>Current total</span> <b>$${cur.toFixed(2)}</b></div>`;
   html += vhRenderChart([{ label: 'Total', color: 'var(--gold)', points: totalSeries }]);
+  // One line per binder / per owned deck, valued at each recorded snapshot.
+  const seriesFromCardMaps = (items) => items.map((o, i) => {
+    const s = {}, fl = {};
+    Object.entries(o.cards || {}).forEach(([n, q]) => { if (q.std) s[n] = q.std; if (q.foil) fl[n] = q.foil; });
+    return { label: o.name, color: VH_COLORS[i % VH_COLORS.length], points: vhSeriesFrom(vhRows, s, fl) };
+  }).filter(s => s.points.length);
+
   const binders = getBinders();
   if (binders.length) {
-    const bseries = binders.map((b, i) => {
-      const bs = {}, bf = {};
-      Object.entries(b.cards || {}).forEach(([n, q]) => { if (q.std) bs[n] = q.std; if (q.foil) bf[n] = q.foil; });
-      return { label: b.name, color: VH_COLORS[i % VH_COLORS.length], points: vhSeriesFrom(vhRows, bs, bf) };
-    }).filter(s => s.points.length);
-    if (bseries.length) {
-      html += '<div class="vh-sub-title">Binders</div>' + vhRenderChart(bseries) + vhLegend(bseries);
-    }
+    const bseries = seriesFromCardMaps(binders);
+    if (bseries.length) html += '<div class="vh-sub-title">Binders</div>' + vhRenderChart(bseries) + vhLegend(bseries);
+  }
+  const odecks = getOwnedDecks();
+  if (odecks.length) {
+    const dseries = seriesFromCardMaps(odecks);
+    if (dseries.length) html += '<div class="vh-sub-title">Owned Decks</div>' + vhRenderChart(dseries) + vhLegend(dseries);
   }
   html += '<div class="pc-source">Your <b>current</b> holdings valued at recorded <b>TCGplayer Market</b> prices (via JustTCG). History begins when daily capture started.</div>';
   body.innerHTML = html;

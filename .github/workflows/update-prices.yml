@@ -20,6 +20,8 @@ jobs:
     steps:
       - name: Check out the repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # full history so the rebase-before-push below works
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -41,13 +43,24 @@ jobs:
           else
             git add prices.json
             git commit -m "Auto-update card prices ($(date -u '+%Y-%m-%d %H:%M UTC'))"
-            git push
+            # Resilient to concurrent pushes (e.g. manual commits landing at the
+            # same time): rebase onto the latest main and retry a few times.
+            pushed=""
+            for i in 1 2 3 4 5; do
+              git fetch origin main || true
+              git rebase origin/main || { git rebase --abort || true; }
+              if git push origin HEAD:main; then pushed="yes"; break; fi
+              echo "push attempt $i failed; retrying in 5s…"; sleep 5
+            done
+            [ -n "$pushed" ] || echo "::warning::Could not push prices.json after retries (history capture still runs)."
           fi
 
       # Append a snapshot to the Supabase price_history table for charts.
       # No-ops quietly until SUPABASE_SERVICE_ROLE is set, so it never blocks
-      # the price update above. Runs last on purpose.
+      # the price update above. Runs LAST and ALWAYS — even if the commit/push
+      # above failed — because the snapshot is independent of committing prices.json.
       - name: Record price history to Supabase
+        if: always()
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE: ${{ secrets.SUPABASE_SERVICE_ROLE }}
