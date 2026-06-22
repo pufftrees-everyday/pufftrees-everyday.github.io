@@ -688,10 +688,13 @@
   .modal-overlay.open { display: flex; }
   .modal { background: var(--dusk); border: 1px solid var(--border-strong); border-radius: 8px; box-shadow: 0 0 60px rgba(155,135,212,0.2); max-width: 1400px; width: 96vw; display: grid; grid-template-columns: auto 1fr; position: relative; overflow: hidden; }
   .modal-img { background: var(--twilight); display: flex; align-items: center; justify-content: center; width: 520px; min-height: 520px; }
-  .modal-img img { width: 460px; height: 613px; object-fit: cover; display: block; }
-  /* Site cards: container sized for landscape, image rotated to fill it */
-  .modal-img.site-img { width: 900px; min-height: 620px; }
-  .modal-img.site-img img { width: 860px; height: 645px; transform: rotate(90deg); object-fit: contain; }
+  /* Render at natural size capped at the design width, so card art is NEVER
+     upscaled past its native resolution (which is what makes it look blurry).
+     Low-res scans show a touch smaller but sharp; hi-res scans fill the frame. */
+  .modal-img img { width: auto; max-width: 460px; height: auto; max-height: 82vh; object-fit: contain; display: block; }
+  /* Site cards: portrait scan rotated to landscape; sized to avoid upscaling. */
+  .modal-img.site-img { width: 660px; min-height: 540px; }
+  .modal-img.site-img img { width: auto; max-width: none; height: 500px; max-height: 64vw; transform: rotate(90deg); object-fit: contain; }
   .modal.site-modal .modal-name { font-size: 1.6rem; }
   .modal.site-modal .modal-type { font-size: 1.2rem; }
   .modal.site-modal .modal-text { font-size: 1.1rem; }
@@ -730,7 +733,7 @@
 
   @media (max-width: 700px) {
     .modal { grid-template-columns: 1fr; }
-    .modal-img img { width: 100%; height: 180px; }
+    .modal-img img { width: auto; height: auto; max-width: 280px; }
     .deck-visual-grid { grid-template-columns: repeat(auto-fill, minmax(120px,1fr)); }
     .search-bar { flex-direction: column; align-items: stretch; }
     .decks-grid:has(.md-deck-card) { grid-template-columns: 1fr; gap: 14px; }
