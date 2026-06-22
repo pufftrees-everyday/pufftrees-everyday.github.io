@@ -85,8 +85,9 @@ then variant where `finish==='Standard' && product==='Booster'`. Example real sl
 ## Pages (all in repo root)
 - **index.html** — Card Explorer homepage. 4 standardized card views (see Change View note above).
   Stone filters (Type/Set/Rarity/Element + Element-Lock), advanced filters (subtypes/keyword/cost/
-  power), sorting (Random/A–Z/Mana), and the **"Invoke"** advanced-search query language. No
-  deck-building here (builder is on deckbuilder.html).
+  power), sorting (Random/A–Z/Mana), and the **"Invoke"** advanced-search query language (supports
+  `a:`/`artist:` among the field filters). Clicking a card opens a modal with an "Illustrated by"
+  artist link (→ artist.html). No deck-building here (builder is on deckbuilder.html).
 - **collection.html** — "My Vault." Foil/Standard toggle + prices (only page with prices via prices.json).
   Sections (in order): Card Search, **Vault** (owned), **Trades**, **Wants**. 4 standardized card views;
   the **Text** view shows count + price and has quick −/+ steppers (see Change View note).
@@ -119,6 +120,12 @@ then variant where `finish==='Standard' && product==='Booster'`. Example real sl
   via the `increment_deck_views` RPC — see gotcha below. Comments section under the deck
   (deck_comments table): logged-in users post + reply (one level); owner posts badged "Author".
 - **avatar.html** — avatar detail (?a=Name). Uses real rulesText only (no copyrighted flavor).
+  Shows an "Illustrated by" line linking to artist.html.
+- **artist.html** — artist gallery (?a=ArtistName). Lists every card illustrated by that artist in a
+  grid; clicking a card opens a self-contained detail modal (image, stats, rules, price chart via
+  price-chart.js, artist link). Artist data comes from `card.sets[].variants[].artist` in cards.json
+  (collected as a distinct list per card, since reprints can differ). Linked from the artist line in
+  every card popup (index modal, collection Vault modal, avatar.html).
 - **profile.html** — user profile (?u=username). Avatar, bio, social links, public decks, total
   likes. On your **own** profile (reached via "Edit Profile" in the account dropdown) you can edit
   everything: set an avatar (pick a card's art / upload an image to Storage / paste a URL via a

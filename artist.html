@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-70B9BVL5LC"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-70B9BVL5LC');
+</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cursed Realm — Artist</title>
+<meta name="description" content="Every Sorcery: Contested Realm card illustrated by this artist, on Cursed Realm.">
+<meta name="theme-color" content="#0b0a0f">
+<link rel="icon" type="image/png" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cinzel+Decorative:wght@700;900&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --void: #0b0a0f; --abyss: #111018; --dusk: #1a1826; --twilight: #252338;
+    --mist: #3a3658; --rune: #6b5fa0; --arcane: #9b87d4; --shimmer: #c9bfee;
+    --parchment: #e8e0cc; --gold: #c8a96e; --ember: #c4614a; --sage: #5a8a6a;
+    --border: rgba(155, 135, 212, 0.18); --border-strong: rgba(155, 135, 212, 0.35);
+    --glow-strong: 0 0 30px rgba(155,135,212,0.3);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { overflow-x: clip; max-width: 100%; }
+  body { background: var(--void); color: var(--parchment); font-family: 'Crimson Pro', serif; min-height: 100vh; }
+  a { color: inherit; }
+
+  header {
+    background: linear-gradient(180deg, #0d0b14 0%, var(--void) 100%);
+    border-bottom: 1px solid var(--border); padding: 0 24px;
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    height: 60px; position: sticky; top: 0; z-index: 100; backdrop-filter: blur(8px);
+  }
+  .header-main { display: flex; align-items: center; gap: 16px; min-width: 0; }
+  .header-nav { display: flex; gap: 14px; align-items: center; }
+  .header-link { font-family: 'Cinzel', serif; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--rune); text-decoration: none; transition: color 0.2s; white-space: nowrap; }
+  .header-link:hover { color: var(--arcane); }
+  .logo-link { display: flex; align-items: center; gap: 9px; text-decoration: none; }
+  .logo-link img { width: 30px; height: 30px; border-radius: 6px; }
+  .logo-text { font-family: 'Cinzel Decorative', serif; font-size: 1.1rem; font-weight: 700; color: var(--gold); white-space: nowrap; }
+  @media (max-width: 760px) { .header-nav .nav-extra { display: none; } }
+
+  .page { max-width: 1180px; margin: 0 auto; padding: 28px 24px 64px; }
+  .status { text-align: center; color: var(--rune); padding: 60px 0; font-style: italic; }
+  .back-link { font-family: 'Cinzel', serif; font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--rune); text-decoration: none; display: inline-block; margin-bottom: 18px; }
+  .back-link:hover { color: var(--arcane); }
+
+  .artist-head { margin-bottom: 22px; }
+  .artist-eyebrow { font-family: 'Cinzel', serif; font-size: 0.72rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--rune); margin-bottom: 8px; }
+  .artist-name { font-family: 'Cinzel Decorative', serif; font-size: clamp(1.9rem, 5vw, 2.8rem); font-weight: 700; color: var(--gold); line-height: 1.1; text-wrap: balance; }
+  .artist-count { font-size: 1rem; color: var(--shimmer); margin-top: 8px; }
+  .artist-count b { color: var(--arcane); }
+
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 16px; }
+  @media (max-width: 640px) { .card-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; } }
+  @media (max-width: 380px) { .card-grid { grid-template-columns: repeat(2, 1fr); } }
+
+  .card-thumb { cursor: pointer; border-radius: 8px; border: 2px solid var(--border); overflow: hidden; background: var(--dusk); transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s; }
+  .card-thumb:hover { transform: translateY(-2px); border-color: var(--border-strong); box-shadow: var(--glow-strong); }
+  .card-thumb .thumb-img { position: relative; width: 100%; aspect-ratio: 3/4; overflow: hidden; background: var(--twilight); }
+  .card-thumb .thumb-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .card-thumb.is-site .thumb-img img { position: absolute; top: 50%; left: 50%; width: 133%; height: auto; transform: translate(-50%,-50%) rotate(90deg); object-fit: contain; }
+  .card-thumb .thumb-name { padding: 7px 9px 2px; font-size: 0.9rem; color: var(--shimmer); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .card-thumb .thumb-meta { padding: 0 9px 8px; font-size: 0.72rem; color: var(--rune); font-style: italic; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* ── CARD DETAIL MODAL (shared look with the rest of the site) ── */
+  .cm-overlay { display: none; position: fixed; inset: 0; background: rgba(11,10,15,0.85); z-index: 1200; align-items: center; justify-content: center; backdrop-filter: blur(4px); padding: 20px; }
+  .cm-overlay.open { display: flex; }
+  .cm-modal { background: var(--dusk); border: 1px solid var(--border-strong); border-radius: 10px; box-shadow: 0 0 60px rgba(155,135,212,0.2); max-width: 880px; width: 100%; max-height: 92vh; display: grid; grid-template-columns: 340px 1fr; position: relative; overflow: hidden; }
+  .cm-img { background: var(--twilight); display: flex; align-items: center; justify-content: center; padding: 24px; }
+  .cm-img img { width: 100%; max-width: 290px; aspect-ratio: 3/4; object-fit: contain; display: block; border-radius: 8px; }
+  .cm-modal.site-modal { grid-template-columns: 440px 1fr; }
+  .cm-img.site-img img { max-width: 360px; transform: rotate(90deg); }
+  .cm-body { padding: 26px 28px; display: flex; flex-direction: column; gap: 13px; overflow-y: auto; }
+  .cm-name { font-family: 'Cinzel', serif; font-size: 1.55rem; font-weight: 600; color: var(--gold); line-height: 1.15; padding-right: 28px; }
+  .cm-type { font-size: 1rem; color: var(--arcane); font-style: italic; }
+  .cm-text { font-size: 1rem; color: var(--parchment); line-height: 1.6; border-top: 1px solid var(--border); padding-top: 12px; white-space: pre-wrap; }
+  .cm-stats { display: flex; flex-wrap: wrap; gap: 7px; }
+  .cm-stat { font-size: 0.85rem; background: rgba(155,135,212,0.08); border: 1px solid var(--border); border-radius: 4px; padding: 3px 10px; color: var(--shimmer); }
+  .cm-stat b { color: var(--arcane); }
+  .cm-artist { font-size: 0.92rem; color: var(--rune); font-style: italic; }
+  .cm-artist a { color: var(--arcane); text-decoration: none; font-style: normal; }
+  .cm-artist a:hover { color: var(--gold); text-decoration: underline; }
+  .cm-close { position: absolute; top: 10px; right: 14px; background: rgba(11,10,15,0.5); border: none; width: 32px; height: 32px; border-radius: 50%; color: var(--rune); font-size: 1.3rem; cursor: pointer; z-index: 2; line-height: 1; display: flex; align-items: center; justify-content: center; }
+  .cm-close:hover { color: var(--parchment); background: rgba(11,10,15,0.8); }
+
+  /* Price history chart */
+  .cm-pricechart { margin-top: 2px; border-top: 1px solid var(--border); padding-top: 12px; }
+  .pc-title { font-family: 'Cinzel', serif; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--gold); margin-bottom: 8px; }
+  .pc-title .pc-sub { color: var(--rune); font-weight: 400; font-size: 0.7rem; text-transform: none; letter-spacing: 0; margin-left: 6px; }
+  .pc-status { color: var(--rune); font-style: italic; font-size: 0.85rem; padding: 4px 0; }
+  .pc-svg { width: 100%; height: auto; display: block; background: rgba(11,10,15,0.4); border: 1px solid var(--border); border-radius: 8px; }
+  .pc-axis { fill: var(--rune); font-family: 'Crimson Pro', serif; font-size: 9px; }
+  .pc-grid { stroke: var(--border); stroke-width: 1; }
+  .pc-legend { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 8px; font-size: 0.82rem; color: var(--parchment); }
+  .pc-leg { display: inline-flex; align-items: center; gap: 6px; }
+  .pc-leg b { color: var(--gold); }
+  .pc-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+  .pc-note { color: var(--rune); font-style: italic; }
+  .pc-source { font-size: 0.72rem; font-style: italic; color: var(--rune); margin-top: 7px; line-height: 1.4; }
+  .pc-source b { color: var(--gold); font-style: normal; font-weight: 600; }
+
+  @media (max-width: 680px) {
+    .cm-overlay { padding: 14px; }
+    .cm-modal, .cm-modal.site-modal { display: flex; flex-direction: column; grid-template-columns: none; width: 100%; max-width: 440px; max-height: 90vh; max-height: 90dvh; border-radius: 14px; overflow: hidden; }
+    .cm-img { flex-shrink: 0; padding: 20px 18px 8px; }
+    .cm-img img { max-width: 200px; }
+    .cm-img.site-img { height: 190px; padding: 12px; overflow: hidden; }
+    .cm-img.site-img img { max-width: 148px; }
+    .cm-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 14px 18px 22px; gap: 12px; }
+    .cm-name { font-size: 1.3rem; padding-right: 36px; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="header-main">
+    <a href="index.html" class="logo-link">
+      <img src="icon-192.png" alt="Cursed Realm" onerror="this.style.display='none'">
+      <span class="logo-text">Cursed Realm</span>
+    </a>
+  </div>
+  <nav class="header-nav">
+    <a href="index.html" class="header-link">Explore</a>
+    <a href="archive.html" class="header-link nav-extra">The Archive</a>
+    <a href="deckbuilder.html" class="header-link">New Deck</a>
+  </nav>
+</header>
+
+<div class="page">
+  <a href="index.html" class="back-link">← Back to Explore</a>
+  <div class="status" id="status">Gathering the artist's works…</div>
+  <div id="content" style="display:none;">
+    <div class="artist-head">
+      <div class="artist-eyebrow">Artist</div>
+      <h1 class="artist-name" id="artist-name"></h1>
+      <div class="artist-count" id="artist-count"></div>
+    </div>
+    <div class="card-grid" id="card-grid"></div>
+  </div>
+</div>
+
+<!-- CARD DETAIL MODAL -->
+<div class="cm-overlay" id="cm-overlay" onclick="closeCardModal(event)">
+  <div class="cm-modal" id="cm-modal">
+    <button class="cm-close" onclick="closeCardModal()" aria-label="Close">✕</button>
+    <div class="cm-img" id="cm-img"><img id="cm-img-el" src="" alt="" onerror="this.style.opacity='0.2'"></div>
+    <div class="cm-body">
+      <div>
+        <div class="cm-name" id="cm-name"></div>
+        <div class="cm-type" id="cm-type"></div>
+      </div>
+      <div class="cm-text" id="cm-text"></div>
+      <div class="cm-stats" id="cm-stats"></div>
+      <div class="cm-artist" id="cm-artist" style="display:none;"></div>
+      <div class="cm-pricechart" id="cm-pricechart" style="display:none;"></div>
+    </div>
+  </div>
+</div>
+
+<script src="price-chart.js?v=1"></script>
+<script>
+  const IMAGE_BASE = 'https://pub-5999238092ad418ca60e7a9ad641cf57.r2.dev/';
+  function escHtml(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  function getParam(n){ return new URLSearchParams(location.search).get(n); }
+
+  function chooseSet(sets) {
+    return (sets||[]).find(s => /beta/i.test(s.name||''))
+      || (sets||[]).find(s => /alpha/i.test(s.name||''))
+      || (sets||[])[0];
+  }
+  // Build a normalized card record (Beta-preferred slug, distinct artists).
+  function normalize(card) {
+    const g = card.guardian || {};
+    const sets = card.sets || [];
+    const set = chooseSet(sets);
+    const variant = set ? ((set.variants||[]).find(v => v.finish==='Standard' && v.product==='Booster') || (set.variants||[])[0]) : null;
+    const slug = variant ? variant.slug : (card.name||'').toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'');
+    const artistSet = new Set();
+    sets.forEach(s => (s.variants||[]).forEach(v => { if (v.artist && v.artist.trim()) artistSet.add(v.artist.trim()); }));
+    return {
+      name: card.name,
+      type: g.type || '',
+      rarity: g.rarity || '',
+      cost: g.cost, attack: g.attack, defence: g.defence, life: g.life,
+      thresholds: g.thresholds || {},
+      rules_text: g.rulesText || '',
+      element: Array.isArray(card.elements) ? card.elements.join(', ') : (card.elements || ''),
+      subTypes: card.subTypes || '',
+      set: set ? set.name : '',
+      slug,
+      artists: [...artistSet],
+    };
+  }
+
+  let byName = new Map();
+
+  async function run() {
+    const artist = getParam('a');
+    const statusEl = document.getElementById('status');
+    if (!artist) { statusEl.textContent = 'No artist specified.'; return; }
+    document.title = `${artist} — Cursed Realm`;
+
+    let raw;
+    try {
+      const res = await fetch('cards.json');
+      raw = await res.json();
+      if (!Array.isArray(raw)) raw = raw.data || raw.cards || [];
+    } catch (e) { statusEl.textContent = 'Could not load card data.'; return; }
+
+    const want = artist.trim().toLowerCase();
+    const cards = raw.map(normalize)
+      .filter(c => c.artists.some(a => a.toLowerCase() === want))
+      .sort((a, b) => a.name.localeCompare(b.name));
+
+    if (!cards.length) { statusEl.textContent = `No cards found for artist "${artist}".`; return; }
+
+    // Use the artist's name exactly as spelled in the data (canonical casing).
+    const canonical = cards[0].artists.find(a => a.toLowerCase() === want) || artist;
+    byName = new Map(cards.map(c => [c.name, c]));
+
+    document.getElementById('artist-name').textContent = canonical;
+    document.getElementById('artist-count').innerHTML = `<b>${cards.length}</b> card${cards.length === 1 ? '' : 's'} illustrated`;
+    document.getElementById('card-grid').innerHTML = cards.map(c => {
+      const meta = [c.type, c.rarity, c.set].filter(Boolean).join(' · ');
+      return `<div class="card-thumb${c.type==='Site'?' is-site':''}" onclick="openCardModal('${c.name.replace(/'/g,"\\'")}')">
+        <div class="thumb-img"><img src="${IMAGE_BASE}${c.slug}.png" alt="${escHtml(c.name)}" loading="lazy" onerror="this.style.opacity='0.2'"></div>
+        <div class="thumb-name">${escHtml(c.name)}</div>
+        <div class="thumb-meta">${escHtml(meta)}</div>
+      </div>`;
+    }).join('');
+
+    statusEl.style.display = 'none';
+    document.getElementById('content').style.display = '';
+  }
+
+  // ── CARD DETAIL MODAL ──
+  function openCardModal(name) {
+    const card = byName.get(name);
+    if (!card) return;
+    const modal = document.getElementById('cm-modal');
+    const imgWrap = document.getElementById('cm-img');
+    const img = document.getElementById('cm-img-el');
+    const isSite = card.type === 'Site';
+    modal.classList.toggle('site-modal', isSite);
+    imgWrap.classList.toggle('site-img', isSite);
+    img.style.opacity = '1';
+    img.src = `${IMAGE_BASE}${card.slug}.png`;
+    img.alt = card.name;
+    document.getElementById('cm-name').textContent = card.name;
+    document.getElementById('cm-type').textContent = [card.type, card.set].filter(Boolean).join(' · ');
+    const textEl = document.getElementById('cm-text');
+    textEl.textContent = card.rules_text || '';
+    textEl.style.display = card.rules_text ? '' : 'none';
+    const stats = [];
+    if (card.cost != null && card.cost !== '') stats.push({ l: 'Cost', v: card.cost });
+    if (card.attack != null && card.attack !== '') stats.push({ l: 'Power', v: card.attack });
+    if (card.defence != null && card.defence !== '') stats.push({ l: 'Defence', v: card.defence });
+    if (card.life != null && card.life !== '') stats.push({ l: 'Life', v: card.life });
+    if (card.rarity) stats.push({ l: 'Rarity', v: card.rarity });
+    if (card.element) stats.push({ l: 'Element', v: card.element });
+    if (card.subTypes) stats.push({ l: 'Subtype', v: card.subTypes });
+    if (card.thresholds) {
+      const t = Object.entries(card.thresholds).filter(([, v]) => v > 0).map(([k, v]) => `${v} ${k}`).join(', ');
+      if (t) stats.push({ l: 'Threshold', v: t });
+    }
+    document.getElementById('cm-stats').innerHTML = stats.map(s => `<div class="cm-stat"><b>${s.l}:</b> ${s.v}</div>`).join('');
+    const cmArtist = document.getElementById('cm-artist');
+    if (card.artists && card.artists.length) {
+      cmArtist.innerHTML = 'Illustrated by ' + card.artists
+        .map(a => `<a href="artist.html?a=${encodeURIComponent(a)}">${escHtml(a)}</a>`).join(', ');
+      cmArtist.style.display = '';
+    } else { cmArtist.style.display = 'none'; }
+    document.getElementById('cm-overlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+    CRPriceChart.load(card.name, 'cm-pricechart');
+  }
+
+  function closeCardModal(e) {
+    if (e && e.target !== document.getElementById('cm-overlay')) return;
+    document.getElementById('cm-overlay').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && document.getElementById('cm-overlay').classList.contains('open')) closeCardModal();
+  });
+
+  run();
+</script>
+</body>
+</html>

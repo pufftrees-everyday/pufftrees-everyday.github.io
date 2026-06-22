@@ -701,6 +701,9 @@
   .modal-type { font-size: 2.6rem; color: var(--arcane); font-style: italic; }
   .modal-text { font-size: 2.5rem; color: var(--parchment); line-height: 1.7; flex: 1; border-top: 1px solid var(--border); padding-top: 14px; border-bottom: 1px solid var(--border); padding-bottom: 14px; }
   .modal-stats { display: flex; flex-wrap: wrap; gap: 8px; }
+  .modal-artist { font-size: 1.6rem; color: var(--rune); font-style: italic; }
+  .modal-artist a { color: var(--arcane); text-decoration: none; font-style: normal; }
+  .modal-artist a:hover { color: var(--gold); text-decoration: underline; }
   .modal-stat { font-size: 2.4rem; background: rgba(155,135,212,0.08); border: 1px solid var(--border); border-radius: 3px; padding: 4px 12px; color: var(--shimmer); }
   .modal-stat b { color: var(--arcane); }
   .modal-add { padding: 10px 20px; font-family: 'Cinzel', serif; font-size: 0.85rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; background: var(--rune); border: 1px solid var(--arcane); color: #fff; border-radius: 4px; cursor: pointer; transition: background 0.2s; }
@@ -785,6 +788,7 @@
     .modal-body { padding: 18px !important; }
     .modal-name { font-size: 1.5rem !important; }
     .modal-text { font-size: 1.05rem !important; }
+    .modal-artist { font-size: 0.95rem !important; }
     .card-grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; }
   }
 
@@ -1082,6 +1086,7 @@
       <div><div class="modal-name" id="modal-name"></div><div class="modal-type" id="modal-type"></div></div>
       <div class="modal-text" id="modal-text"></div>
       <div class="modal-stats" id="modal-stats"></div>
+      <div class="modal-artist" id="modal-artist" style="display:none;"></div>
       <div class="modal-pricechart" id="modal-pricechart" style="display:none;"></div>
       <button class="modal-add" id="modal-add-btn">+ Add to Deck</button>
     </div>
@@ -1133,6 +1138,7 @@
         <div class="invoke-cheat-h" style="margin-top:12px;">Other</div>
         <div class="invoke-cheat-row"><code>r:unique</code> rarity <span class="invoke-dim">(rarity:)</span></div>
         <div class="invoke-cheat-row"><code>s:alpha</code> set name <span class="invoke-dim">(set:)</span></div>
+        <div class="invoke-cheat-row"><code>a:"hiekkala"</code> artist <span class="invoke-dim">(artist:)</span></div>
         <div class="invoke-cheat-row"><code>o:"draw a card"</code> rules text <span class="invoke-dim">(text:)</span></div>
         <div class="invoke-cheat-row"><code>-t:site</code> NOT a site</div>
         <div class="invoke-cheat-row"><code>e:water OR e:fire</code> either</div>
@@ -1193,6 +1199,10 @@ async function loadCards() {
       const firstVariant = firstSet
         ? (firstSet.variants || []).find(v => v.finish === 'Standard' && v.product === 'Booster') || firstSet.variants[0]
         : null;
+      // Distinct artist(s) across every printing/variant (usually one).
+      const artistSet = new Set();
+      sets.forEach(s => (s.variants || []).forEach(v => { if (v.artist && v.artist.trim()) artistSet.add(v.artist.trim()); }));
+      const artists = [...artistSet];
       return {
         id: card.name,
         name: card.name,
@@ -1208,6 +1218,8 @@ async function loadCards() {
         subTypes: card.subTypes || '',
         set: firstSet ? firstSet.name : '',
         slug: firstVariant ? firstVariant.slug : null,
+        artists,
+        artist: artists.join(', '),
       };
     }).sort((a, b) => a.name.localeCompare(b.name));
     reshuffle(); // assign random order for the default Random sort
@@ -1548,6 +1560,7 @@ const INVOKE_FIELDS = {
   r: 'rarity', rarity: 'rarity',
   s: 'set', set: 'set', e_set: 'set',
   o: 'text', text: 'text', oracle: 'text', rules: 'text',
+  a: 'artist', artist: 'artist', art: 'artist', illus: 'artist', illustrator: 'artist',
   // thresholds
   water: 'th_water', wt: 'th_water',
   fire: 'th_fire', ft: 'th_fire',
@@ -1619,6 +1632,7 @@ function invokeCardValue(card, field) {
     case 'subtype': return (card.subTypes || '').toLowerCase();
     case 'rarity': return (card.rarity || '').toLowerCase();
     case 'set': return (card.set || '').toLowerCase();
+    case 'artist': return (card.artist || '').toLowerCase();
     case 'text': return (card.rules_text || '').toLowerCase();
     case 'cost': return card.cost;
     case 'attack': return card.attack;
@@ -2042,6 +2056,12 @@ function openModal(id) {
     if (t) stats.push({l:'Threshold',v:t});
   }
   document.getElementById('modal-stats').innerHTML = stats.map(s=>`<div class="modal-stat"><b>${s.l}:</b> ${s.v}</div>`).join('');
+  const artistEl = document.getElementById('modal-artist');
+  if (card.artists && card.artists.length) {
+    artistEl.innerHTML = 'Illustrated by ' + card.artists
+      .map(a => `<a href="artist.html?a=${encodeURIComponent(a)}">${escHtml(a)}</a>`).join(', ');
+    artistEl.style.display = '';
+  } else { artistEl.style.display = 'none'; }
   document.getElementById('modal-add-btn').style.display = 'none';
   document.getElementById('modal-overlay').classList.add('open');
   CRPriceChart.load(card.name, 'modal-pricechart');

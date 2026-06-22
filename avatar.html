@@ -79,6 +79,9 @@
 
   .printings { font-size: 0.9rem; color: var(--rune); margin-top: 6px; }
   .printings b { color: var(--gold); }
+  .artist-line { font-size: 0.9rem; color: var(--rune); font-style: italic; margin-top: 8px; }
+  .artist-line a { color: var(--arcane); text-decoration: none; font-style: normal; }
+  .artist-line a:hover { color: var(--gold); text-decoration: underline; }
 
   .disclaimer { margin-top: 36px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 0.78rem; color: var(--rune); line-height: 1.6; font-style: italic; }
 
@@ -164,6 +167,9 @@
     const slug = slugFor(card);
     const els = Array.isArray(card.elements) ? card.elements : (card.elements ? String(card.elements).split(',') : []);
     const th = g.thresholds || {};
+    const artistSet = new Set();
+    (card.sets||[]).forEach(s => (s.variants||[]).forEach(v => { if (v.artist && v.artist.trim()) artistSet.add(v.artist.trim()); }));
+    const artists = [...artistSet];
 
     document.title = `${card.name} — Cursed Realm`;
 
@@ -214,6 +220,7 @@
           <div class="ability-text${ability ? '' : ' empty'}">${ability ? escHtml(ability) : 'No ability text on record.'}</div>
 
           ${setNames.length ? `<div class="printings">Printed in: <b>${setNames.map(escHtml).join('</b>, <b>')}</b></div>` : ''}
+          ${artists.length ? `<div class="artist-line">Illustrated by ${artists.map(a => `<a href="artist.html?a=${encodeURIComponent(a)}">${escHtml(a)}</a>`).join(', ')}</div>` : ''}
 
           <div class="price-chart-block" id="pricechart"></div>
         </div>

@@ -632,6 +632,9 @@
   .cm-type { font-size: 1rem; color: var(--arcane); font-style: italic; }
   .cm-text { font-size: 1rem; color: var(--parchment); line-height: 1.6; border-top: 1px solid var(--border); padding-top: 12px; }
   .cm-stats { display: flex; flex-wrap: wrap; gap: 7px; }
+  .cm-artist { font-size: 0.92rem; color: var(--rune); font-style: italic; }
+  .cm-artist a { color: var(--arcane); text-decoration: none; font-style: normal; }
+  .cm-artist a:hover { color: var(--gold); text-decoration: underline; }
   .cm-stat { font-size: 0.85rem; background: rgba(155,135,212,0.08); border: 1px solid var(--border); border-radius: 4px; padding: 3px 10px; color: var(--shimmer); }
   .cm-stat b { color: var(--arcane); }
   .cm-close { position: absolute; top: 10px; right: 14px; background: rgba(11,10,15,0.5); border: none; width: 32px; height: 32px; border-radius: 50%; color: var(--rune); font-size: 1.3rem; cursor: pointer; z-index: 2; line-height: 1; display: flex; align-items: center; justify-content: center; }
@@ -996,6 +999,7 @@
       </div>
       <div class="cm-text" id="cm-text"></div>
       <div class="cm-stats" id="cm-stats"></div>
+      <div class="cm-artist" id="cm-artist" style="display:none;"></div>
       <div class="cm-coll" id="cm-coll"></div>
       <div class="cm-pricechart" id="cm-pricechart" style="display:none;"></div>
     </div>
@@ -1533,6 +1537,7 @@ async function loadCards() {
         setNames: sets.map(s => s.name).filter(Boolean),
         slug: firstVariant ? firstVariant.slug : null,
         foilSlug: foilVariant ? foilVariant.slug : null,
+        artists: (() => { const a = new Set(); sets.forEach(s => (s.variants || []).forEach(v => { if (v.artist && v.artist.trim()) a.add(v.artist.trim()); })); return [...a]; })(),
       };
     }).sort((a, b) => a.name.localeCompare(b.name));
 
@@ -1654,6 +1659,12 @@ function openCardModal(id) {
     if (t) stats.push({ l: 'Threshold', v: t });
   }
   document.getElementById('cm-stats').innerHTML = stats.map(s => `<div class="cm-stat"><b>${s.l}:</b> ${s.v}</div>`).join('');
+  const cmArtist = document.getElementById('cm-artist');
+  if (card.artists && card.artists.length) {
+    cmArtist.innerHTML = 'Illustrated by ' + card.artists
+      .map(a => `<a href="artist.html?a=${encodeURIComponent(a)}">${bEsc(a)}</a>`).join(', ');
+    cmArtist.style.display = '';
+  } else { cmArtist.style.display = 'none'; }
   renderModalControls();
   document.getElementById('cm-overlay').classList.add('open');
   document.body.style.overflow = 'hidden';
