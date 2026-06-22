@@ -95,6 +95,10 @@ then variant where `finish==='Standard' && product==='Booster'`. Example real sl
   Vault = `have`; Trades = `trade`. **Vault and Trades are mutually exclusive** per card: flagging
   Trade moves the card (and its qty) out of the Vault into Trades; un-flagging returns it. `want` is
   independent. "Total Collection Value" = Vault value + Trades value (both finishes) + all binder values.
+  **Export** is a dropdown (`doExport`) that exports the active section in 4 formats — Plain text
+  (`2x Card`, foils suffixed `(Foil)`), With prices (branded "Exported from Cursed Realm" + TCGplayer/
+  JustTCG scrape date + total value), Detailed (grouped by set & rarity), and CSV (spreadsheet
+  columns). All include both standard and foil quantities; filenames are `cursed-realm-{section}-{date}`.
   **Binders:** the Vault and Trades tabs each have a "Create Binder" button — named, collapsible
   (collapsed by default), isolated card containers with std/foil quantities. Per-card add and bulk
   "add 1 of each / +1 foil each / Master Set / Foil Master Set" from a chosen set (Master Set = 1×

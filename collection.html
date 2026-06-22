@@ -565,6 +565,17 @@
   .more-discord:hover { color: #d4d8ff !important; }
   .mobile-discord { color: #b9c0ff !important; font-weight: 600; }
 
+  /* Export format dropdown */
+  .export-menu { position: relative; display: inline-block; }
+  .export-dropdown { position: absolute; top: calc(100% + 6px); right: 0; min-width: 280px; background: var(--dusk); border: 1px solid var(--border-strong); border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); padding: 6px; opacity: 0; transform: translateY(-6px); pointer-events: none; transition: opacity 0.14s, transform 0.14s; z-index: 300; }
+  .export-dropdown.open { opacity: 1; transform: translateY(0); pointer-events: auto; }
+  .export-item { display: block; width: 100%; text-align: left; background: none; border: none; cursor: pointer; padding: 9px 12px; border-radius: 6px; transition: background 0.12s; }
+  .export-item:hover { background: rgba(155,135,212,0.12); }
+  .export-item b { display: block; font-family: 'Cinzel', serif; font-size: 0.82rem; font-weight: 700; letter-spacing: 0.03em; color: var(--shimmer); }
+  .export-item span { display: block; font-family: 'Crimson Pro', serif; font-size: 0.82rem; color: var(--rune); margin-top: 2px; line-height: 1.35; }
+  .export-item code { font-family: 'Courier New', monospace; font-size: 0.76rem; color: var(--arcane); background: rgba(155,135,212,0.1); padding: 0 4px; border-radius: 3px; }
+  @media (max-width: 700px) { .export-menu { width: 100%; } .export-dropdown { left: 0; right: 0; min-width: 0; } }
+
   /* ── BINDERS ── */
   .binders-panel { margin-top: 18px; }
   .binders-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
@@ -788,7 +799,15 @@
       <button class="view-btn" id="sec-wants" onclick="setView('want')">Wants</button>
     </div>
     <div class="collection-actions">
-      <button class="btn btn-ghost" id="export-btn" onclick="exportCurrentSection()">⬇ Export</button>
+      <div class="export-menu">
+        <button class="btn btn-ghost" id="export-btn" onclick="toggleExportMenu(event)"><span id="export-btn-label">⬇ Export Vault</span> <span style="font-size:0.6rem;">▾</span></button>
+        <div class="export-dropdown" id="export-dropdown">
+          <button class="export-item" onclick="doExport('text')"><b>Plain text</b><span>Just <code>2x Card Name</code> lines — paste anywhere</span></button>
+          <button class="export-item" onclick="doExport('prices')"><b>With prices</b><span>Prices + total value, credited to Cursed Realm &amp; scrape date</span></button>
+          <button class="export-item" onclick="doExport('detailed')"><b>Detailed</b><span>Grouped by set &amp; rarity, with prices</span></button>
+          <button class="export-item" onclick="doExport('csv')"><b>CSV (spreadsheet)</b><span>Columns for set, rarity, finish, qty, price</span></button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -1957,10 +1976,9 @@ function setView(view) {
   const btn = document.getElementById(idMap[view]);
   if (btn) btn.classList.add('active');
   // Update export button label to match the section
-  const exportBtn = document.getElementById('export-btn');
-  if (exportBtn) {
-    const label = view === 'want' ? '⬇ Export Wants' : view === 'trade' ? '⬇ Export Trades' : '⬇ Export Vault';
-    exportBtn.textContent = label;
+  const exportLabel = document.getElementById('export-btn-label');
+  if (exportLabel) {
+    exportLabel.textContent = view === 'want' ? '⬇ Export Wants' : view === 'trade' ? '⬇ Export Trades' : '⬇ Export Vault';
   }
   // Card Search hides the stats panel; the three vault sections show it
   const inVaultSection = (view !== 'search');
@@ -2177,60 +2195,143 @@ function setVaultSort(mode) {
 }
 
 // ── EXPORTS ──
-function exportList(flag, filename, title) {
+// ── EXPORT (multiple formats; always exports the active section) ──
+function toggleExportMenu(e) {
+  if (e) e.stopPropagation();
+  const d = document.getElementById('export-dropdown');
+  if (!d) return;
+  const open = d.classList.toggle('open');
+  if (open) setTimeout(() => document.addEventListener('click', exportMenuOutside), 0);
+  else document.removeEventListener('click', exportMenuOutside);
+}
+function closeExportMenu() {
+  const d = document.getElementById('export-dropdown');
+  if (d) d.classList.remove('open');
+  document.removeEventListener('click', exportMenuOutside);
+}
+function exportMenuOutside(e) { if (!e.target.closest('.export-menu')) closeExportMenu(); }
+
+// Which section is active, and its storage fields + label.
+function currentSectionInfo() {
+  if (currentView === 'want')  return { flag: 'want',  title: 'Wants',  file: 'wants'  };
+  if (currentView === 'trade') return { flag: 'trade', title: 'Trades', file: 'trades' };
+  return { flag: 'have', title: 'Vault', file: 'vault' }; // 'all' and 'search' export the owned Vault
+}
+// Cards in the active section, with std + foil counts (both finishes), sorted by name.
+function sectionEntries(flag) {
   const col = getCollection();
-  const cards = allCards.filter(c => col[c.id]?.[flag] > 0);
-  if (!cards.length) { toast(`No cards flagged as ${flag}`); return; }
-
-  cards.sort((a, b) => a.name.localeCompare(b.name));
-
-  const totalQty = cards.reduce((s, c) => s + (col[c.id]?.[flag] || 0), 0);
-  const totalPrice = cards.reduce((sum, c) => sum + (prices[c.name]?.market || 0) * (col[c.id]?.[flag] || 1), 0);
-  const priceStr = totalPrice > 0 ? `$${totalPrice.toFixed(2)}` : 'N/A (no price data)';
-
-  const groups = {};
-  cards.forEach(c => {
-    const key = `${c.set || 'Unknown Set'} — ${c.rarity || 'Unknown'}`;
-    (groups[key] = groups[key] || []).push(c);
+  const stdF = flag, foilF = flag + 'Foil';
+  const out = [];
+  allCards.forEach(c => {
+    const e = col[c.id]; if (!e) return;
+    const std = e[stdF] || 0, foil = e[foilF] || 0;
+    if (std > 0 || foil > 0) out.push({ card: c, std, foil });
   });
+  return out.sort((a, b) => a.card.name.localeCompare(b.card.name));
+}
+const _money = n => '$' + n.toFixed(2);
+const _stdPrice = name => prices[name]?.market;
+const _foilPrice = name => foilPrices[name]?.market;
 
-  const lines = [
-    `// ${title}`,
-    `// Generated ${new Date().toLocaleDateString()} by Pufftrees`,
-    `// Total cards: ${totalQty} (${cards.length} unique)`,
-    priceDate ? `// Market prices from TCGPlayer as of ${priceDate}` : `// No price data available`,
-    `// Total price: ${priceStr}`,
-    ''
+function exportBrandHeader(title) {
+  return [
+    `Sorcery: Contested Realm — My ${title}`,
+    `Exported from Cursed Realm (https://cursedrealm.org)`,
+    priceDate ? `Prices: TCGplayer Market via JustTCG, as of ${priceDate}` : `Prices: unavailable`,
   ];
-
-  Object.entries(groups).sort().forEach(([group, gcards]) => {
-    lines.push(`// ${group}`);
-    gcards.forEach(c => {
-      const qty = col[c.id]?.[flag] || 1;
-      const price = prices[c.name]?.market;
-      const priceTag = price != null ? ` — $${(price * qty).toFixed(2)}${qty > 1 ? ` (${qty}× $${price.toFixed(2)})` : ''}` : '';
-      const qtyTag = qty > 1 ? `${qty}x ` : '';
-      lines.push(`${qtyTag}${c.name}${priceTag}`);
-    });
-    lines.push('');
-  });
-
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([lines.join('\n')], {type:'text/plain'}));
-  a.download = filename;
-  a.click();
-  toast(`Exported ${totalQty} cards (${cards.length} unique)`);
 }
 
-function exportWantList() { exportList('want', 'want_list.txt', 'Sorcery TCG — Want List'); }
-function exportHaveList() { exportList('have', 'have_list.txt', 'Sorcery TCG — Have List'); }
-function exportTradeList() { exportList('trade', 'trade_list.txt', 'Sorcery TCG — Trades'); }
-// Export whichever section the user is currently viewing
-function exportCurrentSection() {
-  if (currentView === 'want') return exportWantList();
-  if (currentView === 'trade') return exportTradeList();
-  // 'all' (Collection) and 'search' both export the owned collection
-  return exportHaveList();
+function buildPlainText(entries) {
+  const lines = [];
+  entries.forEach(e => {
+    if (e.std > 0)  lines.push(`${e.std}x ${e.card.name}`);
+    if (e.foil > 0) lines.push(`${e.foil}x ${e.card.name} (Foil)`);
+  });
+  return lines.join('\n') + '\n';
+}
+
+function buildPricedText(entries, title) {
+  let total = 0, totalQty = 0;
+  const body = [];
+  entries.forEach(e => {
+    const sp = _stdPrice(e.card.name), fp = _foilPrice(e.card.name);
+    if (e.std > 0) {
+      totalQty += e.std;
+      if (sp != null) { total += sp * e.std; body.push(`${e.std}x ${e.card.name} — ${_money(sp * e.std)}${e.std > 1 ? ` (${_money(sp)} ea)` : ''}`); }
+      else body.push(`${e.std}x ${e.card.name} — (no price)`);
+    }
+    if (e.foil > 0) {
+      totalQty += e.foil;
+      if (fp != null) { total += fp * e.foil; body.push(`${e.foil}x ${e.card.name} (Foil) — ${_money(fp * e.foil)}${e.foil > 1 ? ` (${_money(fp)} ea)` : ''}`); }
+      else body.push(`${e.foil}x ${e.card.name} (Foil) — (no price)`);
+    }
+  });
+  const header = exportBrandHeader(title).concat([
+    `Total value: ${_money(total)} — ${totalQty} cards, ${entries.length} unique`, ''
+  ]);
+  return header.concat(body).join('\n') + '\n';
+}
+
+function buildDetailedText(entries, title) {
+  let total = 0, totalQty = 0;
+  const groups = {};
+  entries.forEach(e => {
+    const key = `${e.card.set || 'Unknown Set'} — ${e.card.rarity || 'Unknown'}`;
+    (groups[key] = groups[key] || []).push(e);
+  });
+  const body = [];
+  Object.keys(groups).sort().forEach(key => {
+    body.push(`== ${key} ==`);
+    groups[key].forEach(e => {
+      const sp = _stdPrice(e.card.name), fp = _foilPrice(e.card.name);
+      if (e.std > 0)  { totalQty += e.std;  if (sp != null) total += sp * e.std;  body.push(`  ${e.std}x ${e.card.name}${sp != null ? ` — ${_money(sp * e.std)}` : ''}`); }
+      if (e.foil > 0) { totalQty += e.foil; if (fp != null) total += fp * e.foil; body.push(`  ${e.foil}x ${e.card.name} (Foil)${fp != null ? ` — ${_money(fp * e.foil)}` : ''}`); }
+    });
+    body.push('');
+  });
+  const header = exportBrandHeader(title).concat([
+    `Total: ${totalQty} cards (${entries.length} unique)${total > 0 ? ` · ${_money(total)}` : ''}`, ''
+  ]);
+  return header.concat(body).join('\n') + '\n';
+}
+
+function buildCSV(entries) {
+  const field = s => { s = String(s == null ? '' : s); return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
+  const rows = [['Name', 'Set', 'Rarity', 'Type', 'Element', 'Finish', 'Quantity', 'Unit Price (USD)', 'Line Total (USD)']];
+  entries.forEach(e => {
+    const add = (finish, qty, price) => {
+      if (qty <= 0) return;
+      rows.push([e.card.name, e.card.set, e.card.rarity, e.card.type, e.card.element, finish, qty,
+        price != null ? price.toFixed(2) : '', price != null ? (price * qty).toFixed(2) : '']);
+    };
+    add('Standard', e.std, _stdPrice(e.card.name));
+    add('Foil', e.foil, _foilPrice(e.card.name));
+  });
+  return rows.map(r => r.map(field).join(',')).join('\n') + '\n';
+}
+
+function downloadFile(text, filename, mime) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([text], { type: mime || 'text/plain' }));
+  a.download = filename;
+  a.click();
+}
+
+function doExport(format) {
+  closeExportMenu();
+  const { flag, title, file } = currentSectionInfo();
+  const entries = sectionEntries(flag);
+  if (!entries.length) { toast(`No cards in ${title}`); return; }
+  let text, ext = 'txt', mime = 'text/plain';
+  if (format === 'text')          text = buildPlainText(entries);
+  else if (format === 'prices')   text = buildPricedText(entries, title);
+  else if (format === 'detailed') text = buildDetailedText(entries, title);
+  else if (format === 'csv')      { text = buildCSV(entries); ext = 'csv'; mime = 'text/csv'; }
+  else return;
+  const stamp = new Date().toISOString().slice(0, 10);
+  downloadFile(text, `cursed-realm-${file}-${stamp}.${ext}`, mime);
+  const totalQty = entries.reduce((s, e) => s + e.std + e.foil, 0);
+  toast(`Exported ${totalQty} cards (${entries.length} unique)`);
 }
 
 // ── TOAST ──
