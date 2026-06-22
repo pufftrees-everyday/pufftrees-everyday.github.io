@@ -716,9 +716,14 @@
   .cm-overlay.open { display: flex; }
   .cm-modal { background: var(--dusk); border: 1px solid var(--border-strong); border-radius: 10px; box-shadow: 0 0 60px rgba(155,135,212,0.2); max-width: 920px; width: 100%; max-height: 92vh; display: grid; grid-template-columns: 360px 1fr; position: relative; overflow: hidden; }
   .cm-img { background: var(--twilight); display: flex; align-items: center; justify-content: center; padding: 24px; }
+  .cm-img-rot { display: contents; } /* transparent wrapper for portrait cards */
   .cm-img img { width: 100%; max-width: 300px; aspect-ratio: 3/4; object-fit: contain; display: block; border-radius: 8px; }
-  .cm-modal.site-modal { grid-template-columns: 440px 1fr; }
-  .cm-img.site-img img { max-width: 360px; transform: rotate(90deg); }
+  /* Sites are portrait image files rotated 90° to read as landscape. Size a box
+     to the rotated (landscape) dimensions and center the rotated image in it, so
+     the whole card shows cleanly — never clipped, no dead space. */
+  .cm-modal.site-modal { grid-template-columns: 420px 1fr; }
+  .cm-img.site-img .cm-img-rot { display: block; position: relative; overflow: hidden; width: 360px; height: 258px; max-width: 100%; border-radius: 8px; }
+  .cm-img.site-img .cm-img-rot img { position: absolute; top: 50%; left: 50%; width: 258px; height: 360px; max-width: none; aspect-ratio: auto; border-radius: 0; object-fit: contain; transform: translate(-50%, -50%) rotate(90deg); }
   .cm-body { padding: 26px 28px; display: flex; flex-direction: column; gap: 13px; overflow-y: auto; }
   .cm-name { font-family: 'Cinzel', serif; font-size: 1.55rem; font-weight: 600; color: var(--gold); line-height: 1.15; padding-right: 28px; }
   .cm-type { font-size: 1rem; color: var(--arcane); font-style: italic; }
@@ -786,10 +791,10 @@
     }
     .cm-img { flex-shrink: 0; padding: 20px 18px 8px; }
     .cm-img img { max-width: 200px; }
-    /* Sites render landscape (rotated); fix the header height so the rotated
-       image doesn't reserve a tall whitespace box. */
-    .cm-img.site-img { height: 190px; padding: 12px; overflow: hidden; }
-    .cm-img.site-img img { max-width: 148px; }
+    /* Sites render landscape (rotated) in a box sized to the rotated image. */
+    .cm-img.site-img { padding: 16px 12px; }
+    .cm-img.site-img .cm-img-rot { width: 280px; height: 201px; }
+    .cm-img.site-img .cm-img-rot img { width: 201px; height: 280px; }
     .cm-body {
       flex: 1 1 auto; min-height: 0;
       overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
@@ -1142,7 +1147,7 @@
 <div class="cm-overlay" id="cm-overlay" onclick="closeCardModal(event)">
   <div class="cm-modal" id="cm-modal">
     <button class="cm-close" onclick="closeCardModal()" aria-label="Close">✕</button>
-    <div class="cm-img" id="cm-img"><img id="cm-img-el" src="" alt="" onerror="this.style.opacity='0.2'"></div>
+    <div class="cm-img" id="cm-img"><div class="cm-img-rot"><img id="cm-img-el" src="" alt="" onerror="this.style.opacity='0.2'"></div></div>
     <div class="cm-body">
       <div>
         <div class="cm-name" id="cm-name"></div>
