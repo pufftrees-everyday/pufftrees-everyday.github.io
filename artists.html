@@ -69,8 +69,15 @@
   .search-wrap input:focus { border-color: var(--arcane); }
   .search-wrap input::placeholder { color: var(--mist); font-style: italic; }
 
+  .viewmode-wrap { display: inline-flex; align-items: center; gap: 8px; }
+  .viewmode-label, .sort-bar .lbl { font-family: 'Cinzel', serif; font-size: 0.68rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--rune); }
+  .viewmode-toggle { display: inline-flex; border: 1px solid var(--border-strong); border-radius: 8px; overflow: hidden; }
+  .viewmode-toggle button { font-size: 1rem; line-height: 1; background: transparent; border: none; color: var(--rune); padding: 7px 11px; cursor: pointer; transition: background 0.15s, color 0.15s; }
+  .viewmode-toggle button + button { border-left: 1px solid var(--border-strong); }
+  .viewmode-toggle button:hover { color: var(--arcane); }
+  .viewmode-toggle button.active { background: rgba(155,135,212,0.16); color: var(--shimmer); }
+
   .sort-bar { display: flex; align-items: center; gap: 8px; }
-  .sort-bar .lbl { font-family: 'Cinzel', serif; font-size: 0.68rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--rune); }
   .sort-toggle { display: inline-flex; border: 1px solid var(--border-strong); border-radius: 8px; overflow: hidden; }
   .sort-toggle button {
     background: transparent; border: none; cursor: pointer; color: var(--rune);
@@ -80,6 +87,7 @@
   .sort-toggle button + button { border-left: 1px solid var(--border-strong); }
   .sort-toggle button:hover { color: var(--arcane); }
   .sort-toggle button.active { background: rgba(155,135,212,0.16); color: var(--shimmer); }
+  .sort-dir { font-size: 0.85em; }
 
   .artist-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
   @media (max-width: 520px) { .artist-grid { grid-template-columns: 1fr; } }
@@ -98,6 +106,24 @@
   .artist-tile:hover .name { color: var(--shimmer); }
   .artist-tile .count { font-size: 0.85rem; color: var(--rune); margin-top: 4px; }
   .artist-tile .count b { color: var(--gold); }
+
+  /* --- Text view: compact rows, no art, multi-column flow --- */
+  .artist-grid.view-text { grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 2px 16px; }
+  @media (max-width: 520px) { .artist-grid.view-text { grid-template-columns: 1fr; } }
+  .artist-grid.view-text .artist-tile { padding: 8px 12px; gap: 10px; border-radius: 7px; }
+  .artist-grid.view-text .artist-tile:hover { transform: none; box-shadow: none; }
+  .artist-grid.view-text .artist-thumb { display: none; }
+  .artist-grid.view-text .artist-info { display: flex; width: 100%; align-items: baseline; justify-content: space-between; gap: 10px; }
+  .artist-grid.view-text .name { font-size: 0.98rem; }
+  .artist-grid.view-text .count { margin-top: 0; white-space: nowrap; }
+
+  /* --- Card / Large views: art-forward grid --- */
+  .artist-grid.view-card { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+  .artist-grid.view-large { grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); }
+  .artist-grid.view-card .artist-tile, .artist-grid.view-large .artist-tile { flex-direction: column; align-items: stretch; text-align: center; gap: 10px; }
+  .artist-grid.view-card .artist-thumb, .artist-grid.view-large .artist-thumb { width: 100%; height: auto; aspect-ratio: 3 / 4; }
+  .artist-grid.view-card .artist-info, .artist-grid.view-large .artist-info { width: 100%; }
+  .artist-grid.view-large .name { font-size: 1.15rem; }
 
   .no-results { color: var(--rune); font-style: italic; padding: 30px 4px; }
   .disclaimer { margin-top: 36px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 0.78rem; color: var(--rune); line-height: 1.6; font-style: italic; }
@@ -129,11 +155,20 @@
     <div class="search-wrap">
       <input type="text" id="artist-search" placeholder="Search artists…" autocomplete="off" oninput="filterArtists()">
     </div>
+    <div class="viewmode-wrap">
+      <span class="viewmode-label">View</span>
+      <div class="viewmode-toggle">
+        <button type="button" id="vm-text" onclick="setView('text')" title="Text view" aria-label="Text view">☰</button>
+        <button type="button" id="vm-detail" class="active" onclick="setView('detail')" title="Detailed view" aria-label="Detailed view">▤</button>
+        <button type="button" id="vm-card" onclick="setView('card')" title="Card view" aria-label="Card view">⊞</button>
+        <button type="button" id="vm-large" onclick="setView('large')" title="Large view" aria-label="Large view">⊡</button>
+      </div>
+    </div>
     <div class="sort-bar">
       <span class="lbl">Sort</span>
       <div class="sort-toggle">
-        <button type="button" id="sort-name" class="active" onclick="setSort('name')">A–Z</button>
-        <button type="button" id="sort-count" onclick="setSort('count')">Most Cards</button>
+        <button type="button" id="sort-name" class="active" onclick="setSort('name')">A–Z <span class="sort-dir" id="dir-name">↑</span></button>
+        <button type="button" id="sort-count" onclick="setSort('count')" title="Sort by number of cards"># Cards <span class="sort-dir" id="dir-count"></span></button>
       </div>
     </div>
   </div>
@@ -172,23 +207,57 @@
 
   let artists = []; // [{ name, count, slug, isSite }]
   let sortMode = 'name'; // 'name' | 'count'
+  let sortDir = 1;       // 1 = ascending, -1 = descending (per active mode)
+  let view = 'detail';   // 'text' | 'detail' | 'card' | 'large'
+  const SORT_KEY = 'grimoire_artist_sort', VIEW_KEY = 'grimoire_artist_view';
 
   function sortArtists(list) {
     const arr = list.slice();
     if (sortMode === 'count') {
-      arr.sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+      arr.sort((a, b) => (a.count - b.count) * sortDir || a.name.localeCompare(b.name));
     } else {
-      arr.sort((a, b) => a.name.localeCompare(b.name));
+      arr.sort((a, b) => a.name.localeCompare(b.name) * sortDir);
     }
     return arr;
   }
 
+  function updateSortUI() {
+    document.getElementById('sort-name').classList.toggle('active', sortMode === 'name');
+    document.getElementById('sort-count').classList.toggle('active', sortMode === 'count');
+    const arrow = sortDir === 1 ? '↑' : '↓';
+    document.getElementById('dir-name').textContent = sortMode === 'name' ? arrow : '';
+    document.getElementById('dir-count').textContent = sortMode === 'count' ? arrow : '';
+  }
+
   function setSort(mode) {
-    if (mode === sortMode) return;
-    sortMode = mode;
-    document.getElementById('sort-name').classList.toggle('active', mode === 'name');
-    document.getElementById('sort-count').classList.toggle('active', mode === 'count');
+    if (mode === sortMode) { sortDir = -sortDir; }          // same button → flip direction
+    else { sortMode = mode; sortDir = (mode === 'count') ? -1 : 1; } // default: name A–Z, count high→low
+    try { localStorage.setItem(SORT_KEY, sortMode + ':' + sortDir); } catch (e) {}
+    updateSortUI();
     filterArtists();
+  }
+
+  function setView(v) {
+    view = v;
+    ['text', 'detail', 'card', 'large'].forEach(k =>
+      document.getElementById('vm-' + k).classList.toggle('active', k === v));
+    const g = document.getElementById('artist-grid');
+    g.classList.remove('view-text', 'view-card', 'view-large');
+    if (v === 'text') g.classList.add('view-text');
+    else if (v === 'card') g.classList.add('view-card');
+    else if (v === 'large') g.classList.add('view-large');
+    try { localStorage.setItem(VIEW_KEY, v); } catch (e) {}
+  }
+
+  function restorePrefs() {
+    try {
+      const sv = localStorage.getItem(SORT_KEY);
+      if (sv) { const [m, d] = sv.split(':'); if (m === 'name' || m === 'count') { sortMode = m; sortDir = (d === '-1') ? -1 : 1; } }
+    } catch (e) {}
+    try {
+      const vv = localStorage.getItem(VIEW_KEY);
+      if (['text', 'detail', 'card', 'large'].includes(vv)) view = vv;
+    } catch (e) {}
   }
 
   async function run() {
@@ -216,6 +285,9 @@
     artists = [...map.values()];
     if (!artists.length) { statusEl.textContent = 'No artist data found.'; return; }
 
+    restorePrefs();
+    updateSortUI();
+    setView(view);
     renderArtists(sortArtists(artists));
     statusEl.style.display = 'none';
     document.getElementById('artist-grid').style.display = '';
