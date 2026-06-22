@@ -49,8 +49,10 @@ push happen directly, no manual upload.
   OR as deck owner. Shown on deck.html under the deck; owner's posts badged "Author".
 - **VIEW public_decks_with_likes**: public decks + like counts
 - **price_history**: captured_at (timestamptz), card_name, finish ('standard'|'foil'), market
-  (numeric). One row per card/finish/capture; appended twice daily by the price Action
-  (`record-price-history.js`) for historical price/value charts. Public read; writes only via
+  (numeric). One row per card/finish/capture; appended 4×/day by the price Action
+  (`record-price-history.js`) for historical price/value charts. `captured_at` is stamped at run
+  time (not prices.json's `generated`) so every run is a distinct point; the capture step runs
+  `if: always()` so a push hiccup can't skip it, and inserts retry on transient errors. Public read; writes only via
   service role. See the price-history setup gotcha.
 
 **deck_data jsonb shape:** `{ n:name, a:[[cardName,qty]...avatar], t:[...atlas/sites],
@@ -310,12 +312,12 @@ NO blur/glow. Element symbols + moon are loaded as real PNGs from the site.
   Then add the secret: GitHub repo → Settings → Secrets and variables → Actions → New repository
   secret → name `SUPABASE_SERVICE_ROLE`, value = the project's **service_role** key (Supabase →
   Project Settings → API). Capture begins on the next scheduled run (or trigger it manually from
-  the Actions tab). ~2,200 points/run × 2 runs/day; backfill from git history of prices.json is
+  the Actions tab). ~2,200 points/run × 4 runs/day (every 6h); backfill from git history of prices.json is
   possible later if desired.
 
 ## Open / future ideas
 - ✅ **Daily price-history capture — DONE.** `record-price-history.js` appends a snapshot to the
-  `price_history` table on every price Action run (twice/day). See the price-history gotcha for setup.
+  `price_history` table on every price Action run (4×/day, every 6h). See the price-history gotcha for setup.
 - ✅ **Card price-over-time chart — DONE.** index.html card modal **and** avatar.html show a
   dependency-free inline-SVG line chart (standard + foil) from `price_history`
   (`loadPriceChart`/`renderPriceChartSVG`, fetched via the public REST API); graceful empty state

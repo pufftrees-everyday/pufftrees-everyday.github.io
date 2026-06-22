@@ -34,7 +34,12 @@ async function main() {
   }
 
   const data = JSON.parse(fs.readFileSync(PRICES_FILE, 'utf8'));
-  const capturedAt = data.generated || new Date().toISOString();
+  // Stamp the snapshot with the actual run time (not prices.json's `generated`),
+  // so every scheduled run produces a distinct data point — even if the price
+  // fetch was skipped/stale or prices didn't change. This is what makes capture
+  // reliable: we never silently drop a run as a duplicate timestamp.
+  const capturedAt = new Date().toISOString();
+  if (data.generated) console.log(`prices.json generated at ${data.generated}`);
 
   const rows = [];
   for (const [name, v] of Object.entries(data.prices || {})) {
@@ -48,27 +53,46 @@ async function main() {
   console.log(`Recording ${rows.length} price points at ${capturedAt} …`);
 
   const endpoint = `${SUPABASE_URL}/rest/v1/${TABLE}`;
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+  // POST one batch with retries on transient failures (network errors / 5xx /
+  // 429). Returns true once the batch is accepted.
+  async function postBatch(batch, label) {
+    for (let attempt = 1; attempt <= 4; attempt++) {
+      try {
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: {
+            'apikey': SERVICE_ROLE,
+            'Authorization': `Bearer ${SERVICE_ROLE}`,
+            'Content-Type': 'application/json',
+            // Ignore duplicates so re-running the same snapshot is harmless
+            'Prefer': 'resolution=ignore-duplicates,return=minimal',
+          },
+          body: JSON.stringify(batch),
+        });
+        if (res.ok) return true;
+        const txt = await res.text();
+        // 4xx other than 429 won't fix themselves — stop retrying this batch
+        if (res.status < 500 && res.status !== 429) {
+          console.error(`${label} failed (${res.status}, permanent): ${txt.slice(0, 300)}`);
+          return false;
+        }
+        console.warn(`${label} attempt ${attempt} failed (${res.status}); retrying…`);
+      } catch (e) {
+        console.warn(`${label} attempt ${attempt} errored (${e.message}); retrying…`);
+      }
+      await sleep(1500 * attempt); // linear backoff
+    }
+    console.error(`${label} gave up after retries.`);
+    return false;
+  }
+
   let inserted = 0, failed = 0;
   for (let i = 0; i < rows.length; i += BATCH) {
     const batch = rows.slice(i, i + BATCH);
-    const res = await fetch(endpoint, {
-      method: 'POST',
-      headers: {
-        'apikey': SERVICE_ROLE,
-        'Authorization': `Bearer ${SERVICE_ROLE}`,
-        'Content-Type': 'application/json',
-        // Ignore duplicates so re-running the same snapshot is harmless
-        'Prefer': 'resolution=ignore-duplicates,return=minimal',
-      },
-      body: JSON.stringify(batch),
-    });
-    if (res.ok) {
-      inserted += batch.length;
-    } else {
-      failed += batch.length;
-      const txt = await res.text();
-      console.error(`Batch ${i / BATCH} failed (${res.status}): ${txt.slice(0, 300)}`);
-    }
+    const ok = await postBatch(batch, `Batch ${i / BATCH}`);
+    if (ok) inserted += batch.length; else failed += batch.length;
   }
 
   console.log(`Done. Attempted ${rows.length} rows (sent ${inserted}, failed ${failed}).`);
