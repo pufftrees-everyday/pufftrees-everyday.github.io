@@ -243,6 +243,7 @@ const CHANNELS = [
     handle: '@TheAssortedAnimals',
     url: 'https://www.youtube.com/@TheAssortedAnimals',
     channelId: 'UCaO-qqRZVlaGvF5AE0EmbNg',
+    latest: 'IbhervsGZ3Y', // fallback; auto-upgraded to newest at load
     desc: 'Sorcery: Contested Realm gameplay, deck techs, and strategy from a creator deep in the competitive scene. A great place to see real matches played out and learn how archetypes pilot.',
     tags: ['Gameplay', 'Deck Tech', 'Strategy'],
   },
@@ -251,6 +252,7 @@ const CHANNELS = [
     handle: '@winningondeathsdoor',
     url: 'https://www.youtube.com/@winningondeathsdoor',
     channelId: 'UCRXYlCNyqqEW7NiHBwiiSBw',
+    latest: '8hVBacjO1ys', // fallback; auto-upgraded to newest at load
     desc: "A Sorcery: Contested Realm channel bringing you deck profiles, gameplay videos, and discussion on all things Sorcery — with a focus on clawing back wins from the brink at Death's Door.",
     tags: ['Deck Profiles', 'Gameplay', 'Discussion'],
   },
@@ -259,6 +261,7 @@ const CHANNELS = [
     handle: '@SorceryTCG',
     url: 'https://www.youtube.com/@SorceryTCG',
     channelId: 'UCqmv-SKT0_SO5FbP3vGZ_uQ',
+    latest: 'x3R20eDa0jQ', // fallback; auto-upgraded to newest at load
     desc: 'The official channel for Sorcery: Contested Realm — an "old school" fantasy card game for players with a rich imagination, tactical nerve, and an appreciation for hand-painted art. Official reveals, tutorials, and event coverage.',
     tags: ['Official', 'Reveals', 'Tutorials'],
   },
@@ -268,13 +271,15 @@ const CHANNELS = [
 // Instead of RSS (CORS issues), we link directly to each channel
 // and embed their latest videos using YouTube's playlist embed
 
-function getVideoIdFromFeedItem(item) { return null; }
+function embedUrl(id) { return 'https://www.youtube.com/embed/' + id + '?rel=0'; }
 
-// ── CHANNEL FEEDS — YouTube playlist embed (no proxy needed) ──
+// ── CHANNEL FEEDS — embed each channel's latest video ──
+// Single-video embeds are reliable (uploads-playlist embeds are no longer
+// supported by YouTube). We render a known-good recent video immediately,
+// then try to upgrade to the actual newest video from the channel's RSS feed.
 async function renderChannels() {
   const container = document.getElementById('channels-container');
   container.innerHTML = CHANNELS.map(ch => {
-    const playlistId = 'UU' + ch.channelId.slice(2);
     const tags = (ch.tags || []).map(t => `<span class="channel-tag">${t}</span>`).join('');
     return `
     <div class="channel-section">
@@ -286,8 +291,10 @@ async function renderChannels() {
         <div class="channel-player">
           <div class="video-embed">
             <iframe
-              src="https://www.youtube.com/embed?list=${playlistId}&index=0"
-              allowfullscreen loading="lazy" title="${ch.name}">
+              id="yt-${ch.channelId}"
+              src="${embedUrl(ch.latest)}"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen loading="lazy" title="${ch.name} — latest video">
             </iframe>
           </div>
           <div class="channel-browse">
@@ -303,6 +310,25 @@ async function renderChannels() {
       </div>
     </div>`;
   }).join('');
+
+  // Best-effort: upgrade each embed to the channel's newest upload via RSS.
+  CHANNELS.forEach(upgradeLatest);
+}
+
+// Fetch the channel RSS (through a CORS proxy) and swap in the newest video id.
+// Fails silently — the hardcoded `latest` embed already works.
+async function upgradeLatest(ch) {
+  try {
+    const feed = 'https://www.youtube.com/feeds/videos.xml?channel_id=' + ch.channelId;
+    const res = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(feed), { cache: 'no-store' });
+    if (!res.ok) return;
+    const xml = await res.text();
+    const m = xml.match(/<yt:videoId>([\w-]{6,})<\/yt:videoId>/);
+    if (!m) return;
+    const id = m[1];
+    const frame = document.getElementById('yt-' + ch.channelId);
+    if (frame && id !== ch.latest) frame.src = embedUrl(id);
+  } catch (e) { /* keep the fallback embed */ }
 }
 
 // ── TOAST ──
