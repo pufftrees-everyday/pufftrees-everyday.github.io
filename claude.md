@@ -105,12 +105,28 @@ then variant where `finish==='Standard' && product==='Booster'`. Example real sl
   Unique, 2× Elite, 3× Exceptional, 4× Ordinary), a rarity filter on the add-search, and per-binder
   value that rolls into the total. Stored under a reserved `__binders__` key inside the collection
   object (rides the same localStorage + cloud sync).
+  **Import** (⬆ Import button by Export, `openCollectionImport`/`runCollectionImport`): upload a file
+  or paste a list; matched cards land in a **new binder** (named from the filename or a typed name;
+  Vault or Trade). Format-agnostic parser (`parseImportList`) reads Cursed Realm exports (plain text /
+  CSV / detailed-grouped), curiosa.io decklists (`1Archimago`), and generic `2x Name` / `Name x2`
+  lists; `(Foil)` suffix or a CSV Finish column = foil; section headers/metadata are skipped; names
+  matched case/punctuation-insensitively against cards.json.
+  **Full Decks I own** — a 5th section tab ("Full Decks", `currentView==='decks'`) listing physical
+  decks you own. Each is a snapshot of a deck's cards (`a`+`t`+`s`) stored under a reserved
+  `__owned_decks__` key (array of `{id,name,code,cards:{name:{std,foil}},added}`), parallel to binders;
+  their value rolls into Vault + Total Collection Value (`ownedDecksTotalValue`). Added from the
+  Workshop (see decks.html); the collection page renders/removes them (`renderOwnedDecks`,
+  `removeOwnedDeck`) and reuses binder card styling. The tab hides the card browser via a
+  `body.in-decks-section` class.
 - **archive.html** — "The Archive" public deck gallery. Loads from the **public_decks_with_likes**
   view (has `like_count`, `views`); author usernames are fetched separately from **profiles** by
   `owner_id` (the view has no `author` column). Sort: Newest / Most Viewed / Most Liked. Each card
   shows 👁 views, ♥ likes (rendered on the card), 💬 comments (counted client-side from
   deck_comments), and a 📜 icon when the deck's Scroll (deck_data.d) is non-empty.
-- **decks.html** — "My Workshop" (user's own decks).
+- **decks.html** — "My Workshop" (user's own decks). Each deck card has an "Add to Collection" (📥)
+  button (`addDeckToCollection`) that snapshots the deck's cards into the user's collection under
+  `__owned_decks__` (Full Decks I own) — fetches the `collections` row directly via its own `supa`
+  client, upserts, and mirrors to localStorage; re-adding the same deck (matched by `code`) refreshes it.
 - **deckbuilder.html** — deck building interface. Two "Change View" toggles (left explorer + right
   deck panel), both with the standard 4 views; the explorer **Text** view has in-deck −/+ steppers
   (see Change View note). Spellbook **and** Collection have a **TYPE** toggle (top of the section)

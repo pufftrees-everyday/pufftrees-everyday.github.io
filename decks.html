@@ -823,6 +823,7 @@ function renderDeckCard(d, authors) {
       <div class="deck-card-actions">
         <button class="btn btn-primary" onclick="window.location.href='deckbuilder.html?d=${d.short_code}'">Edit</button>
         <button class="btn btn-ghost" onclick="window.location.href='deck.html?d=${d.short_code}'">View</button>
+        <button class="deck-card-link" onclick="event.stopPropagation();addDeckToCollection('${d.short_code}')" title="Add this deck to My Vault (Full Decks I Own)">📥</button>
         <button class="deck-card-link" onclick="event.stopPropagation();copyDeckLink('${d.short_code}')" title="Copy share link">🔗</button>
       </div>
       ${barHtml}
@@ -836,6 +837,46 @@ function copyDeckLink(shortCode) {
     () => toast('Deck link copied!'),
     () => window.prompt('Copy this deck link:', url)
   );
+}
+
+// Snapshot a deck's cards into the user's collection as a "Full Deck I Own".
+// Cards are stored under the reserved __owned_decks__ key (parallel to binders),
+// counting toward Vault + Total Collection Value on collection.html.
+async function addDeckToCollection(code) {
+  const deck = (galleryDecks || []).find(d => d.short_code === code);
+  if (!deck) return;
+  if (!supa || !currentUser) { toast('Sign in to use your collection'); return; }
+  const dd = deck.deck_data || {};
+  const cards = {};
+  // a = avatar, t = atlas/sites, s = spellbook — the deck proper
+  ['a', 't', 's'].forEach(k => (dd[k] || []).forEach(entry => {
+    const nm = entry && entry[0];
+    const q = (entry && +entry[1]) || 0;
+    if (nm && q > 0) { cards[nm] = cards[nm] || { std: 0, foil: 0 }; cards[nm].std += q; }
+  }));
+  if (!Object.keys(cards).length) { toast('This deck has no cards to add'); return; }
+  // Load the collection from the cloud; abort on a real error so we never clobber it.
+  let col;
+  try {
+    const { data, error } = await supa.from('collections').select('data').eq('user_id', currentUser.id).single();
+    if (error && error.code !== 'PGRST116') throw error; // PGRST116 = no row yet
+    col = (data && data.data) || {};
+  } catch (e) { console.warn(e); toast('Could not reach your collection — try again'); return; }
+  if (!Array.isArray(col.__owned_decks__)) col.__owned_decks__ = [];
+  const list = col.__owned_decks__;
+  const existing = list.find(x => x.code === code);
+  const entry = {
+    id: existing ? existing.id : ('od' + Date.now().toString(36) + Math.floor(Math.random() * 1e4).toString(36)),
+    name: deck.name || 'Untitled Deck', code, cards, added: new Date().toISOString()
+  };
+  if (existing) Object.assign(existing, entry); else list.push(entry);
+  try {
+    const { error } = await supa.from('collections')
+      .upsert({ user_id: currentUser.id, data: col, updated_at: new Date().toISOString() });
+    if (error) throw error;
+  } catch (e) { console.warn(e); toast('Could not save to your collection'); return; }
+  try { localStorage.setItem('grimoire_collection', JSON.stringify(col)); } catch (e) {}
+  toast(existing ? `Updated “${deck.name}” in My Vault` : `Added “${deck.name}” to My Vault → Full Decks`);
 }
 
 // Styled delete confirmation

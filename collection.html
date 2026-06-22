@@ -647,6 +647,44 @@
     .bcr-val { grid-column: 1 / -1; text-align: left; }
   }
 
+  /* Owned-deck card meta (reuses .binder styles) */
+  .binder-code { font-size: 0.78rem; color: var(--rune); font-style: italic; }
+  .owned-decks-hint { color: var(--rune); font-size: 0.9rem; line-height: 1.6; padding: 4px 2px 14px; }
+  .owned-decks-hint a { color: var(--arcane); }
+
+  /* Hide the card-browsing UI while the Full Decks section is active */
+  body.in-decks-section .search-bar,
+  body.in-decks-section .advanced-toggle,
+  body.in-decks-section .advanced-panel,
+  body.in-decks-section .vault-card-toolbar,
+  body.in-decks-section #card-grid,
+  body.in-decks-section #binders-panel,
+  body.in-decks-section #section-stats,
+  body.in-decks-section #value-history-panel,
+  body.in-decks-section .export-menu,
+  body.in-decks-section #price-source-note { display: none !important; }
+
+  /* ── IMPORT MODAL ── */
+  .cimport-overlay { display: none; position: fixed; inset: 0; background: rgba(11,10,15,0.85); z-index: 1300; align-items: flex-start; justify-content: center; backdrop-filter: blur(4px); padding: 40px 16px; overflow-y: auto; }
+  .cimport-overlay.open { display: flex; }
+  .cimport-modal { background: var(--dusk); border: 1px solid var(--border-strong); border-radius: 12px; box-shadow: 0 0 60px rgba(155,135,212,0.2); max-width: 560px; width: 100%; padding: 26px 26px 22px; position: relative; }
+  .cimport-modal h2 { font-family: 'Cinzel', serif; color: var(--gold); font-size: 1.4rem; margin-bottom: 8px; }
+  .cimport-sub { color: var(--shimmer); font-size: 0.9rem; line-height: 1.55; margin-bottom: 16px; }
+  .cimport-sub code { background: rgba(155,135,212,0.12); padding: 1px 5px; border-radius: 4px; font-size: 0.85em; }
+  .cimport-label { display: block; font-family: 'Cinzel', serif; font-size: 0.6rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--rune); margin-bottom: 6px; }
+  .cimport-input, .cimport-textarea { width: 100%; background: var(--abyss); border: 1px solid var(--border-strong); color: var(--parchment); font-family: 'Crimson Pro', serif; font-size: 0.95rem; padding: 9px 11px; border-radius: 6px; }
+  .cimport-input:focus, .cimport-textarea:focus { outline: none; border-color: var(--arcane); }
+  .cimport-textarea { min-height: 120px; resize: vertical; line-height: 1.5; }
+  .cimport-modal input[type="file"] { color: var(--shimmer); font-family: 'Crimson Pro', serif; font-size: 0.9rem; }
+  .cimport-row { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 14px; align-items: flex-end; }
+  .cimport-actions { display: flex; gap: 10px; margin-top: 18px; }
+  .cimport-actions .btn { flex: 1; }
+  .cimport-close { position: absolute; top: 12px; right: 14px; background: none; border: none; color: var(--rune); font-size: 1.2rem; cursor: pointer; }
+  .cimport-close:hover { color: var(--shimmer); }
+  .cimport-msg { margin-top: 14px; font-size: 0.88rem; line-height: 1.5; border-top: 1px solid var(--border); padding-top: 12px; }
+  .cimport-msg .ok { color: var(--sage); }
+  .cimport-msg .warn { color: var(--gold); }
+
   /* ── CARD DETAIL MODAL ── */
   .cm-overlay { display: none; position: fixed; inset: 0; background: rgba(11,10,15,0.85); z-index: 1200; align-items: center; justify-content: center; backdrop-filter: blur(4px); padding: 20px; }
   .cm-overlay.open { display: flex; }
@@ -814,8 +852,10 @@
       <button class="view-btn" id="sec-collection" onclick="setView('all')">Vault</button>
       <button class="view-btn" id="sec-trade" onclick="setView('trade')">Trades</button>
       <button class="view-btn" id="sec-wants" onclick="setView('want')">Wants</button>
+      <button class="view-btn" id="sec-decks" onclick="setView('decks')">Full Decks</button>
     </div>
     <div class="collection-actions">
+      <button class="btn btn-ghost" id="import-btn" onclick="openCollectionImport()">⬆ Import</button>
       <div class="export-menu">
         <button class="btn btn-ghost" id="export-btn" onclick="toggleExportMenu(event)"><span id="export-btn-label">⬇ Export Vault</span> <span style="font-size:0.6rem;">▾</span></button>
         <div class="export-dropdown" id="export-dropdown">
@@ -996,6 +1036,9 @@
   <!-- Binders (Vault / Trades tabs) -->
   <div id="binders-panel" class="binders-panel" style="display:none;"></div>
 
+  <!-- Full Decks I own (Full Decks tab) -->
+  <div id="owned-decks-panel" class="binders-panel" style="display:none;"></div>
+
   <!-- Card toolbar: sits right above the card grid -->
   <div class="vault-card-toolbar">
     <div class="vault-sort-row">
@@ -1033,6 +1076,41 @@
 
 <!-- HOVER PREVIEW (desktop, list view only) -->
 <div class="hover-preview" id="hover-preview"><img id="hover-preview-img" src="" alt=""></div>
+
+<!-- IMPORT MODAL -->
+<div class="cimport-overlay" id="cimport-overlay" onclick="if(event.target===this)closeCollectionImport()">
+  <div class="cimport-modal">
+    <button class="cimport-close" onclick="closeCollectionImport()">✕</button>
+    <h2>Import into a Binder</h2>
+    <p class="cimport-sub">Upload a file or paste a list. Your cards land in a <b>new binder</b> so nothing in your Vault is overwritten. Reads Cursed Realm exports (text / CSV / detailed), curiosa.io decklists, and most <code>2x Card Name</code> lists. Add <code>(Foil)</code> after a name for foils.</p>
+
+    <label class="cimport-label">Choose a file</label>
+    <input type="file" id="cimport-file" accept=".txt,.text,.csv,.json,.tsv" onchange="onImportFile(event)">
+
+    <label class="cimport-label" style="margin-top:14px;">…or paste your list</label>
+    <textarea id="cimport-text" class="cimport-textarea" placeholder="2x Sea Serpent&#10;1x Philosopher's Stone (Foil)&#10;3 Bridge Troll&#10;…"></textarea>
+
+    <div class="cimport-row">
+      <div style="flex:1 1 240px;min-width:0;">
+        <label class="cimport-label">Binder name</label>
+        <input type="text" id="cimport-name" class="cimport-input" placeholder="Imported cards" autocomplete="off">
+      </div>
+      <div>
+        <label class="cimport-label">Add to</label>
+        <select id="cimport-target" class="cimport-input">
+          <option value="vault">Vault binders</option>
+          <option value="trade">Trade binders</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="cimport-actions">
+      <button class="btn btn-primary" onclick="runCollectionImport()">Import</button>
+      <button class="btn btn-ghost" onclick="closeCollectionImport()">Cancel</button>
+    </div>
+    <div id="cimport-msg" class="cimport-msg" style="display:none;"></div>
+  </div>
+</div>
 
 <!-- CARD DETAIL MODAL -->
 <div class="cm-overlay" id="cm-overlay" onclick="closeCardModal(event)">
@@ -1089,11 +1167,13 @@ let cloudSaveTimer = null;
 // Binders live inside the collection object under this reserved key so they
 // ride along with the existing localStorage + cloud sync untouched.
 const BINDERS_KEY = '__binders__';
+// Full decks the user physically owns live here, parallel to binders.
+const OWNED_DECKS_KEY = '__owned_decks__';
 
 function normalizeCollection(col) {
-  // Migrate old boolean values to numbers (skip the reserved binders key)
+  // Migrate old boolean values to numbers (skip the reserved keys)
   for (const key of Object.keys(col)) {
-    if (key === BINDERS_KEY) continue;
+    if (key === BINDERS_KEY || key === OWNED_DECKS_KEY) continue;
     if (typeof col[key].have === 'boolean') col[key].have = col[key].have ? 1 : 0;
     if (typeof col[key].want === 'boolean') col[key].want = col[key].want ? 1 : 0;
   }
@@ -1127,6 +1207,21 @@ function binderCardCount(binder) {
   for (const q of Object.values(binder.cards || {})) n += (q.std || 0) + (q.foil || 0);
   return n;
 }
+
+// ── FULL DECKS I OWN ──
+// owned deck = { id, name, code, cards:{ [cardName]:{std,foil} }, added }
+function getOwnedDecks() {
+  const col = getCollection();
+  if (!Array.isArray(col[OWNED_DECKS_KEY])) col[OWNED_DECKS_KEY] = [];
+  return col[OWNED_DECKS_KEY];
+}
+function saveOwnedDecks() {
+  const col = getCollection();
+  if (Array.isArray(col[OWNED_DECKS_KEY]) && col[OWNED_DECKS_KEY].length === 0) delete col[OWNED_DECKS_KEY];
+  saveCollection(col);
+}
+// Owned decks share the binder value/count helpers (same card-map shape).
+function ownedDecksTotalValue() { return getOwnedDecks().reduce((s, d) => s + binderValue(d), 0); }
 
 // ── BINDER UI ──
 function bEsc(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
@@ -1481,7 +1576,7 @@ function updateStats() {
   // Foil totals
   let foilHaveQty = 0, foilWantQty = 0, foilHaveVal = 0, foilWantVal = 0, foilTradeQty = 0, foilTradeVal = 0;
   for (const [name, v] of entries) {
-    if (name === BINDERS_KEY) continue; // reserved key, not a card
+    if (name === BINDERS_KEY || name === OWNED_DECKS_KEY) continue; // reserved keys, not cards
     const sp = prices[name]?.market || 0;
     const fp = foilPrices[name]?.market || 0;
     stdHaveQty += v.have || 0;
@@ -1527,7 +1622,9 @@ function updateStats() {
   // Binders add to the total (vault binders → Vault value, trade binders → Trades value)
   let binderVaultVal = 0, binderTradeVal = 0;
   getBinders().forEach(b => { if (b.parent === 'trade') binderTradeVal += binderValue(b); else binderVaultVal += binderValue(b); });
-  const vaultVal = stdHaveVal + foilHaveVal + binderVaultVal;
+  // Full decks you own roll into the Vault value, like vault binders.
+  const ownedDecksVal = ownedDecksTotalValue();
+  const vaultVal = stdHaveVal + foilHaveVal + binderVaultVal + ownedDecksVal;
   const tradesVal = stdTradeVal + foilTradeVal + binderTradeVal;
   const binderVal = binderVaultVal + binderTradeVal;
   const totalCollectionVal = vaultVal + tradesVal;
@@ -1535,8 +1632,11 @@ function updateStats() {
     const priceNote = priceDate
       ? ` <span style="color:var(--rune);font-size:0.72rem;font-style:italic;">· TCG market, ${priceDate}</span>`
       : ` <span style="color:var(--rune);font-size:0.72rem;font-style:italic;">· TCG market price</span>`;
-    const breakdown = (tradesVal > 0 || binderVal > 0)
-      ? ` <span style="color:var(--rune);font-size:0.74rem;">(Vault $${vaultVal.toFixed(2)} · Trades $${tradesVal.toFixed(2)}${binderVal > 0 ? ` · incl. Binders $${binderVal.toFixed(2)}` : ''})</span>`
+    const extras = [];
+    if (binderVal > 0) extras.push(`Binders $${binderVal.toFixed(2)}`);
+    if (ownedDecksVal > 0) extras.push(`Decks $${ownedDecksVal.toFixed(2)}`);
+    const breakdown = (tradesVal > 0 || extras.length)
+      ? ` <span style="color:var(--rune);font-size:0.74rem;">(Vault $${vaultVal.toFixed(2)} · Trades $${tradesVal.toFixed(2)}${extras.length ? ` · incl. ${extras.join(' · ')}` : ''})</span>`
       : '';
     totalEl.innerHTML = totalCollectionVal > 0
       ? `Total Collection Value: <b style="color:var(--gold)">$${totalCollectionVal.toFixed(2)}</b>` + breakdown + priceNote
@@ -1998,7 +2098,7 @@ function setFinish(mode) {
 function setView(view) {
   currentView = view;
   document.querySelectorAll('.section-switcher .view-btn').forEach(b => b.classList.remove('active'));
-  const idMap = { search: 'sec-search', all: 'sec-collection', want: 'sec-wants', trade: 'sec-trade' };
+  const idMap = { search: 'sec-search', all: 'sec-collection', want: 'sec-wants', trade: 'sec-trade', decks: 'sec-decks' };
   const btn = document.getElementById(idMap[view]);
   if (btn) btn.classList.add('active');
   // Update export button label to match the section
@@ -2007,8 +2107,14 @@ function setView(view) {
     exportLabel.textContent = view === 'want' ? '⬇ Export Wants' : view === 'trade' ? '⬇ Export Trades' : '⬇ Export Vault';
   }
   // Card Search hides the stats panel; the three vault sections show it
-  const inVaultSection = (view !== 'search');
+  const inVaultSection = (view !== 'search' && view !== 'decks');
   document.body.classList.toggle('in-vault-section', inVaultSection);
+  // Full Decks section swaps the card browser for the owned-decks panel
+  const inDecks = (view === 'decks');
+  document.body.classList.toggle('in-decks-section', inDecks);
+  const odPanel = document.getElementById('owned-decks-panel');
+  if (odPanel) odPanel.style.display = inDecks ? '' : 'none';
+  if (inDecks) { renderOwnedDecks(); return; }
   renderSectionStats(view);
   renderBinders();
   // Value-over-time lives on the Vault tab (it covers the whole collection).
@@ -2024,7 +2130,7 @@ function setView(view) {
 function renderSectionStats(view) {
   const panel = document.getElementById('section-stats');
   if (!panel) return;
-  if (view === 'search') { panel.style.display = 'none'; panel.innerHTML = ''; return; }
+  if (view === 'search' || view === 'decks') { panel.style.display = 'none'; panel.innerHTML = ''; return; }
 
   const flag = view === 'want' ? 'want' : view === 'trade' ? 'trade' : 'have';
   const foilFlag = flag + 'Foil';
@@ -2080,31 +2186,35 @@ let vhRows = null;     // cached price_history rows (don't change within a sessi
 let vhLoading = false;
 const vhState = { open: false };
 
-// Every card name the user owns (Vault + Trades + binders).
+// Every card name the user owns (Vault + Trades + binders + owned decks).
 function ownedCardNames() {
   const col = getCollection();
   const names = new Set();
   for (const [k, e] of Object.entries(col)) {
-    if (k === BINDERS_KEY) continue;
+    if (k === BINDERS_KEY || k === OWNED_DECKS_KEY) continue;
     if ((e.have||0)+(e.trade||0)+(e.haveFoil||0)+(e.tradeFoil||0) > 0) names.add(k);
   }
-  getBinders().forEach(b => Object.entries(b.cards||{}).forEach(([n,q]) => { if ((q.std||0)+(q.foil||0) > 0) names.add(n); }));
+  const addCardMaps = src => src.forEach(o => Object.entries(o.cards||{}).forEach(([n,q]) => { if ((q.std||0)+(q.foil||0) > 0) names.add(n); }));
+  addCardMaps(getBinders());
+  addCardMaps(getOwnedDecks());
   return [...names];
 }
-// Total quantities per card (Vault + Trades + binders), split by finish.
+// Total quantities per card (Vault + Trades + binders + owned decks), split by finish.
 function totalQtyMaps() {
   const col = getCollection();
   const std = {}, foil = {};
   for (const [k, e] of Object.entries(col)) {
-    if (k === BINDERS_KEY) continue;
+    if (k === BINDERS_KEY || k === OWNED_DECKS_KEY) continue;
     const s = (e.have||0)+(e.trade||0), f = (e.haveFoil||0)+(e.tradeFoil||0);
     if (s) std[k] = (std[k]||0) + s;
     if (f) foil[k] = (foil[k]||0) + f;
   }
-  getBinders().forEach(b => Object.entries(b.cards||{}).forEach(([n,q]) => {
+  const addCardMaps = src => src.forEach(o => Object.entries(o.cards||{}).forEach(([n,q]) => {
     if (q.std) std[n] = (std[n]||0) + q.std;
     if (q.foil) foil[n] = (foil[n]||0) + q.foil;
   }));
+  addCardMaps(getBinders());
+  addCardMaps(getOwnedDecks());
   return { std, foil };
 }
 async function vhFetch(names) {
@@ -2513,6 +2623,237 @@ function doExport(format) {
   downloadFile(text, `cursed-realm-${file}-${stamp}.${ext}`, mime);
   const totalQty = entries.reduce((s, e) => s + e.std + e.foil, 0);
   toast(`Exported ${totalQty} cards (${entries.length} unique)`);
+}
+
+// ── FULL DECKS I OWN — render ──
+function renderOwnedDecks() {
+  const panel = document.getElementById('owned-decks-panel');
+  if (!panel) return;
+  const list = getOwnedDecks();
+  list.forEach(d => { if (!(d.id in binderUI.collapsed)) binderUI.collapsed[d.id] = true; });
+  const total = ownedDecksTotalValue();
+  const head = `
+    <div class="binders-head">
+      <div class="binders-head-title">Full Decks I Own${list.length ? `<span class="bh-sub">${list.length} deck${list.length===1?'':'s'}${total>0?` · $${total.toFixed(2)}`:''}</span>` : ''}</div>
+      <a class="binder-btn" href="decks.html" style="text-decoration:none;" title="Add decks to your collection from your Workshop">+ Add from Workshop ↗</a>
+    </div>`;
+  const hint = `<div class="owned-decks-hint">Physical decks you own. Add them from <a href="decks.html">My Workshop</a> (the “Add to Collection” button on each deck) — every deck's cards count toward your Vault and Total Collection Value. These are snapshots; re-add a deck to refresh it after you edit it.</div>`;
+  panel.innerHTML = head + (list.length
+    ? list.map(renderOwnedDeckCard).join('')
+    : `<div class="binder-empty">No full decks yet. Open <a href="decks.html" style="color:var(--arcane)">My Workshop</a> and use “Add to Collection” on any deck.</div>`) + hint;
+}
+function renderOwnedDeckCard(d) {
+  const collapsed = binderUI.collapsed[d.id];
+  const count = binderCardCount(d);
+  const val = binderValue(d);
+  const names = Object.keys(d.cards || {})
+    .filter(n => (d.cards[n].std || 0) + (d.cards[n].foil || 0) > 0)
+    .sort((a, c) => a.localeCompare(c));
+  const rows = names.map(n => {
+    const q = d.cards[n];
+    const card = allCards.find(c => c.id === n);
+    const rarity = card ? card.rarity : '';
+    const qty = (q.std || 0) + (q.foil || 0);
+    const rowVal = (prices[n]?.market || 0) * (q.std || 0) + (foilPrices[n]?.market || 0) * (q.foil || 0);
+    return `<div class="binder-card-row">
+      <div class="bcr-name">${bEsc(n)}${rarity ? `<span class="bcr-rarity">${bEsc(rarity)}</span>` : ''}</div>
+      <div class="bcr-qty"><span class="bcr-num">${qty}×</span></div>
+      <div class="bcr-val">${rowVal > 0 ? '$' + rowVal.toFixed(2) : '—'}</div>
+    </div>`;
+  }).join('');
+  const added = d.added ? new Date(d.added).toLocaleDateString() : '';
+  return `<div class="binder${collapsed ? ' collapsed' : ''}" id="binder-${d.id}">
+    <div class="binder-head" onclick="toggleBinderCollapse('${d.id}')">
+      <span class="binder-caret">▾</span>
+      <span class="binder-name">${bEsc(d.name || 'Untitled Deck')}</span>
+      <span class="binder-meta"><b>${count}</b> card${count === 1 ? '' : 's'} · <b>${val > 0 ? '$' + val.toFixed(2) : '$0.00'}</b></span>
+      <span class="binder-head-actions">
+        ${d.code ? `<a class="binder-icon-btn" title="View deck" href="deck.html?d=${encodeURIComponent(d.code)}" onclick="event.stopPropagation()">↗</a>` : ''}
+        <button class="binder-icon-btn danger" title="Remove from collection" onclick="event.stopPropagation();removeOwnedDeck('${d.id}')">🗑</button>
+      </span>
+    </div>
+    <div class="binder-body">
+      ${added ? `<div class="binder-code">Added ${added}${d.code ? ` · code ${bEsc(d.code)}` : ''}</div>` : ''}
+      <div class="binder-cards">${rows || `<div class="binder-empty">This deck has no cards.</div>`}</div>
+    </div>
+  </div>`;
+}
+function removeOwnedDeck(id) {
+  const list = getOwnedDecks();
+  const d = list.find(x => x.id === id); if (!d) return;
+  if (!confirm(`Remove “${d.name}” from your collection? (Your saved deck is not affected.)`)) return;
+  const i = list.indexOf(d); if (i >= 0) list.splice(i, 1);
+  saveOwnedDecks(); renderOwnedDecks(); updateStats();
+}
+
+// ── IMPORT INTO A BINDER ──
+let importFileName = '';
+function openCollectionImport() {
+  importFileName = '';
+  const t = document.getElementById('cimport-target');
+  if (t) t.value = (currentView === 'trade') ? 'trade' : 'vault';
+  document.getElementById('cimport-file').value = '';
+  document.getElementById('cimport-text').value = '';
+  document.getElementById('cimport-name').value = '';
+  const msg = document.getElementById('cimport-msg');
+  if (msg) { msg.style.display = 'none'; msg.innerHTML = ''; }
+  document.getElementById('cimport-overlay').classList.add('open');
+}
+function closeCollectionImport() { document.getElementById('cimport-overlay').classList.remove('open'); }
+function onImportFile(e) {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+  importFileName = file.name.replace(/\.[^.]+$/, '').trim();
+  const nameInput = document.getElementById('cimport-name');
+  if (nameInput && !nameInput.value.trim()) nameInput.value = importFileName;
+  const reader = new FileReader();
+  reader.onload = () => { document.getElementById('cimport-text').value = String(reader.result || ''); };
+  reader.readAsText(file);
+}
+
+// Card-name matching for imports (case- and punctuation-insensitive).
+let _impLookup = null;
+function importLookup() {
+  if (_impLookup) return _impLookup;
+  const lower = new Map(), norm = new Map();
+  const normalize = s => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+  allCards.forEach(c => { lower.set(c.name.toLowerCase(), c.name); norm.set(normalize(c.name), c.name); });
+  _impLookup = { lower, norm, normalize };
+  return _impLookup;
+}
+function matchCardName(raw) {
+  const { lower, norm, normalize } = importLookup();
+  let s = String(raw || '').trim();
+  if (!s) return null;
+  const foil = /\(\s*foil\s*\)/i.test(s) || /\bfoil\b/i.test(s);
+  s = s.replace(/\(\s*foil\s*\)/ig, '').replace(/\bfoil\b/ig, '').trim();
+  let hit = lower.get(s.toLowerCase());
+  if (!hit) hit = norm.get(normalize(s));
+  return hit ? { name: hit, foil } : null;
+}
+function parseQtyName(s) {
+  s = s.trim(); if (!s) return null;
+  let m;
+  if ((m = s.match(/^(\d+)\s*[xX]\s+(.+)$/))) return { qty: +m[1], name: m[2] };
+  if ((m = s.match(/^(\d+)\s+(.+)$/)))        return { qty: +m[1], name: m[2] };
+  if ((m = s.match(/^(\d+)(\D.+)$/)))         return { qty: +m[1], name: m[2] }; // curiosa "1Archimago"
+  if ((m = s.match(/^(.+?)\s*[xX]\s*(\d+)$/))) return { qty: +m[2], name: m[1] };
+  if ((m = s.match(/^(.+?)\s*\(\s*[xX]?\s*(\d+)\s*\)$/))) return { qty: +m[2], name: m[1] };
+  return { qty: 1, name: s };
+}
+// Lines that are section headers / metadata, not cards (only when they carry no leading count).
+const IMPORT_SKIP = /^(==|#|\/\/|avatar\b|atlas\b|sites?\b|spellbook\b|maybeboard\b|sideboard\b|collection\b|minion\b|magic\b|artifact\b|aura\b|other\b|total\b|totals\b|exported\b|prices?:|source:|sorcery:|cursed realm)/i;
+function parseTextLines(text) {
+  const out = [];
+  String(text).split(/\r?\n/).forEach(line => {
+    let s = line.trim();
+    if (!s) return;
+    s = s.split(/\s[—–]\s|\s--\s/)[0].trim(); // drop trailing " — $price" / notes
+    if (IMPORT_SKIP.test(s) && !/^\d/.test(s)) return;
+    const pn = parseQtyName(s);
+    if (pn && pn.name) out.push({ qty: pn.qty, name: pn.name, foil: /\(\s*foil\s*\)/i.test(line) });
+  });
+  return out;
+}
+function csvRows(text) {
+  const rows = []; let row = [], cur = '', q = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (q) { if (ch === '"') { if (text[i + 1] === '"') { cur += '"'; i++; } else q = false; } else cur += ch; }
+    else if (ch === '"') q = true;
+    else if (ch === ',') { row.push(cur); cur = ''; }
+    else if (ch === '\n') { row.push(cur); rows.push(row); row = []; cur = ''; }
+    else if (ch === '\r') { /* skip */ }
+    else cur += ch;
+  }
+  if (cur !== '' || row.length) { row.push(cur); rows.push(row); }
+  return rows.filter(r => r.some(c => c.trim() !== ''));
+}
+function parseCSV(text) {
+  if (text.indexOf(',') < 0) return null;
+  const rows = csvRows(text);
+  if (rows.length < 2) return null;
+  const header = rows[0].map(h => h.trim().toLowerCase());
+  const ni = header.findIndex(h => h === 'name' || h === 'card' || h === 'card name');
+  if (ni < 0) return null; // not a card CSV we recognize
+  const qi = header.findIndex(h => h.startsWith('quantity') || h === 'qty' || h === 'count');
+  const fi = header.findIndex(h => h === 'finish' || h === 'foil');
+  const out = [];
+  for (let i = 1; i < rows.length; i++) {
+    const r = rows[i];
+    const name = (r[ni] || '').trim(); if (!name) continue;
+    const qty = qi >= 0 ? (parseInt(r[qi], 10) || 0) : 1;
+    if (qty <= 0) continue;
+    const foil = fi >= 0 ? /foil|yes|true/i.test(r[fi] || '') : false;
+    out.push({ name, qty, foil });
+  }
+  return out.length ? out : null;
+}
+function parseJSONList(text) {
+  let data; try { data = JSON.parse(text); } catch { return null; }
+  const out = [];
+  if (Array.isArray(data)) {
+    data.forEach(it => {
+      if (typeof it === 'string') out.push({ name: it, qty: 1, foil: false });
+      else if (it && typeof it === 'object') {
+        const name = it.name || it.card || it.cardName;
+        const qty = +(it.qty || it.quantity || it.count || 1) || 1;
+        const foil = /foil/i.test(it.finish || '') || it.foil === true;
+        if (name) out.push({ name, qty, foil: !!foil });
+      }
+    });
+  } else if (data && typeof data === 'object') {
+    Object.entries(data).forEach(([name, v]) => {
+      if (typeof v === 'number') { if (v > 0) out.push({ name, qty: v, foil: false }); }
+      else if (v && typeof v === 'object') {
+        const std = +(v.std || v.standard || v.have || 0) || 0;
+        const fl = +(v.foil || v.haveFoil || 0) || 0;
+        if (std > 0) out.push({ name, qty: std, foil: false });
+        if (fl > 0) out.push({ name, qty: fl, foil: true });
+      }
+    });
+  }
+  return out.length ? out : null;
+}
+function parseImportList(text) {
+  const trimmed = String(text || '').trim();
+  let raw = null;
+  if (/^[\[{]/.test(trimmed)) raw = parseJSONList(trimmed);
+  if (!raw) raw = parseCSV(text);
+  if (!raw) raw = parseTextLines(text);
+  const cards = {}; let matchedQty = 0; const unmatched = new Set();
+  (raw || []).forEach(item => {
+    const hit = matchCardName(item.name);
+    if (!hit) { const nm = String(item.name || '').trim(); if (nm) unmatched.add(nm); return; }
+    const foil = item.foil || hit.foil;
+    if (!cards[hit.name]) cards[hit.name] = { std: 0, foil: 0 };
+    if (foil) cards[hit.name].foil += item.qty; else cards[hit.name].std += item.qty;
+    matchedQty += item.qty;
+  });
+  return { cards, matchedQty, matchedUnique: Object.keys(cards).length, unmatched: [...unmatched] };
+}
+function runCollectionImport() {
+  const text = document.getElementById('cimport-text').value || '';
+  const msg = document.getElementById('cimport-msg');
+  const showMsg = html => { if (msg) { msg.style.display = ''; msg.innerHTML = html; } };
+  if (!text.trim()) { showMsg('<span class="warn">Paste a list or choose a file first.</span>'); return; }
+  const { cards, matchedQty, matchedUnique, unmatched } = parseImportList(text);
+  if (!matchedUnique) {
+    showMsg('<span class="warn">No cards matched. Check the format — one card per line, e.g. <code>2x Card Name</code>.</span>');
+    return;
+  }
+  const target = (document.getElementById('cimport-target').value === 'trade') ? 'trade' : 'vault';
+  const name = (document.getElementById('cimport-name').value || '').trim() || importFileName || 'Imported cards';
+  const binders = getBinders();
+  const newId = 'b' + Date.now().toString(36) + Math.floor(Math.random() * 1e4).toString(36);
+  binders.push({ id: newId, parent: target, name, cards });
+  binderUI.collapsed[newId] = false;
+  saveBinders(); updateStats();
+  closeCollectionImport();
+  setView(target === 'trade' ? 'trade' : 'all'); // jump to where the binder now lives
+  let t = `Imported ${matchedQty} cards (${matchedUnique} unique) into “${name}”.`;
+  if (unmatched.length) t += ` ${unmatched.length} not recognized.`;
+  toast(t);
 }
 
 // ── TOAST ──
