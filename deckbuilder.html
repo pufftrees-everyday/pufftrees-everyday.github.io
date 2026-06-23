@@ -904,6 +904,9 @@
   .add-feedback { font-size: 0.9rem; font-style: italic; }
   .add-feedback.ok { color: #7ab88a; }
   .add-feedback.warn { color: var(--ember); }
+  /* Make the Collection (sideboard) destination unmistakable */
+  .add-collection-note { font-size: 0.78rem; color: var(--rune); font-style: italic; line-height: 1.5; }
+  .add-collection-note b { color: var(--gold); font-style: normal; }
 
   .modal-close { position: absolute; top: 10px; right: 14px; background: none; border: none; color:var(--rune); font-size: 1.4rem; cursor: pointer; transition: color 0.15s; }
   .modal-close:hover { color: var(--parchment); }
@@ -933,6 +936,13 @@
   .confirm-actions { display: flex; gap: 12px; justify-content: center; }
   .confirm-actions .btn { min-width: 120px; }
   .toast.show { opacity: 1; transform: translateY(0); }
+  /* Gold-themed toast + section pulse so Collection (sideboard) adds clearly stand apart */
+  .toast.collection { border-color: var(--gold); color: var(--gold); background: linear-gradient(180deg, #221b11, var(--dusk)); font-style: normal; font-weight: 600; }
+  .deck-section.flash-collection { animation: collectionFlash 1.5s ease-out; }
+  @keyframes collectionFlash {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(200,169,110,0); }
+    18% { box-shadow: inset 0 0 0 2px var(--gold), 0 0 22px 2px rgba(200,169,110,0.5); }
+  }
   /* HEADER NAV (added for consistency) */
   .header-nav { display: flex; gap: 12px; align-items: center; }
   .header-link { font-family: 'Cinzel', serif; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--rune); text-decoration: none; transition: color 0.2s; }
@@ -1376,10 +1386,11 @@
             <div class="qty-num-display" id="add-qty-display">1</div>
             <button onclick="changeAddQty(1)">+</button>
           </div>
-          <button class="add-to-deck-btn" onclick="addCurrentCard()">+ Add to Deck</button>
-          <button class="add-to-collection-btn" onclick="addCurrentCardToCollection()" title="Set aside as one of your 10 Collection (sideboard) cards">+ Collection</button>
+          <button class="add-to-deck-btn" onclick="addCurrentCard()" title="Add to your main deck (Atlas or Spellbook, by card type)">+ Add to Deck</button>
+          <button class="add-to-collection-btn" onclick="addCurrentCardToCollection()" title="Set aside as one of your 10 Collection (sideboard) cards">📦 + Collection</button>
           <div class="add-feedback" id="add-feedback"></div>
         </div>
+        <div class="add-collection-note"><b>📦 Collection</b> is your deck's separate 10-card sideboard — cards go here instead of your Atlas &amp; Spellbook.</div>
       </div>
     </div>
     <button class="modal-close" onclick="closeModal()">✕</button>
@@ -2051,7 +2062,30 @@ function addCurrentCardToCollection() {
   if (result.ok) {
     renderDeck();
     renderCardGrid();
+    collectionToast('📦 ' + result.message);
+    flashCollectionSection(); // run after renderDeck rebuilds the section
   }
+}
+
+// A distinct gold toast for Collection (sideboard) adds — visually unlike a normal
+// Atlas/Spellbook add so the user clearly registers the different destination.
+function collectionToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show', 'collection');
+  clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('show', 'collection'), 2800);
+}
+
+// Reveal + pulse the Collection deck section so it's obvious where the card landed.
+function flashCollectionSection() {
+  const el = document.getElementById('deck-section-collection');
+  if (!el) return;
+  sectionCollapsed.collection = false; // keep it revealed after the flash
+  el.classList.remove('collapsed', 'flash-collection');
+  void el.offsetWidth; // restart the animation if it's mid-play
+  el.classList.add('flash-collection');
+  el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  setTimeout(() => el.classList.remove('flash-collection'), 1600);
 }
 
 function closeModal(e) {
@@ -2244,7 +2278,7 @@ function addCardToDeckCollection(card, qty = 1) {
   if (deck.collection[key]) deck.collection[key].qty += allowed;
   else deck.collection[key] = { card, qty: allowed };
 
-  return { ok: true, message: `${allowed}× ${card.name} added to Collection.` };
+  return { ok: true, message: `${allowed}× ${card.name} set aside in your Collection — ${collectionTotal + allowed}/${DECK_COLLECTION_LIMIT} (sideboard).` };
 }
 
 function changeQty(section, key, delta) {
@@ -3728,7 +3762,7 @@ function onCardDragEnd(e) {
 // ── TOAST ──
 function toast(msg) {
   const el = document.getElementById('toast');
-  el.textContent = msg; el.classList.add('show');
+  el.textContent = msg; el.classList.add('show'); el.classList.remove('collection');
   clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('show'), 2400);
 }
 
