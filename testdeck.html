@@ -46,24 +46,28 @@
   /* Mat area — the playmat is sized by JS (fitPlaymat) so the whole mat shows. */
   .mat-area { flex: 1; min-height: 0; position: relative; overflow: hidden; background: radial-gradient(circle at 50% 35%, #16162a, #0b0a0f 75%); }
   .playmat { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); border-radius: 8px; overflow: hidden; box-shadow: 0 0 40px rgba(0,0,0,0.6); }
-  .playmat-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  /* fill (not cover) so a feature at X% of the image is at X% of the container,
+     keeping the pile percentages aligned regardless of sub-pixel rounding. */
+  .playmat-img { width: 100%; height: 100%; object-fit: fill; display: block; }
 
-  /* A card placed on the mat (avatar / stack) — sizes are % of playmat width */
-  .pm-card { position: absolute; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; gap: 4px; }
-  .pm-frame { position: relative; width: 100%; border-radius: 6px; overflow: hidden; border: 1px solid var(--border-strong); box-shadow: 0 4px 14px rgba(0,0,0,0.6); background: var(--twilight); aspect-ratio: 3 / 4; }
-  .pm-card.landscape .pm-frame { aspect-ratio: 88 / 63; }
+  /* A pile on the mat. width is % of the container; aspect-ratio sets the height.
+     translate(-50%,-50%) makes left/top refer to the pile's CENTRE. The label
+     lives INSIDE the frame so it never shifts the anchor or gets clipped. */
+  .pm-card { position: absolute; transform: translate(-50%, -50%); aspect-ratio: 3 / 4; }
+  .pm-card.landscape { aspect-ratio: 88 / 63; }
+  .pm-frame { position: relative; width: 100%; height: 100%; border-radius: 6px; overflow: hidden; border: 1px solid var(--border-strong); box-shadow: 0 4px 14px rgba(0,0,0,0.6); background: var(--twilight); background-size: cover; background-position: center; background-repeat: no-repeat; }
   .pm-frame img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .pm-label { font-family: 'Cinzel', serif; font-size: 0.58rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--shimmer); text-shadow: 0 1px 4px #000; white-space: nowrap; }
+  .pm-label { position: absolute; left: 0; right: 0; bottom: 0; padding: 11px 4px 3px; background: linear-gradient(0deg, rgba(11,10,15,0.9) 35%, transparent); font-family: 'Cinzel', serif; font-size: 0.55rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--shimmer); text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none; z-index: 2; }
 
   /* Stacks (face-down piles) */
-  .pm-card.stack .pm-frame { cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; background-size: cover; background-position: center; }
+  .pm-card.stack .pm-frame { cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; }
   .pm-card.stack .pm-frame:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.7), 0 0 14px rgba(200,169,110,0.35); }
   .pm-frame.spellbook  { background-image: url('SpellbookBack.png'); }
   .pm-frame.collection { background-image: url('SpellbookBack.png'); }
   .pm-frame.atlas      { background-image: url('AtlasBack.png'); }
-  .pm-card.empty .pm-frame { background-image: none !important; background: rgba(11,10,15,0.35); border-style: dashed; border-color: var(--mist); cursor: default; }
+  .pm-card.empty .pm-frame { background-image: none !important; background-color: rgba(11,10,15,0.35); border-style: dashed; border-color: var(--mist); cursor: default; }
   .pm-card.empty .pm-frame:hover { transform: none; box-shadow: 0 4px 14px rgba(0,0,0,0.6); }
-  .pm-count { position: absolute; bottom: 5px; right: 5px; min-width: 24px; height: 24px; padding: 0 6px; border-radius: 12px; background: rgba(11,10,15,0.9); border: 1px solid var(--gold); color: var(--gold); font-family: 'Cinzel', serif; font-weight: 700; font-size: 0.75rem; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.7); z-index: 2; }
+  .pm-count { position: absolute; top: 5px; right: 5px; min-width: 24px; height: 24px; padding: 0 6px; border-radius: 12px; background: rgba(11,10,15,0.9); border: 1px solid var(--gold); color: var(--gold); font-family: 'Cinzel', serif; font-weight: 700; font-size: 0.75rem; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.7); z-index: 3; }
   .pm-card.empty .pm-count { border-color: var(--mist); color: var(--mist); }
 
   /* Hand bar — always one wide row along the bottom */
@@ -156,11 +160,13 @@
   // ── Board placement (% of playmat; tweak freely) ──
   // Sorcery board is a 4×5 grid (spots 1–20). The avatar starts on spot 18
   // (bottom-centre). Decks sit in the right margin under the SORCERY logo.
+  // x/y are the pile's CENTER as a % of the playmat image (which the container
+  // exactly matches). The card is center-anchored via translate(-50%,-50%).
   const POS = {
-    avatar:     { x: 45,   y: 85, w: 8.5, land: false },
-    atlas:      { x: 88.5, y: 47, w: 12,  land: true  }, // top-right (swapped with Spellbook)
-    spellbook:  { x: 88,   y: 66, w: 8.5, land: false }, // middle-right
-    collection: { x: 88.5, y: 85, w: 8.5, land: false }, // bottom-right
+    avatar:     { x: 48.7, y: 88.8, w: 8.5, land: false },
+    atlas:      { x: 92.7, y: 52.1, w: 12,  land: true  },
+    spellbook:  { x: 92.7, y: 68.0, w: 8.5, land: false },
+    collection: { x: 92.7, y: 87.8, w: 8.5, land: false },
   };
 
   // ── Cards image lookup ──
@@ -262,14 +268,14 @@
   function pmCardHtml(kind, opts) {
     const p = POS[kind];
     const style = `left:${p.x}%;top:${p.y}%;width:${p.w}%;`;
-    const inner = opts.face
-      ? `<div class="pm-frame"><img src="${imgUrl(opts.face)}" alt="${escHtml(opts.face)}" onerror="this.style.opacity='0.15'"></div>`
-      : `<div class="pm-frame ${kind}"><span class="pm-count">${opts.count}</span></div>`;
-    const cls = `pm-card ${p.land?'landscape ':''}${opts.face?'':'stack '}${(!opts.face && !opts.count)?'empty ':''}`;
+    const cls = `pm-card ${p.land?'landscape ':''}${opts.face?'':'stack '}${(!opts.face && !opts.count)?'empty ':''}`.trim();
     const onclick = opts.draw ? ` onclick="drawOne('${opts.draw}')"` : '';
-    return `<div class="${cls.trim()}" style="${style}"${onclick}>
-      ${inner}
-      <span class="pm-label">${escHtml(opts.label)}</span>
+    const body = opts.face
+      ? `<img src="${imgUrl(opts.face)}" alt="${escHtml(opts.face)}" onerror="this.style.opacity='0.15'">`
+      : `<span class="pm-count">${opts.count}</span>`;
+    const frameCls = opts.face ? 'pm-frame' : `pm-frame ${kind}`;
+    return `<div class="${cls}" style="${style}"${onclick}>
+      <div class="${frameCls}">${body}<span class="pm-label">${escHtml(opts.label)}</span></div>
     </div>`;
   }
   function renderBoard() {
