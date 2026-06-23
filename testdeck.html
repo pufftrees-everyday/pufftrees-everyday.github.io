@@ -67,16 +67,24 @@
   .pm-card.empty .pm-count { border-color: var(--mist); color: var(--mist); }
 
   /* Hand bar — always one wide row along the bottom */
-  .hand-bar { flex-shrink: 0; height: clamp(124px, 23vh, 210px); background: linear-gradient(180deg, rgba(17,16,24,0.92), rgba(11,10,15,0.98)); border-top: 1px solid var(--border-strong); display: flex; flex-direction: column; z-index: 10; }
+  .hand-bar { flex-shrink: 0; height: clamp(124px, 23vh, 210px); position: relative; background: linear-gradient(180deg, rgba(17,16,24,0.92), rgba(11,10,15,0.98)); border-top: 1px solid var(--border-strong); display: flex; flex-direction: column; z-index: 10; }
+  /* Edge fade + chevron — signals the hand scrolls when it overflows */
+  .hand-bar::before, .hand-bar::after { position: absolute; top: 30px; bottom: 16px; width: 46px; z-index: 6; pointer-events: none; opacity: 0; transition: opacity 0.2s; display: flex; align-items: center; font-size: 1.8rem; line-height: 1; color: var(--gold); text-shadow: 0 1px 5px #000; }
+  .hand-bar::before { content: '‹'; left: 0; justify-content: flex-start; padding-left: 9px; background: linear-gradient(90deg, rgba(11,10,15,0.97), transparent); }
+  .hand-bar::after  { content: '›'; right: 0; justify-content: flex-end; padding-right: 9px; background: linear-gradient(270deg, rgba(11,10,15,0.97), transparent); }
+  .hand-bar.can-left::before { opacity: 1; }
+  .hand-bar.can-right::after { opacity: 1; }
   .hand-head { display: flex; align-items: center; gap: 12px; padding: 6px 14px 0; flex-shrink: 0; }
   .hand-title { font-family: 'Cinzel', serif; font-size: 0.74rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold); }
   .hand-title b { color: var(--shimmer); }
   .hand-hint { font-size: 0.82rem; color: var(--rune); font-style: italic; }
   .hand-hint.warn { color: var(--gold); font-style: normal; }
   .hand-head .tb-spacer { flex: 1; }
-  .hand-scroll { flex: 1; min-height: 0; display: flex; flex-wrap: nowrap; align-items: center; gap: 9px; overflow-x: auto; overflow-y: hidden; padding: 6px 14px 10px; scrollbar-width: thin; }
-  .hand-scroll::-webkit-scrollbar { height: 8px; }
-  .hand-scroll::-webkit-scrollbar-thumb { background: var(--mist); border-radius: 4px; }
+  .hand-scroll { flex: 1; min-height: 0; display: flex; flex-wrap: nowrap; align-items: center; gap: 9px; overflow-x: auto; overflow-y: hidden; padding: 6px 14px 12px; -webkit-overflow-scrolling: touch; scrollbar-width: auto; scrollbar-color: var(--arcane) rgba(155,135,212,0.14); }
+  .hand-scroll::-webkit-scrollbar { height: 13px; }
+  .hand-scroll::-webkit-scrollbar-track { background: rgba(155,135,212,0.12); border-radius: 7px; }
+  .hand-scroll::-webkit-scrollbar-thumb { background: var(--arcane); border-radius: 7px; border: 2px solid rgba(11,10,15,0.55); }
+  .hand-scroll::-webkit-scrollbar-thumb:hover { background: var(--shimmer); }
   .hand-empty { color: var(--rune); font-style: italic; padding-left: 4px; }
 
   .hcard { flex: 0 0 auto; height: 100%; aspect-ratio: 3 / 4; position: relative; border-radius: 7px; overflow: hidden; border: 1px solid var(--border-strong); box-shadow: 0 5px 16px rgba(0,0,0,0.55); background: var(--twilight); cursor: grab; touch-action: none; transition: box-shadow 0.15s, outline-color 0.15s; outline: 2px solid transparent; outline-offset: 2px; }
@@ -94,6 +102,9 @@
   @media (max-width: 640px) {
     .tb-title { max-width: 40vw; font-size: 0.92rem; }
     .btn { padding: 7px 10px; font-size: 0.58rem; }
+    /* Smaller cards → more of the hand visible at once; scroll for the rest. */
+    .hand-bar { height: clamp(104px, 19vh, 168px); }
+    .hand-scroll { gap: 7px; padding: 5px 10px 12px; }
   }
 </style>
 </head>
@@ -146,10 +157,10 @@
   // Sorcery board is a 4×5 grid (spots 1–20). The avatar starts on spot 18
   // (bottom-centre). Decks sit in the right margin under the SORCERY logo.
   const POS = {
-    avatar:     { x: 47,   y: 85, w: 8.5, land: false },
-    spellbook:  { x: 90.5, y: 47, w: 8.5, land: false },
-    atlas:      { x: 90,   y: 66, w: 12,  land: true  },
-    collection: { x: 90.5, y: 85, w: 8.5, land: false },
+    avatar:     { x: 45,   y: 85, w: 8.5, land: false },
+    atlas:      { x: 88.5, y: 47, w: 12,  land: true  }, // top-right (swapped with Spellbook)
+    spellbook:  { x: 88,   y: 66, w: 8.5, land: false }, // middle-right
+    collection: { x: 88.5, y: 85, w: 8.5, land: false }, // bottom-right
   };
 
   // ── Cards image lookup ──
@@ -202,7 +213,7 @@
     pm.style.width = Math.round(w) + 'px';
     pm.style.height = Math.round(h) + 'px';
   }
-  window.addEventListener('resize', fitPlaymat);
+  window.addEventListener('resize', () => { fitPlaymat(); updateHandFades(); });
 
   // ── Draw / discard / mulligan ──
   function drawOne(type) {
@@ -296,6 +307,15 @@
     const hint = document.getElementById('hand-hint');
     if (mulligan) { hint.textContent = `Select up to 3 cards to replace (${selected.size}/3), then confirm.`; hint.classList.add('warn'); }
     else { hint.textContent = 'Draw cards, click a stack, or drag a card up to discard it.'; hint.classList.remove('warn'); }
+    requestAnimationFrame(updateHandFades);
+  }
+  // Toggle the ‹ › scroll indicators based on how far the hand is scrolled.
+  function updateHandFades() {
+    const sc = document.getElementById('hand-scroll'), bar = document.getElementById('hand-bar');
+    if (!sc || !bar) return;
+    const max = sc.scrollWidth - sc.clientWidth;
+    bar.classList.toggle('can-left', sc.scrollLeft > 2);
+    bar.classList.toggle('can-right', sc.scrollLeft < max - 2);
   }
   function updateMullButton() {
     const b = document.getElementById('btn-mull');
@@ -368,9 +388,11 @@
       document.getElementById('mat-area').style.display = '';
       document.getElementById('hand-bar').style.display = '';
       document.getElementById('controls').style.display = '';
+      document.getElementById('hand-scroll').addEventListener('scroll', updateHandFades, { passive: true });
       fitPlaymat();
       renderBoard(); renderHand();
-      setTimeout(fitPlaymat, 80); setTimeout(fitPlaymat, 350); // re-fit after layout/fonts settle
+      setTimeout(() => { fitPlaymat(); updateHandFades(); }, 80);
+      setTimeout(() => { fitPlaymat(); updateHandFades(); }, 350); // re-fit after layout/fonts settle
     } catch (e) {
       console.warn(e);
       statusEl.textContent = 'Could not load the deck.';
