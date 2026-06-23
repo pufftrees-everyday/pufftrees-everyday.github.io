@@ -1,11 +1,13 @@
 name: Update card prices
 
-# Runs four times a day, and can also be triggered manually from the Actions tab.
+# Runs eight times a day, and can also be triggered manually from the Actions tab.
 on:
   schedule:
-    # Every 6 hours (UTC). Minute :23 avoids the top-of-hour cron congestion
-    # that delays GitHub-hosted scheduled runs. ~03:23 / 09:23 / 15:23 / 21:23.
-    - cron: '23 3,9,15,21 * * *'
+    # Every 3 hours (UTC). Minute :23 avoids the top-of-hour cron congestion
+    # that delays GitHub-hosted scheduled runs. ~00:23 / 03:23 / 06:23 / 09:23 /
+    # 12:23 / 15:23 / 18:23 / 21:23. More attempts → denser price history, since
+    # GitHub silently drops/delays a good fraction of scheduled cron runs.
+    - cron: '23 */3 * * *'
   workflow_dispatch:   # lets you run it on-demand from the GitHub Actions tab
 
 # Allow the workflow to push the updated prices.json back to the repo
