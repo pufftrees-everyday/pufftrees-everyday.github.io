@@ -119,14 +119,16 @@
     .hand-bar { height: auto; flex: 1; min-height: 0; }
     .hand-bar::before, .hand-bar::after { display: none; } /* no horizontal scroll cue — it wraps */
     .hand-head { padding-bottom: 4px; }
-    .hand-controls { width: 100%; }
-    .hand-controls .btn { flex: 1; text-align: center; }
-    /* Draw buttons show the real pile back (Spellbook/Atlas) + a plus + count. */
-    .btn-draw { gap: 6px; padding: 5px 9px; }
-    .btn-draw .draw-back { display: block; height: 30px; width: auto; border-radius: 3px;
-      border: 1px solid var(--border-strong); box-shadow: 0 1px 4px rgba(0,0,0,0.55); }
+    .hand-controls { width: 100%; align-items: stretch; }
+    .hand-controls .btn { flex: 1; text-align: center; min-height: 54px; }
+    /* Draw buttons: the real pile back (Spellbook/Atlas) fills the button box,
+       with the plus + count sitting beside it (not on top of the art). */
+    .btn-draw { gap: 0; padding: 0; overflow: hidden; }
+    .btn-draw .draw-back { display: block; flex: 1; min-width: 0; height: 100%;
+      object-fit: cover; border: none; border-radius: 4px 0 0 4px; box-shadow: none; }
     .btn-draw .draw-name { display: none; }
-    .btn-draw .draw-plus { font-size: 1.15rem; line-height: 1; }
+    .btn-draw .draw-plus { font-size: 1.3rem; line-height: 1; padding-left: 6px; color: var(--gold); }
+    .btn-draw .btn-ct { padding: 0 8px 0 3px; opacity: 0.9; }
     .hand-hint { width: 100%; margin-left: 0; text-align: center; font-size: 0.78rem; }
     /* Hand flows into a 3-up wrapping grid so the whole opening hand is visible. */
     .hand-scroll { flex-wrap: wrap; align-content: flex-start; justify-content: center;
