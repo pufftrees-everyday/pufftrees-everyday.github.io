@@ -27,7 +27,7 @@
   /* Tabletop = the playmat. Falls back to a dark gradient if playmat.jpg is missing. */
   .tabletop {
     min-height: 100vh; min-height: 100dvh;
-    background-image: url('playmat.jpg'), radial-gradient(circle at 50% 30%, #20203a 0%, #0b0a0f 70%);
+    background-image: url('Playmat.jpg'), radial-gradient(circle at 50% 30%, #20203a 0%, #0b0a0f 70%);
     background-size: cover, cover; background-position: center, center; background-repeat: no-repeat;
     display: flex; flex-direction: column;
   }
@@ -77,9 +77,9 @@
     display: flex; align-items: center; justify-content: center;
   }
   /* Each back layers its art over a themed gradient fallback (gradient shows if the PNG is missing) */
-  .card-back.spellbook  { background-image: url('Spellbookback.png'), linear-gradient(150deg, #322a55, #15111f); }
-  .card-back.collection { background-image: url('Spellbookback.png'), linear-gradient(150deg, #3a2a52, #15111f); }
-  .card-back.atlas      { background-image: url('atlasback.png'),     linear-gradient(150deg, #234034, #14111c); }
+  .card-back.spellbook  { background-image: url('SpellbookBack.png'), linear-gradient(150deg, #322a55, #15111f); }
+  .card-back.collection { background-image: url('SpellbookBack.png'), linear-gradient(150deg, #3a2a52, #15111f); }
+  .card-back.atlas      { background-image: url('AtlasBack.png'),     linear-gradient(150deg, #234034, #14111c); }
   .stack.empty .card-back { background-image: none; background: rgba(11,10,15,0.35); border-style: dashed; border-color: var(--mist); }
 
   .stack-count {
