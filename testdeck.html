@@ -78,10 +78,12 @@
   .hand-bar::after  { content: '›'; right: 0; justify-content: flex-end; padding-right: 9px; background: linear-gradient(270deg, rgba(11,10,15,0.97), transparent); }
   .hand-bar.can-left::before { opacity: 1; }
   .hand-bar.can-right::after { opacity: 1; }
-  .hand-head { display: flex; align-items: center; gap: 12px; padding: 6px 14px 0; flex-shrink: 0; }
-  .hand-title { font-family: 'Cinzel', serif; font-size: 0.74rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold); }
+  .hand-head { display: flex; align-items: center; gap: 9px 12px; padding: 8px 14px 0; flex-shrink: 0; flex-wrap: wrap; }
+  .hand-title { font-family: 'Cinzel', serif; font-size: 0.74rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold); white-space: nowrap; }
   .hand-title b { color: var(--shimmer); }
-  .hand-hint { font-size: 0.82rem; color: var(--rune); font-style: italic; }
+  .hand-controls { display: flex; gap: 7px; flex-wrap: wrap; }
+  .btn-ct { font-size: 0.85em; opacity: 0.75; font-weight: 400; }
+  .hand-hint { font-size: 0.82rem; color: var(--rune); font-style: italic; margin-left: auto; }
   .hand-hint.warn { color: var(--gold); font-style: normal; }
   .hand-head .tb-spacer { flex: 1; }
   .hand-scroll { flex: 1; min-height: 0; display: flex; flex-wrap: nowrap; align-items: center; gap: 9px; overflow-x: auto; overflow-y: hidden; padding: 6px 14px 12px; -webkit-overflow-scrolling: touch; scrollbar-width: auto; scrollbar-color: var(--arcane) rgba(155,135,212,0.14); }
@@ -104,11 +106,22 @@
   .discard-hint.show { opacity: 1; }
 
   @media (max-width: 640px) {
-    .tb-title { max-width: 40vw; font-size: 0.92rem; }
-    .btn { padding: 7px 10px; font-size: 0.58rem; }
-    /* Smaller cards → more of the hand visible at once; scroll for the rest. */
-    .hand-bar { height: clamp(104px, 19vh, 168px); }
-    .hand-scroll { gap: 7px; padding: 5px 10px 12px; }
+    .tb-title { max-width: 56vw; font-size: 0.92rem; }
+    .btn { padding: 8px 11px; font-size: 0.6rem; }
+    /* On mobile we drop the playmat entirely: the hand bar becomes a clean,
+       full-screen starting-hand view (draw / mulligan / fresh hand only). */
+    .mat-area { display: none !important; }
+    .hand-bar { height: auto; flex: 1; min-height: 0; }
+    .hand-bar::before, .hand-bar::after { display: none; } /* no horizontal scroll cue — it wraps */
+    .hand-head { padding-bottom: 4px; }
+    .hand-controls { width: 100%; }
+    .hand-controls .btn { flex: 1; text-align: center; }
+    .hand-hint { width: 100%; margin-left: 0; text-align: center; font-size: 0.78rem; }
+    /* Hand flows into a 3-up wrapping grid so the whole opening hand is visible. */
+    .hand-scroll { flex-wrap: wrap; align-content: flex-start; justify-content: center;
+      overflow-x: hidden; overflow-y: auto; gap: 8px; padding: 8px 10px 14px; }
+    .hcard { height: auto; width: calc(33.333% - 8px); max-width: 150px; }
+    .hand-empty { width: 100%; text-align: center; }
   }
 </style>
 </head>
@@ -118,12 +131,6 @@
     <a class="tb-back" id="back-link" href="archive.html">← Deck</a>
     <div class="tb-title" id="deck-title">Test Deck</div>
     <div class="tb-spacer"></div>
-    <div class="controls" id="controls" style="display:none;">
-      <button class="btn btn-ghost" onclick="drawOne('spellbook')" id="btn-draw-s" title="Draw 1 from the Spellbook">+ Spellbook</button>
-      <button class="btn btn-ghost" onclick="drawOne('atlas')" id="btn-draw-a" title="Draw 1 from the Atlas">+ Atlas</button>
-      <button class="btn btn-primary" onclick="drawFreshHand()" id="btn-fresh">Draw Fresh Hand</button>
-      <button class="btn btn-ember" onclick="toggleMulligan()" id="btn-mull">Mulligan</button>
-    </div>
   </div>
 
   <div class="status" id="status">Setting the table…</div>
@@ -139,7 +146,12 @@
   <div class="hand-bar" id="hand-bar" style="display:none;">
     <div class="hand-head">
       <span class="hand-title">Hand <b id="hand-count">0</b></span>
-      <span class="tb-spacer"></span>
+      <div class="hand-controls" id="controls">
+        <button class="btn btn-ghost" onclick="drawOne('spellbook')" id="btn-draw-s" title="Draw 1 from the Spellbook">+ Spellbook <span class="btn-ct" id="ct-s"></span></button>
+        <button class="btn btn-ghost" onclick="drawOne('atlas')" id="btn-draw-a" title="Draw 1 from the Atlas">+ Atlas <span class="btn-ct" id="ct-a"></span></button>
+        <button class="btn btn-primary" onclick="drawFreshHand()" id="btn-fresh">Fresh Hand</button>
+        <button class="btn btn-ember" onclick="toggleMulligan()" id="btn-mull">Mulligan</button>
+      </div>
       <span class="hand-hint" id="hand-hint">Draw cards, or drag a card up to discard it.</span>
     </div>
     <div class="hand-scroll" id="hand-scroll"></div>
@@ -310,9 +322,16 @@
       });
     }
     updateMullButton();
+    updateControlCounts();
     const hint = document.getElementById('hand-hint');
     if (mulligan) { hint.textContent = `Select up to 3 cards to replace (${selected.size}/3), then confirm.`; hint.classList.add('warn'); }
-    else { hint.textContent = 'Draw cards, click a stack, or drag a card up to discard it.'; hint.classList.remove('warn'); }
+    else {
+      // The drag-to-discard / click-a-stack cues only apply on the desktop board.
+      const mobile = window.matchMedia('(max-width: 640px)').matches;
+      hint.textContent = mobile ? 'Draw cards, mulligan, or deal a fresh hand.'
+                                : 'Draw cards, click a stack, or drag a card up to discard it.';
+      hint.classList.remove('warn');
+    }
     requestAnimationFrame(updateHandFades);
   }
   // Toggle the ‹ › scroll indicators based on how far the hand is scrolled.
@@ -322,6 +341,16 @@
     const max = sc.scrollWidth - sc.clientWidth;
     bar.classList.toggle('can-left', sc.scrollLeft > 2);
     bar.classList.toggle('can-right', sc.scrollLeft < max - 2);
+  }
+  // Show remaining pile counts on the draw buttons (the on-mat stack counts are
+  // hidden on mobile) and disable a pile's draw button when empty / mid-mulligan.
+  function updateControlCounts() {
+    const s = document.getElementById('ct-s'), a = document.getElementById('ct-a');
+    if (s) s.textContent = remain.spellbook.length;
+    if (a) a.textContent = remain.atlas.length;
+    const bs = document.getElementById('btn-draw-s'), ba = document.getElementById('btn-draw-a');
+    if (bs) bs.disabled = mulligan || !remain.spellbook.length;
+    if (ba) ba.disabled = mulligan || !remain.atlas.length;
   }
   function updateMullButton() {
     const b = document.getElementById('btn-mull');
