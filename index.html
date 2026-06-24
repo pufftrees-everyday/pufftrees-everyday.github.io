@@ -149,8 +149,8 @@
   .section-title.explorer-head::after { display: none; }
   .section-title .head-rule { flex: 1; height: 1px; background: var(--border); }
   .archive-cta {
-    display: inline-flex; align-items: center; gap: 7px; flex-shrink: 0;
-    padding: 7px 14px 7px 11px; border-radius: 8px; text-decoration: none;
+    display: inline-flex; align-items: center; flex-shrink: 0;
+    padding: 7px 16px; border-radius: 8px; text-decoration: none;
     font-family: 'Cinzel', serif; font-size: 0.7rem; font-weight: 700;
     letter-spacing: 0.1em; text-transform: uppercase; white-space: nowrap;
     color: var(--void); background: linear-gradient(135deg, var(--gold), #e7d199);
@@ -159,7 +159,6 @@
     transition: transform .16s, box-shadow .16s, filter .16s;
     animation: archiveGlow 2.8s ease-in-out infinite;
   }
-  .archive-cta svg { width: 16px; height: 16px; fill: currentColor; display: block; }
   .archive-cta:hover {
     transform: translateY(-1px); filter: brightness(1.05);
     box-shadow: 0 7px 22px rgba(200,169,110,0.5), 0 0 18px rgba(200,169,110,0.55);
@@ -171,8 +170,7 @@
   }
   @media (prefers-reduced-motion: reduce) { .archive-cta { animation: none; } }
   @media (max-width: 520px) {
-    .archive-cta { padding: 7px 11px; }
-    .archive-cta .archive-cta-label { display: none; }
+    .archive-cta { padding: 7px 12px; }
   }
 
   /* MY DECKS */
@@ -892,8 +890,7 @@
       <span>Card Explorer</span>
       <span class="head-rule"></span>
       <a href="archive.html" class="archive-cta" title="Browse community decks — The Archive">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.54 5.23l-1.39-1.68C18.88 3.21 18.47 3 18 3H6c-.47 0-.88.21-1.16.55L3.46 5.23C3.17 5.57 3 6.02 3 6.5V19c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6.5c0-.48-.17-.93-.46-1.27zM12 17.5L6.5 12H10v-2h4v2h3.5L12 17.5zM5.12 5l.81-1h12l.94 1H5.12z"/></svg>
-        <span class="archive-cta-label">Archive</span>
+        <span class="archive-cta-label">The Archive</span>
       </a>
     </div>
     <div class="search-bar">
