@@ -53,7 +53,9 @@ push happen directly, no manual upload.
   (`record-price-history.js`) for historical price/value charts. `captured_at` is stamped at run
   time (not prices.json's `generated`) so every run is a distinct point; the capture step runs
   `if: always()` so a push hiccup can't skip it, and inserts retry on transient errors. Public read; writes only via
-  service role. See the price-history setup gotcha.
+  service role. See the price-history setup gotcha. **Promotional/special printings** (Team Covenant
+  Promo, Box Topper, etc.) are recorded as their own series with the qualifier folded into `card_name`
+  (e.g. `Lightning Bolt (Team Covenant Promo)`), `finish` still 'standard'/'foil' (no schema change).
 
 **deck_data jsonb shape:** `{ n:name, a:[[cardName,qty]...avatar], t:[...atlas/sites],
 s:[...spellbook], c:[...collection/sideboard], d:"Scroll" }`
@@ -341,6 +343,16 @@ NO blur/glow. Element symbols + moon are loaded as real PNGs from the site.
   Project Settings → API). Capture begins on the next scheduled run (or trigger it manually from
   the Actions tab). ~2,200 points/run × 4 runs/day (every 6h); backfill from git history of prices.json is
   possible later if desired.
+- **Promotional price separation (`prices.json` `promos`):** JustTCG (mirroring TCGplayer) encodes a
+  promo/special printing as a parenthetical in the card name, e.g. `Lightning Bolt (Team Covenant
+  Promo) (Foil)`. `fetch-prices.js` (`classifyName` + `PROMO_RE`) splits these out into a separate
+  `prices.json` `promos` bucket — shape `{ "Card Name": { "Team Covenant Promo": { standard?, foil? } } }` —
+  so a promo's (often very different) price never merges into the booster price. `PROMO_RE` is
+  keyword-based (promo / team covenant / box topper / prerelease / borderless / etc.) and deliberately
+  does **not** match the few real card names whose parenthetical is part of the name (`Frog (Blue)`,
+  `Foot Soldier (English)`, …) — those stay as normal cards. The fetch run logs the distinct promo
+  qualifiers it detected (self-validating, since the parser is keyword-based). Currently **capture-only**:
+  promos are stored + charted in history, not yet surfaced in the collection/deck UI (a follow-up).
 
 ## Open / future ideas
 - ✅ **Daily price-history capture — DONE.** `record-price-history.js` appends a snapshot to the

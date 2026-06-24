@@ -48,6 +48,19 @@ async function main() {
   for (const [name, v] of Object.entries(data.foils || {})) {
     if (v && v.market != null) rows.push({ captured_at: capturedAt, card_name: name, finish: 'foil', market: v.market });
   }
+  // Promotional / special printings get their own series. We fold the promo
+  // qualifier into the card_name (e.g. "Lightning Bolt (Team Covenant Promo)")
+  // so each promo charts separately, while finish stays 'standard'/'foil' to
+  // respect the table's CHECK constraint — no schema change needed.
+  let promoRows = 0;
+  for (const [name, byQual] of Object.entries(data.promos || {})) {
+    for (const [qual, fin] of Object.entries(byQual || {})) {
+      const cardName = `${name} (${qual})`;
+      if (fin && fin.standard != null) { rows.push({ captured_at: capturedAt, card_name: cardName, finish: 'standard', market: fin.standard }); promoRows++; }
+      if (fin && fin.foil != null) { rows.push({ captured_at: capturedAt, card_name: cardName, finish: 'foil', market: fin.foil }); promoRows++; }
+    }
+  }
+  if (promoRows) console.log(`Including ${promoRows} promotional price points.`);
 
   if (!rows.length) { console.log('No priced rows to record.'); return; }
   console.log(`Recording ${rows.length} price points at ${capturedAt} …`);
