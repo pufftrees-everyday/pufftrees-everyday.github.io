@@ -218,6 +218,23 @@
   .more-item[target="_blank"]::after,
   .mobile-nav a[target="_blank"]::after { content: "\2197"; font-size: 0.72em; margin-left: 4px; opacity: 0.55; vertical-align: 1px; }
   .mobile-discord { color: #b9c0ff !important; font-weight: 600; }
+
+  /* ── Import from Curiosa panel ── */
+  #curiosa-import.cr-panel{background:var(--dusk);border:1px solid var(--twilight);
+    border-radius:10px;padding:14px 16px;margin:0 0 18px;}
+  #curiosa-import label{display:block;font-family:'Cinzel',serif;color:var(--shimmer);
+    font-size:.85rem;letter-spacing:.04em;margin-bottom:8px;}
+  #curiosa-import .ci-row{display:flex;gap:8px;}
+  #curiosa-url{flex:1;background:var(--abyss);border:1px solid var(--mist);
+    border-radius:7px;color:var(--parchment);padding:9px 11px;font-size:.95rem;}
+  #curiosa-url:focus{outline:none;border-color:var(--arcane);
+    box-shadow:0 0 0 2px rgba(155,135,212,.25);}
+  #curiosa-import-btn{background:var(--rune);color:var(--parchment);border:none;
+    border-radius:7px;padding:9px 18px;font-family:'Cinzel',serif;cursor:pointer;
+    transition:background .15s;}
+  #curiosa-import-btn:hover{background:var(--arcane);}
+  #curiosa-import-btn:disabled{opacity:.55;cursor:default;}
+  .ci-status{margin-top:9px;font-size:.85rem;color:var(--arcane);min-height:1em;}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -267,6 +284,17 @@
       <div class="gallery-sub">Your personal workshop — every deck you've saved, all in one place. Open one to keep building, view it in its full glory, or start something new.</div>
     </div>
     <button class="btn btn-primary" onclick="window.location.href='deckbuilder.html'" style="flex-shrink:0;">+ New Deck</button>
+  </div>
+
+  <div id="curiosa-import" class="cr-panel" style="display:none;">
+    <label for="curiosa-url">Import a deck from Curiosa</label>
+    <div class="ci-row">
+      <input id="curiosa-url" type="text"
+             placeholder="Paste a curiosa.io deck link…" autocomplete="off"
+             onkeydown="if(event.key==='Enter')importFromCuriosa()">
+      <button id="curiosa-import-btn" onclick="importFromCuriosa()">Import</button>
+    </div>
+    <div id="curiosa-status" class="ci-status" aria-live="polite"></div>
   </div>
 
   <div style="margin-bottom:14px;">
@@ -476,6 +504,9 @@ function renderAuthBar() {
     mob.innerHTML = `<a class="header-link" onclick="openAuth('login')">Sign In</a>
       <a class="header-link" onclick="openAuth('signup')">Sign Up</a>`;
   }
+  // Curiosa import is only for logged-in users (saves to their own Workshop)
+  const imp = document.getElementById('curiosa-import');
+  if (imp) imp.style.display = currentUser ? '' : 'none';
 }
 
 function toggleProfileMenu(e) {
@@ -905,6 +936,119 @@ async function confirmDeckDelete() {
 
 function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+// ── CURIOSA IMPORT ──
+// Worker route that fetches + normalizes a curiosa.io deck (CORS already handled).
+const CURIOSA_IMPORT_ENDPOINT = 'https://og.cursedrealm.workers.dev/import?url=';
+
+// Name index over cards.json, built once. deck_data stores card NAMES, and the
+// deck viewer/deckbuilder look cards up by name, so we match by name (with a
+// normalized fallback for apostrophe/whitespace differences).
+let _ciByName = null, _ciByNorm = null;
+function ciNorm(s) {
+  return (s || '')
+    .toLowerCase()
+    .replace(/[‘’′]/g, "'")   // curly/prime apostrophes -> '
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+async function ensureCardIndex() {
+  if (_ciByName && _ciByNorm) return;
+  const res = await fetch('https://cursedrealm.org/cards.json');
+  const cards = await res.json();
+  _ciByName = new Map();
+  _ciByNorm = new Map();
+  for (const c of cards) {
+    if (!c || !c.name) continue;
+    _ciByName.set(c.name, c);
+    _ciByNorm.set(ciNorm(c.name), c);
+  }
+}
+function ciResolveName(entry) {            // entry = {slug,name,type,qty}
+  if (_ciByName.has(entry.name)) return _ciByName.get(entry.name).name;
+  const n = _ciByNorm.get(ciNorm(entry.name));
+  return n ? n.name : null;                // null = couldn't match
+}
+
+// Mirrors the deckbuilder's short-code generator (no l/0/1/o to avoid confusion)
+function genShortCode() {
+  const chars = 'abcdefghijkmnpqrstuvwxyz23456789';
+  let s = '';
+  for (let i = 0; i < 5; i++) s += chars[Math.floor(Math.random() * chars.length)];
+  return s;
+}
+
+function ciSetStatus(msg) {
+  const el = document.getElementById('curiosa-status');
+  if (el) el.textContent = msg || '';
+}
+
+async function importFromCuriosa() {
+  const input = document.getElementById('curiosa-url');
+  const btn = document.getElementById('curiosa-import-btn');
+  const rawUrl = (input.value || '').trim();
+  if (!rawUrl) { ciSetStatus('Paste a link first.'); return; }
+  if (!supa || !currentUser) { ciSetStatus('Sign in to import a deck.'); return; }
+
+  btn.disabled = true;
+  ciSetStatus('Importing…');
+  try {
+    await ensureCardIndex();
+
+    const res = await fetch(CURIOSA_IMPORT_ENDPOINT + encodeURIComponent(rawUrl));
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+
+    const missing = [];
+    const toPairs = (list) => (list || []).map(e => {
+      const name = ciResolveName(e);
+      if (!name) { missing.push(e.name); return null; }
+      return [name, e.qty];
+    }).filter(Boolean);
+
+    const deck_data = {
+      n: (data.name && data.name.trim()) || 'Imported from Curiosa',
+      a: toPairs(data.avatar),   // avatar
+      t: toPairs(data.sites),    // atlas / sites
+      s: toPairs(data.spells),   // spellbook
+      c: toPairs(data.sideboard) // collection / sideboard
+      // data.maybeboard is intentionally ignored (it's a "considering" list).
+    };
+
+    if (!deck_data.a.length && !deck_data.s.length && !deck_data.t.length) {
+      throw new Error("Couldn't read any cards from that deck — is the link correct/public?");
+    }
+
+    // Save via the same path the deckbuilder uses: a private, owned deck with a
+    // unique short_code (retry on collision). Schema matches decks.html exactly.
+    let saved = false, lastErr = null;
+    for (let attempt = 0; attempt < 5; attempt++) {
+      const code = genShortCode();
+      const { error } = await supa.from('decks').insert({
+        short_code: code, name: deck_data.n, deck_data,
+        owner_id: currentUser.id, is_saved: true, is_public: false
+      });
+      if (!error) { saved = true; break; }
+      lastErr = error;
+      if (error.code !== '23505') throw error; // not a short_code collision
+    }
+    if (!saved) throw new Error((lastErr && lastErr.message) || 'Could not save the deck.');
+
+    const total = ['a','t','s'].reduce((sum, k) => sum + deck_data[k].reduce((s, [, q]) => s + (q || 0), 0), 0);
+    let msg = `Imported “${deck_data.n}” — ${total} cards.`;
+    if (missing.length) msg += ` (${missing.length} not recognized: ${missing.join(', ')})`;
+    ciSetStatus(msg);
+    toast(`Imported “${deck_data.n}”`);
+    input.value = '';
+    await loadGallery(); // refresh the Workshop list with the new deck
+  } catch (e) {
+    const m = (e && e.message) || 'Import failed.';
+    ciSetStatus(m);
+    toast(m);
+  } finally {
+    btn.disabled = false;
+  }
 }
 
 // ── INIT ──
