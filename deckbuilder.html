@@ -89,6 +89,7 @@
   .btn-ghost:hover { border-color: var(--arcane); color: var(--arcane); }
   .btn-danger { background: transparent; border-color: rgba(196,97,74,0.3); color: var(--ember); }
   .btn-danger:hover { background: rgba(196,97,74,0.12); }
+  .btn:disabled { opacity: 0.4; cursor: default; pointer-events: none; }
   .btn-success { background: var(--sage); border-color: #7ab88a; color: #fff; }
   .btn-success:hover { background: #7ab88a; }
 
@@ -1331,7 +1332,7 @@
           <button class="btn btn-ghost" id="scroll-btn" onclick="toggleScrollEditor()">📜 Scroll</button>
           <button class="btn btn-ghost" onclick="openImport()">Import</button>
           <button class="btn btn-ghost" onclick="exportDeck()">Export</button>
-          <button class="btn btn-danger" onclick="clearDeck()">Clear</button>
+          <button class="btn btn-ghost" id="undo-btn" onclick="undoDeck()" title="Undo the last deck edit (up to 5)" disabled>↶ Undo</button>
         </div>
       </div>
       <div class="deck-stats" id="deck-stats"></div>
@@ -1529,6 +1530,55 @@ let lastSharedCode = null; // short code of the most recently shared deck (for p
 // deck: { atlas: {key: {card, qty}}, spellbook: {key: {card, qty}}, avatar: {key: {card, qty}} }
 let deck = { avatar: {}, atlas: {}, spellbook: {}, collection: {} };
 let deckScroll = ''; // the deck's "Scroll" (free-text description / strategy notes)
+
+// ── UNDO ──
+// A small history stack of recent deck states (up to UNDO_LIMIT). Each entry is a
+// compact serialized snapshot {sections: [id,qty][], scroll}. We snapshot *before*
+// every edit and only commit when the edit actually changed something, so "Undo"
+// always steps back a real edit rather than a no-op click.
+const UNDO_LIMIT = 5;
+let deckHistory = [];
+function serializeDeck() {
+  const secs = {};
+  for (const sec of ['avatar','atlas','spellbook','collection']) {
+    secs[sec] = Object.entries(deck[sec]).map(([k,v]) => [k, v.qty]);
+  }
+  return JSON.stringify({ secs, scroll: deckScroll });
+}
+function restoreDeckSnapshot(snapshot) {
+  const obj = JSON.parse(snapshot);
+  const newDeck = { avatar: {}, atlas: {}, spellbook: {}, collection: {} };
+  for (const sec of ['avatar','atlas','spellbook','collection']) {
+    (obj.secs[sec] || []).forEach(([k, qty]) => {
+      const card = allCards.find(c => String(c.id) === String(k));
+      if (card) newDeck[sec][String(k)] = { card, qty };
+    });
+  }
+  deck = newDeck;
+  deckScroll = obj.scroll || '';
+}
+// Commit `before` to history only if the deck actually changed since it was captured.
+function commitUndo(before) {
+  if (serializeDeck() === before) return;
+  deckHistory.push(before);
+  if (deckHistory.length > UNDO_LIMIT) deckHistory.shift();
+  updateUndoButton();
+}
+// Reset undo history — called when a whole deck is loaded/replaced (fresh edit session).
+function resetUndoHistory() { deckHistory = []; updateUndoButton(); }
+function updateUndoButton() {
+  const btn = document.getElementById('undo-btn');
+  if (btn) btn.disabled = deckHistory.length === 0;
+}
+function undoDeck() {
+  if (!deckHistory.length) return;
+  restoreDeckSnapshot(deckHistory.pop());
+  syncScrollEditor();
+  renderDeck();
+  renderCardGrid();
+  updateUndoButton();
+  toast('Edit undone');
+}
 
 // Guest deck storage (localStorage). Mirrors the helper in index.html.
 function getSavedDecks() { try { return JSON.parse(localStorage.getItem('grimoire_decks') || '{}'); } catch { return {}; } }
@@ -2163,9 +2213,11 @@ function filterAvatarPicker() {
 function pickAvatar(id) {
   const card = allCards.find(c => c.id === id || c.name === id);
   if (!card) return;
+  const before = serializeDeck();
   // Clear any existing avatar, then set this one
   deck.avatar = {};
   deck.avatar[String(card.id)] = { card, qty: 1 };
+  commitUndo(before);
   hideAvatarPreview();
   closeAvatarPicker();
   renderDeck();
@@ -2214,6 +2266,12 @@ function getDeckSection(card) {
 }
 
 function addCardToDeck(card, qty = 1) {
+  const before = serializeDeck();
+  const result = addCardToDeckInner(card, qty);
+  commitUndo(before);
+  return result;
+}
+function addCardToDeckInner(card, qty = 1) {
   const section = getDeckSection(card);
   const key = String(card.id);
   const rarity = card.rarity || 'Ordinary';
@@ -2250,6 +2308,12 @@ function addCardToDeck(card, qty = 1) {
 
 // Add a card to the 10-card Deck Collection (Sorcery's sideboard/toolbox)
 function addCardToDeckCollection(card, qty = 1) {
+  const before = serializeDeck();
+  const result = addCardToDeckCollectionInner(card, qty);
+  commitUndo(before);
+  return result;
+}
+function addCardToDeckCollectionInner(card, qty = 1) {
   const key = String(card.id);
   const rarity = card.rarity || 'Ordinary';
   const limit = RARITY_LIMITS[rarity] || 4;
@@ -2283,6 +2347,7 @@ function addCardToDeckCollection(card, qty = 1) {
 
 function changeQty(section, key, delta) {
   if (!deck[section][key]) return;
+  const before = serializeDeck();
   const card = deck[section][key].card;
   const rarity = card.rarity || 'Ordinary';
   const limit = RARITY_LIMITS[rarity] || 4;
@@ -2301,12 +2366,16 @@ function changeQty(section, key, delta) {
   }
   if (newQty <= 0) { delete deck[section][key]; }
   else { deck[section][key].qty = newQty; }
+  commitUndo(before);
   renderDeck();
   renderCardGrid();
 }
 
 function removeCard(section, key) {
+  if (!deck[section][key]) return;
+  const before = serializeDeck();
   delete deck[section][key];
+  commitUndo(before);
   renderDeck();
   renderCardGrid();
 }
@@ -2953,6 +3022,7 @@ function loadDeck(id) {
     });
   }
   activeDeckId = id;
+  resetUndoHistory();
   document.getElementById('deck-name-input').value = name;
   refreshDeckNameState();
   renderDeck();
@@ -3427,6 +3497,7 @@ function applyDeckPayload(payload) {
   if (matched === 0) { toast('Shared deck had no matching cards'); return false; }
   deck = newDeck;
   deckScroll = payload.d || '';
+  resetUndoHistory();
   syncScrollEditor();
   // A loaded shared deck is someone else's (or a fresh copy) — saving should
   // create the current user's OWN deck, never overwrite the original.
@@ -3606,22 +3677,6 @@ function syncDeckViewToggle() {
   });
 }
 
-// ── CLEAR ──
-function clearDeck() {
-  deck = { avatar: {}, atlas: {}, spellbook: {}, collection: {} };
-  deckScroll = '';
-  syncScrollEditor();
-  const exp = document.querySelector('.explorer');
-  if (exp && exp.classList.contains('scroll-mode')) toggleScrollEditor();
-  activeDeckCode = null;
-  activeDeckId = null;
-  activeDeckPublic = false;
-  renderDeck();
-  renderCardGrid();
-  renderVisibilityBar();
-  toast('Deck cleared');
-}
-
 // ── IMPORT ──
 function openImport() { document.getElementById('import-text').value=''; document.getElementById('import-overlay').classList.add('open'); }
 function closeImport(e) { if (!e||e.target===document.getElementById('import-overlay')) document.getElementById('import-overlay').classList.remove('open'); }
@@ -3676,7 +3731,9 @@ function runImport() {
     matched++;
   }
   if (matched === 0) { toast('No cards matched — check format'); return; }
+  const undoBefore = serializeDeck();
   deck = newDeck;
+  commitUndo(undoBefore);
   activeDeckCode = null; // imported deck is brand new and unsaved → next Save creates a fresh owned deck
   activeDeckId = null;
   activeDeckPublic = false;
