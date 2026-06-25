@@ -2509,7 +2509,10 @@ function filterCards() {
     if (q && !c.name.toLowerCase().includes(q)) return false;
     // Basic filters
     if (activeFilters.type.size && !activeFilters.type.has(c.type)) return false;
-    if (activeFilters.set.size && !activeFilters.set.has(c.set)) return false;
+    // Match against every set the card is printed in (setNames), not just the
+    // single Beta-preferred c.set — otherwise an Alpha+Beta card is hidden under
+    // the Alpha filter (it only shows all Alpha cards this way, not just avatars).
+    if (activeFilters.set.size && !(c.setNames || [c.set]).some(s => activeFilters.set.has(s))) return false;
     if (activeFilters.rarity.size && !activeFilters.rarity.has(c.rarity)) return false;
     if (elementLock) {
       const els = cardElements(c);
