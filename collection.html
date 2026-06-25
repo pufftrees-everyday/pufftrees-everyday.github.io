@@ -635,6 +635,17 @@
   .binder-finish-toggle { display: inline-flex; border: 1px solid var(--border-strong); border-radius: 6px; overflow: hidden; }
   .binder-finish-toggle button { background: var(--abyss); border: none; color: var(--rune); font-family: 'Cinzel', serif; font-size: 0.58rem; letter-spacing: 0.06em; text-transform: uppercase; padding: 7px 10px; cursor: pointer; }
   .binder-finish-toggle button.active { background: var(--rune); color: #fff; }
+  /* Live card-search results (type a name → click to add) */
+  .binder-search-results { display: flex; flex-direction: column; gap: 2px; margin: 2px 0 4px; max-height: 264px; overflow-y: auto; }
+  .binder-search-results:not(:empty) { padding: 4px; border: 1px solid var(--border); border-radius: 8px; background: rgba(11,10,15,0.35); }
+  .binder-search-item { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; background: var(--abyss); border: 1px solid var(--border); border-radius: 6px; padding: 7px 10px; cursor: pointer; color: var(--parchment); font-family: 'Crimson Pro', serif; transition: border-color 0.12s, background 0.12s; }
+  .binder-search-item:hover { border-color: var(--arcane); background: rgba(155,135,212,0.08); }
+  .bsi-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.95rem; color: var(--shimmer); }
+  .bsi-meta { font-size: 0.76rem; color: var(--rune); white-space: nowrap; }
+  .bsi-meta b { color: var(--gold); }
+  .bsi-add { font-family: 'Cinzel', serif; font-size: 0.56rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--arcane); border: 1px solid var(--border-strong); border-radius: 5px; padding: 3px 7px; flex-shrink: 0; }
+  .binder-search-item:hover .bsi-add { color: #fff; background: var(--rune); border-color: var(--rune); }
+  .binder-search-more { font-size: 0.78rem; color: var(--rune); font-style: italic; padding: 6px 4px 2px; }
   .binder-sort-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 6px 0 2px; }
   .binder-sort-row .bt-label { font-family: 'Cinzel', serif; font-size: 0.58rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--rune); }
   .binder-cards { margin-top: 8px; display: flex; flex-direction: column; gap: 2px; }
@@ -1257,7 +1268,7 @@ function ownedDecksTotalValue() { return getOwnedDecks().reduce((s, d) => s + bi
 
 // ── BINDER UI ──
 function bEsc(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-const binderUI = { collapsed: {}, addFinish: {}, addRarity: {}, sort: {} }; // transient per-binder UI state
+const binderUI = { collapsed: {}, addFinish: {}, sort: {}, search: {}, searchSet: {} }; // transient per-binder UI state
 // Whole-section collapse state (Vault Binders / Trade Binders / Owned Decks).
 // Collapsed by default — expand to reveal the contents.
 const sectionCollapsed = { vaultBinders: true, tradeBinders: true, ownedDecks: true };
@@ -1275,24 +1286,11 @@ const MASTER_COUNTS = { Unique: 1, Elite: 2, Exceptional: 3, Ordinary: 4 };
 function currentBinderParent() {
   return currentView === 'trade' ? 'trade' : (currentView === 'all' ? 'vault' : null);
 }
-function buildCardDatalist() {
-  if (document.getElementById('binder-cardlist')) return;
-  const make = (suffix, cards) => {
-    const dl = document.createElement('datalist');
-    dl.id = 'binder-cardlist' + (suffix ? '-' + suffix : '');
-    dl.innerHTML = cards.map(c => `<option value="${bEsc(c.name)}"></option>`).join('');
-    document.body.appendChild(dl);
-  };
-  make('', allCards);
-  ['Ordinary','Exceptional','Elite','Unique'].forEach(r => make(r, allCards.filter(c => c.rarity === r)));
-}
-
 function renderBinders() {
   const panel = document.getElementById('binders-panel');
   if (!panel) return;
   const parent = currentBinderParent();
   if (!parent) { panel.style.display = 'none'; panel.innerHTML = ''; return; }
-  buildCardDatalist();
   const list = bindersFor(parent);
   // Binders are collapsed by default; only expand ones the user has opened this session
   list.forEach(b => { if (!(b.id in binderUI.collapsed)) binderUI.collapsed[b.id] = true; });
@@ -1338,8 +1336,7 @@ function setBinderSort(id, mode) { binderUI.sort[id] = mode; renderBinders(); }
 function renderBinderCard(b) {
   const collapsed = binderUI.collapsed[b.id];
   const addFinish = binderUI.addFinish[b.id] || 'std';
-  const addRarity = binderUI.addRarity[b.id] || '';
-  const listId = addRarity ? 'binder-cardlist-' + addRarity : 'binder-cardlist';
+  const searchSet = binderUI.searchSet[b.id] || '';
   const count = binderCardCount(b);
   const val = binderValue(b);
   const setOpts = ALL_SETS.map(s => `<option value="${bEsc(s)}">${bEsc(s)}</option>`).join('');
@@ -1378,20 +1375,20 @@ function renderBinderCard(b) {
         <button class="binder-btn" onclick="binderAddMaster('${b.id}','foil')" title="Foil Master Set: 1× Unique, 2× Elite, 3× Exceptional, 4× Ordinary (foil)">Foil Master Set</button>
       </div>
       <div class="binder-add-row">
-        <select class="binder-set-select" id="brar-${b.id}" title="Filter the card search by rarity" onchange="setBinderAddRarity('${b.id}', this.value)">
-          <option value="" ${addRarity===''?'selected':''}>All rarities</option>
-          <option value="Ordinary" ${addRarity==='Ordinary'?'selected':''}>Ordinary</option>
-          <option value="Exceptional" ${addRarity==='Exceptional'?'selected':''}>Exceptional</option>
-          <option value="Elite" ${addRarity==='Elite'?'selected':''}>Elite</option>
-          <option value="Unique" ${addRarity==='Unique'?'selected':''}>Unique</option>
+        <select class="binder-set-select" title="Filter the card search by set" onchange="setBinderSearchSet('${b.id}', this.value)">
+          <option value="">All sets</option>
+          ${ALL_SETS.map(s => `<option value="${bEsc(s)}" ${searchSet===s?'selected':''}>${bEsc(s)}</option>`).join('')}
         </select>
-        <input class="binder-add-input" list="${listId}" id="badd-${b.id}" placeholder="Add a card by name…" onkeydown="if(event.key==='Enter'){event.preventDefault();binderAddManual('${b.id}');}">
+        <input class="binder-add-input" id="badd-${b.id}" autocomplete="off" value="${bEsc(binderUI.search[b.id]||'')}"
+               placeholder="Type to search cards to add…"
+               oninput="binderSearch('${b.id}')"
+               onkeydown="if(event.key==='Enter'){event.preventDefault();binderAddTopResult('${b.id}');}">
         <div class="binder-finish-toggle">
-          <button class="${addFinish==='std'?'active':''}" onclick="setBinderAddFinish('${b.id}','std')">Std</button>
-          <button class="${addFinish==='foil'?'active':''}" onclick="setBinderAddFinish('${b.id}','foil')">Foil</button>
+          <button data-finish="std" class="${addFinish==='std'?'active':''}" onclick="setBinderAddFinish('${b.id}','std')">Std</button>
+          <button data-finish="foil" class="${addFinish==='foil'?'active':''}" onclick="setBinderAddFinish('${b.id}','foil')">Foil</button>
         </div>
-        <button class="binder-btn" onclick="binderAddManual('${b.id}')">Add</button>
       </div>
+      <div class="binder-search-results" id="bsr-${b.id}">${binderSearchResultsHtml(b)}</div>
       ${names.length ? `<div class="binder-sort-row">
         <span class="bt-label">Sort</span>
         <select class="binder-set-select" title="Sort cards in this binder" onchange="setBinderSort('${b.id}', this.value)">
@@ -1434,11 +1431,61 @@ function toggleBinderCollapse(id) {
   const el = document.getElementById('binder-' + id);
   if (el) el.classList.toggle('collapsed', binderUI.collapsed[id]);
 }
-function setBinderAddFinish(id, finish) { binderUI.addFinish[id] = finish; renderBinders(); }
-function setBinderAddRarity(id, rarity) {
-  binderUI.addRarity[id] = rarity;
+// Lightweight: just flip the toggle's active state so we don't blow away the
+// open search box / its focus while you're adding cards.
+function setBinderAddFinish(id, finish) {
+  binderUI.addFinish[id] = finish;
+  const wrap = document.querySelector(`#binder-${id} .binder-finish-toggle`);
+  if (wrap) wrap.querySelectorAll('button').forEach(btn => btn.classList.toggle('active', btn.dataset.finish === finish));
+  const box = document.getElementById('bsr-' + id);
+  if (box) box.innerHTML = binderSearchResultsHtml(findBinder(id)); // refresh the +Std/+Foil chips
+}
+function setBinderSearchSet(id, set) { binderUI.searchSet[id] = set; binderSearch(id); }
+
+// Cards matching the binder's current search box + set filter, best matches first.
+function binderSearchPool(id) {
+  const q = (binderUI.search[id] || '').trim().toLowerCase();
+  const setF = binderUI.searchSet[id] || '';
+  if (!q && !setF) return { q, setF, list: [] };
+  let pool = allCards;
+  if (setF) pool = pool.filter(c => c.setNames.includes(setF));
+  if (q) {
+    pool = pool.filter(c => c.name.toLowerCase().includes(q)).slice().sort((a, c) => {
+      const as = a.name.toLowerCase().startsWith(q) ? 0 : 1;
+      const cs = c.name.toLowerCase().startsWith(q) ? 0 : 1;
+      return (as - cs) || a.name.localeCompare(c.name);
+    });
+  }
+  return { q, setF, list: pool };
+}
+// Re-render only the results dropdown for one binder (called on every keystroke).
+function binderSearch(id) {
   const inp = document.getElementById('badd-' + id);
-  if (inp) inp.setAttribute('list', rarity ? 'binder-cardlist-' + rarity : 'binder-cardlist');
+  if (inp) binderUI.search[id] = inp.value;
+  const box = document.getElementById('bsr-' + id);
+  const b = findBinder(id);
+  if (box && b) box.innerHTML = binderSearchResultsHtml(b);
+}
+function binderSearchResultsHtml(b) {
+  if (!b) return '';
+  const { q, setF, list } = binderSearchPool(b.id);
+  if (!q && !setF) return '';
+  if (!list.length) return `<div class="binder-search-more">No matches${setF ? ` in ${bEsc(setF)}` : ''}.</div>`;
+  const finishLbl = (binderUI.addFinish[b.id] || 'std') === 'foil' ? 'Foil' : 'Std';
+  const LIMIT = 12;
+  const rows = list.slice(0, LIMIT).map(c => {
+    const e = b.cards && b.cards[c.name];
+    const inB = e ? (e.std || 0) + (e.foil || 0) : 0;
+    const pr = prices[c.name] ? prices[c.name].market : null;
+    const meta = [c.rarity, pr != null ? `$${pr.toFixed(2)}` : null].filter(Boolean).join(' · ');
+    return `<button type="button" class="binder-search-item" data-n="${bEsc(c.name)}" onclick="binderAddFromSearch('${b.id}', this.dataset.n)">
+      <span class="bsi-name">${bEsc(c.name)}</span>
+      <span class="bsi-meta">${bEsc(meta)}${inB ? ` · <b>${inB} in binder</b>` : ''}</span>
+      <span class="bsi-add">+ ${finishLbl}</span>
+    </button>`;
+  }).join('');
+  const more = list.length > LIMIT ? `<div class="binder-search-more">+${list.length - LIMIT} more — keep typing to narrow.</div>` : '';
+  return rows + more;
 }
 function binderEnsureCard(b, name) {
   if (!b.cards) b.cards = {};
@@ -1457,21 +1504,31 @@ function binderRemove(id, name) {
   delete b.cards[name];
   saveBinders(); renderBinders(); updateStats();
 }
-function binderAddManual(id) {
+// Add one copy (of the current Std/Foil finish) from a clicked search result.
+// We keep the search box + its text so you can rapidly add several cards.
+function binderAddFromSearch(id, name) {
   const b = findBinder(id); if (!b) return;
-  const input = document.getElementById('badd-' + id);
-  const val = (input.value || '').trim();
-  if (!val) return;
-  const rar = binderUI.addRarity[id] || '';
-  const pool = rar ? allCards.filter(c => c.rarity === rar) : allCards;
-  const card = pool.find(c => c.name.toLowerCase() === val.toLowerCase())
-            || pool.find(c => c.name.toLowerCase().startsWith(val.toLowerCase()));
-  if (!card) { toast(`No ${rar ? rar + ' ' : ''}card named “${val}”`); return; }
+  const card = allCards.find(c => c.id === name) || allCards.find(c => c.name === name);
+  if (!card) { toast(`No card named “${name}”`); return; }
   const finish = binderUI.addFinish[id] || 'std';
   binderEnsureCard(b, card.name)[finish] += 1;
-  input.value = '';
   saveBinders(); renderBinders(); updateStats();
+  restoreBinderSearch(id); // re-focus the search and re-open the results
   toast(`Added ${card.name} (${finish === 'foil' ? 'foil' : 'std'}) to ${b.name}`);
+}
+// Enter in the search box adds the top match.
+function binderAddTopResult(id) {
+  const { list } = binderSearchPool(id);
+  if (!list.length) { toast('No matching card'); return; }
+  binderAddFromSearch(id, list[0].name);
+}
+// After a full re-render, put focus + caret back in the search box and rebuild results.
+function restoreBinderSearch(id) {
+  const inp = document.getElementById('badd-' + id);
+  if (!inp) return;
+  inp.focus();
+  const v = inp.value; inp.value = ''; inp.value = v; // move caret to end
+  binderSearch(id);
 }
 function binderSelectedSet(id) { const sel = document.getElementById('bset-' + id); return sel ? sel.value : null; }
 function binderAddSet(id, finish) {
