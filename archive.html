@@ -358,8 +358,8 @@
   <div class="sort-bar">
     <span class="sort-label">Sort</span>
     <div id="archive-sortbar" style="display:flex;gap:8px;flex-wrap:wrap;">
-      <button class="sort-btn active" data-sort="random" onclick="setArchiveSort('random')">⤮ Random</button>
-      <button class="sort-btn" data-sort="newest" onclick="setArchiveSort('newest')">Newest</button>
+      <button class="sort-btn" data-sort="random" onclick="setArchiveSort('random')">⤮ Random</button>
+      <button class="sort-btn active" data-sort="newest" onclick="setArchiveSort('newest')">Newest</button>
       <button class="sort-btn" data-sort="views" onclick="setArchiveSort('views')">Most Viewed</button>
       <button class="sort-btn" data-sort="likes" onclick="setArchiveSort('likes')">Most Liked</button>
     </div>
@@ -595,7 +595,7 @@ let galleryDecks = [];   // cached public decks
 let galleryAuthors = {}; // id → username
 let galleryAuthorAvatars = {}; // id → avatar url
 let galleryCommentCounts = {}; // deck_id → comment count
-let archiveSort = 'random'; // random | newest | views | likes  (fresh load = random)
+let archiveSort = 'newest'; // random | newest | views | likes  (fresh load = newest)
 let archiveView = 'card';   // card | details | text
 
 // Give each deck a stable random key so a shuffle survives filter keystrokes.
