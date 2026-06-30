@@ -363,6 +363,15 @@ NO blur/glow. Element symbols + moon are loaded as real PNGs from the site.
   `Foot Soldier (English)`, …) — those stay as normal cards. The fetch run logs the distinct promo
   qualifiers it detected (self-validating, since the parser is keyword-based). Currently **capture-only**:
   promos are stored + charted in history, not yet surfaced in the collection/deck UI (a follow-up).
+- **Headline (default) price selection — Beta-preferred, non-promo:** the name-keyed `prices`/`foils`
+  maps (what the whole site shows for deck value, imports, the Vault) are finalized by
+  `applyPrintingPreference()` in `fetch-prices.js` from the `bySet` data: **Beta first, then Alpha, then
+  the cheapest remaining non-promo set**; a `Promotional` printing is **never** the default. So a deck
+  import/value defaults to the cheaper, non-promo (Beta) printing, matching the Beta-preferred slug logic.
+  Alpha/promo prices stay available per-printing in `bySet`/`promos` for when a specific printing is
+  selected (the future per-printing Vault UI). Promo-**only** cards with no booster printing (e.g. the
+  draft sites Spire/Wasteland, Foot Soldier (Forest/Mountain/River)) keep their promo price as the only
+  option. Mirrors the same preference as the image slug logic.
 
 ## Open / future ideas
 - ✅ **Daily price-history capture — DONE.** `record-price-history.js` appends a snapshot to the

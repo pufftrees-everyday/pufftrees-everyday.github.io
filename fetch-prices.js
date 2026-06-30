@@ -86,6 +86,36 @@ function canonicalSet(setName) {
   return (setName || '').trim();
 }
 
+// Headline (default) price selection across a card's printings: Beta first,
+// then Alpha, then the cheapest of any remaining NON-PROMO set. A Promotional
+// printing is never the default — so a deck/import defaults to the cheaper,
+// non-promo (Beta) price. Alpha/promo prices stay available per-printing in
+// bySet/promos for when a specific printing is selected.
+const HEADLINE_SET_PREF = ['Beta', 'Alpha'];
+function preferredPrice(setMap, finish) {
+  if (!setMap) return null;
+  for (const s of HEADLINE_SET_PREF) {
+    if (setMap[s] && setMap[s][finish] != null) return setMap[s][finish];
+  }
+  let min = null;
+  for (const [s, fin] of Object.entries(setMap)) {
+    if (s === 'Promotional' || HEADLINE_SET_PREF.includes(s)) continue;
+    if (fin && fin[finish] != null && (min == null || fin[finish] < min)) min = fin[finish];
+  }
+  return min;
+}
+// Rewrite the name-keyed headline maps (cards/foils) from bySet using the
+// preference above. Names absent from bySet (e.g. empty set_name) or available
+// ONLY as a promo are left as the loop collected them, so nothing loses a price.
+function applyPrintingPreference(cards, foils, bySet) {
+  for (const [name, setMap] of Object.entries(bySet || {})) {
+    const std = preferredPrice(setMap, 'standard');
+    if (std != null) cards[name] = { market: std };
+    const fl = preferredPrice(setMap, 'foil');
+    if (fl != null) foils[name] = { market: fl };
+  }
+}
+
 async function fetchWithKey(url) {
   const res = await fetch(url, {
     headers: { 'x-api-key': API_KEY, 'Content-Type': 'application/json' }
@@ -288,6 +318,10 @@ async function fetchAllPrices() {
 function buildOutput(cards, foils, sealed, promos, bySet) {
   promos = promos || {};
   bySet = bySet || {};
+  // Finalize each card's headline price as Beta-preferred / non-promo (see
+  // applyPrintingPreference). Done here so both the normal and rate-limit save
+  // paths produce consistent defaults.
+  applyPrintingPreference(cards, foils, bySet);
   return {
     generated: new Date().toISOString(),
     source: 'JustTCG (justtcg.com)',
