@@ -1380,14 +1380,16 @@ function renderCards(cards, append = false) {
   grid.classList.toggle('list-view', rowsView);
   grid.classList.toggle('text-view', viewMode === 'list');
   grid.classList.toggle('large-view', viewMode === 'large');
+  // Rotate sites in the image grids (Card + Large), not the row views
+  const rotateSites = sitesOnly && (viewMode === 'grid' || viewMode === 'large');
   if (!append) {
     currentCards = cards;
     visibleCount = PAGE_SIZE;
-    grid.classList.toggle('sites-only', sitesOnly && viewMode === 'grid');
+    grid.classList.toggle('sites-only', rotateSites);
     if (!cards.length) { grid.innerHTML = '<div class="status" style="padding:40px 0">No cards match your search.</div>'; return; }
     grid.innerHTML = '';
   } else {
-    grid.classList.toggle('sites-only', sitesOnly && viewMode === 'grid');
+    grid.classList.toggle('sites-only', rotateSites);
   }
   const shown = currentCards.slice(append ? visibleCount - PAGE_SIZE : 0, visibleCount);
   const html = shown.map(card => viewMode === 'list' ? renderCardTextRow(card)
