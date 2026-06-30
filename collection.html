@@ -286,8 +286,9 @@
   .vault-toolbar-right { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
   /* Section statistics panel */
   .section-stats { margin-top: 18px; background: linear-gradient(180deg, rgba(37,35,56,0.5), rgba(17,16,24,0.5)); border: 1px solid var(--border-strong); border-radius: 8px; padding: 16px 18px; }
-  .ss-head { border-left: 3px solid var(--rune); padding-left: 10px; margin-bottom: 14px; }
+  .ss-head { border-left: 3px solid var(--rune); padding-left: 10px; margin-bottom: 14px; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
   .ss-title { font-family: 'Cinzel', serif; font-size: 0.95rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+  .ss-note { font-family: 'Crimson Pro', serif; font-size: 0.84rem; font-style: italic; color: var(--rune); }
   .ss-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; }
   .ss-stat { background: rgba(11,10,15,0.4); border: 1px solid var(--border); border-radius: 6px; padding: 12px 14px; text-align: center; }
   .ss-num { font-family: 'Cinzel', serif; font-size: 1.5rem; font-weight: 700; color: var(--gold); line-height: 1.1; }
@@ -2470,10 +2471,15 @@ function renderSectionStats(view) {
   const topSets = Object.entries(setCounts).sort((a,b) => b[1]-a[1]).slice(0, 5);
   const setsHtml = topSets.map(([s,n]) => `<span class="ss-pill">${setBadge ? setBadge(s) : s} <b>${n}</b></span>`).join('');
 
+  const headNote = view === 'vault'
+    ? 'Loose cards + binders + owned decks'
+    : view === 'all' ? 'Loose cards only — not yet in a binder' : '';
+
   panel.style.display = '';
   panel.innerHTML = `
     <div class="ss-head" style="border-color:${accent}">
       <span class="ss-title" style="color:${accent}">${sectionName} Stats</span>
+      ${headNote ? `<span class="ss-note">${headNote}</span>` : ''}
     </div>
     <div class="ss-grid">
       <div class="ss-stat"><div class="ss-num">${totalVal > 0 ? '$'+totalVal.toFixed(2) : '—'}</div><div class="ss-lbl">Total Value</div></div>
