@@ -160,6 +160,8 @@
   .section-switcher .view-btn { padding: 7px 16px; font-size: 0.68rem; }
   /* Card Search active = neutral arcane */
   #sec-search.active { background: var(--rune); color: #fff; }
+  /* My Vault active = shimmer (the home/overview tab) */
+  #sec-vault.active { background: var(--shimmer); color: #1a1410; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.25), 0 0 12px rgba(201,191,238,0.45); }
   /* Collection active = sage */
   #sec-collection.active { background: var(--sage); color: #fff; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.15), 0 0 12px rgba(90,138,106,0.4); }
   /* Trades & Wants active = arcane purple */
@@ -928,7 +930,8 @@
       <div class="cstat want-stat">Want: <b id="stat-want">0</b><span id="stat-want-value" style="color:var(--ember);font-size:0.78rem;"></span></div>
     </div>
     <div class="view-toggle section-switcher">
-      <button class="view-btn active" id="sec-search" onclick="setView('search')">Card Search</button>
+      <button class="view-btn" id="sec-search" onclick="setView('search')">Card Search</button>
+      <button class="view-btn active" id="sec-vault" onclick="setView('vault')">My Vault</button>
       <button class="view-btn" id="sec-collection" onclick="setView('all')">Loose Cards</button>
       <button class="view-btn" id="sec-tw" onclick="openTradesWants()">Trades &amp; Wants</button>
       <button class="view-btn" id="sec-binders" onclick="setView('binders')">Binders</button>
@@ -1224,7 +1227,7 @@ let ALL_SETS = [];
 let currentCards = [];
 let visibleCount = 200;
 const PAGE_SIZE = 200;
-let currentView = 'search'; // search (Card Search, all cards) | all (Collection, owned) | want | trade | have | missing
+let currentView = 'search'; // search | vault (My Vault overview) | all (Loose Cards) | want | trade | binders | decks | have | missing
 let viewMode = localStorage.getItem('grimoire_vault_view_mode') || 'list'; // list | grid | large — default text view to distinguish the Vault from the card explorer
 
 const activeFilters = { type: new Set(), set: new Set(), rarity: new Set(), element: new Set() };
@@ -1331,7 +1334,7 @@ const MASTER_COUNTS = { Unique: 1, Elite: 2, Exceptional: 3, Ordinary: 4 };
 function renderBinders() {
   const panel = document.getElementById('binders-panel');
   if (!panel) return;
-  if (currentView !== 'binders') { panel.style.display = 'none'; panel.innerHTML = ''; return; }
+  if (currentView !== 'binders' && currentView !== 'vault') { panel.style.display = 'none'; panel.innerHTML = ''; return; }
   panel.style.display = '';
   panel.innerHTML = renderBinderSection('vault')
     + '<div style="height:22px"></div>'
@@ -1494,7 +1497,7 @@ function looseCardStats() {
 function renderLoosePrompt() {
   const el = document.getElementById('loose-prompt');
   if (!el) return;
-  if (currentView !== 'all') { el.style.display = 'none'; el.innerHTML = ''; return; }
+  if (currentView !== 'all' && currentView !== 'vault') { el.style.display = 'none'; el.innerHTML = ''; return; }
   const c = looseCardStats();
   if (!c.total) { el.style.display = 'none'; el.innerHTML = ''; return; }
   const vbinders = bindersFor('vault');
@@ -1532,7 +1535,7 @@ function moveLooseToBinder(binderId) {
   binderUI.collapsed[b.id] = false;     // open the binder so it's expanded when viewed
   sectionCollapsed.vaultBinders = false; // make sure the binders section is expanded
   updateStats(); renderBinders(); renderLoosePrompt(); filterCards();
-  toast(`Moved ${moved} card${moved === 1 ? '' : 's'} into “${b.name}” — see the Binders tab`);
+  toast(`Moved ${moved} card${moved === 1 ? '' : 's'} into “${b.name}”`);
 }
 // No binders yet → make one, then move the loose cards into it.
 function createBinderForLoose() {
@@ -1961,8 +1964,8 @@ async function loadCards() {
     } catch(e) { /* prices.json not found, that's fine */ }
 
     updateStats();
-    // Land on the Vault tab by default (once cards are ready so binder datalists build).
-    if (!_initialViewSet) { _initialViewSet = true; setView('all'); }
+    // Land on the My Vault overview by default (once cards are ready so binder datalists build).
+    if (!_initialViewSet) { _initialViewSet = true; setView('vault'); }
     else filterCards();
   } catch(e) {
     document.getElementById('card-grid').innerHTML = `<div class="status">Could not load cards.json.<br><small>${e.message}</small></div>`;
@@ -2160,7 +2163,7 @@ function emptyStateMessage() {
     want:  { icon: '🔍', title: 'Your Wants list is empty', body: 'In <b>Card Search</b>, tap <span style="color:var(--ember)">♡ Want</span> on cards you’re hunting for and they’ll appear here.' },
     trade: { icon: '⇄', title: 'Your Trades are empty', body: 'Tap <span style="color:var(--arcane)">⇄ Trade</span> on a card in <b>Card Search</b> or your <b>Loose Cards</b> to list it for trade. Trading an owned card moves it here.' },
   };
-  const m = msgs[currentView];
+  const m = msgs[currentView === 'vault' ? 'all' : currentView];
   if (!m) return '<div class="status" style="padding:48px 0">No cards to show.</div>';
   return `<div class="vault-empty">
     <div class="vault-empty-icon">${m.icon}</div>
@@ -2380,7 +2383,7 @@ function setView(view) {
   if (view === 'trade' || view === 'want') lastTW = view;
   document.querySelectorAll('.section-switcher .view-btn').forEach(b => b.classList.remove('active'));
   // 'trade'/'want' both light up the combined Trades & Wants tab
-  const idMap = { search: 'sec-search', all: 'sec-collection', want: 'sec-tw', trade: 'sec-tw', binders: 'sec-binders', decks: 'sec-decks' };
+  const idMap = { search: 'sec-search', vault: 'sec-vault', all: 'sec-collection', want: 'sec-tw', trade: 'sec-tw', binders: 'sec-binders', decks: 'sec-decks' };
   const btn = document.getElementById(idMap[view]);
   if (btn) btn.classList.add('active');
   // Update export button label to match the section
@@ -2388,15 +2391,16 @@ function setView(view) {
   if (exportLabel) {
     exportLabel.textContent = view === 'want' ? '⬇ Export Wants' : view === 'trade' ? '⬇ Export Trades' : '⬇ Export Loose Cards';
   }
-  // Sections with a card grid + stats panel (owned / trades / wants)
-  const inVaultSection = (view === 'all' || view === 'trade' || view === 'want');
+  // Sections with a card grid + stats panel (My Vault / Loose Cards / trades / wants)
+  const inVaultSection = (view === 'vault' || view === 'all' || view === 'trade' || view === 'want');
   document.body.classList.toggle('in-vault-section', inVaultSection);
   // Owned Decks + Binders tabs swap the card browser out for their own panels
   const inDecks = (view === 'decks');
   const inBinders = (view === 'binders');
   document.body.classList.toggle('in-decks-section', inDecks);
   document.body.classList.toggle('in-binders-section', inBinders);
-  document.body.classList.toggle('in-vault-tab', view === 'all');
+  // My Vault + Loose Cards hide the card filters (they list owned cards, not browse)
+  document.body.classList.toggle('in-vault-tab', view === 'vault' || view === 'all');
   // Trades & Wants sub-toggle
   const twToggle = document.getElementById('tw-subtoggle');
   if (twToggle) {
@@ -2404,21 +2408,21 @@ function setView(view) {
     twToggle.style.display = showTW ? '' : 'none';
     if (showTW) renderTWSubToggle();
   }
-  // Owned decks show under the Loose Cards tab (below the prompt) and on their own tab
+  // Owned decks live on the My Vault overview and on their own tab (not Loose Cards)
   const odPanel = document.getElementById('owned-decks-panel');
-  const showOwned = (view === 'all' || view === 'decks');
+  const showOwned = (view === 'vault' || view === 'decks');
   if (odPanel) odPanel.style.display = showOwned ? '' : 'none';
   if (showOwned) renderOwnedDecks();
   if (inDecks) return; // dedicated tab: nothing else to render
-  // The Loose Cards tab hides the filters, so make sure none silently apply there.
-  if (view === 'all' && anyCardFilterActive()) clearCardFilters();
+  // The My Vault / Loose Cards tabs hide the filters, so make sure none silently apply there.
+  if ((view === 'vault' || view === 'all') && anyCardFilterActive()) clearCardFilters();
   renderSectionStats(view);
-  renderBinders();
-  renderLoosePrompt();
-  // Value-over-time lives on the Loose Cards tab (it covers the whole collection).
+  renderBinders();        // binders show on the Binders tab AND the My Vault overview
+  renderLoosePrompt();    // loose-card nudge on My Vault + Loose Cards
+  // Value-over-time lives on the My Vault overview (it covers the whole collection).
   const vhPanel = document.getElementById('value-history-panel');
   if (vhPanel) {
-    if (view === 'all') { vhPanel.style.display = ''; if (vhState.open) vhRender(); }
+    if (view === 'vault') { vhPanel.style.display = ''; if (vhState.open) vhRender(); }
     else vhPanel.style.display = 'none';
   }
   if (inBinders) return; // binders tab: no card grid to populate
@@ -2445,9 +2449,10 @@ function renderSectionStats(view) {
     const els = ((c && c.element) || '').split(',').map(s => s.trim()).filter(Boolean);
     els.forEach(el => { elemCounts[el] = (elemCounts[el] || 0) + std + foil; });
   };
-  if (view === 'all') {
-    // Vault Stats = loose cards + vault binders + owned decks (the whole hoard).
-    const { std, foil } = vaultQtyMaps();
+  if (view === 'vault' || view === 'all') {
+    // My Vault = the whole hoard (loose + vault binders + owned decks);
+    // Loose Cards = just the loose (have) cards.
+    const { std, foil } = (view === 'vault') ? vaultQtyMaps() : looseQtyMaps();
     new Set([...Object.keys(std), ...Object.keys(foil)]).forEach(n => tally(n, std[n] || 0, foil[n] || 0));
   } else {
     const flag = view === 'want' ? 'want' : 'trade';
@@ -2456,7 +2461,7 @@ function renderSectionStats(view) {
   }
   const totalCards = stdCount + foilCount;
 
-  const sectionName = view === 'want' ? 'Wants' : view === 'trade' ? 'Trades' : 'Vault';
+  const sectionName = view === 'want' ? 'Wants' : view === 'trade' ? 'Trades' : view === 'all' ? 'Loose Cards' : 'Vault';
   const accent = view === 'want' ? 'var(--ember)' : view === 'trade' ? 'var(--arcane)' : 'var(--sage)';
 
   if (totalCards === 0) { panel.style.display = 'none'; panel.innerHTML = ''; return; }
@@ -2772,6 +2777,7 @@ function filterCards() {
     // 'search' = browse everything (no ownership filter)
     // 'all' = Collection tab → only cards you own (have > 0)
     if (currentView === 'all' && !(col[c.id]?.[hf] > 0)) return false;
+    if (currentView === 'vault' && !(col[c.id]?.[hf] > 0)) return false;
     if (currentView === 'have' && !(col[c.id]?.[hf] > 0)) return false;
     if (currentView === 'want' && !(col[c.id]?.[wf] > 0)) return false;
     if (currentView === 'trade' && !(col[c.id]?.[tf] > 0)) return false;
@@ -2998,7 +3004,7 @@ function ensureWorkshopDecks() {
   CR.fetchCloudDecks().then(d => {
     workshopDecks = d || [];
     workshopDecksLoading = false;
-    if (currentView === 'all' || currentView === 'decks') renderOwnedDecks();
+    if (currentView === 'vault' || currentView === 'decks') renderOwnedDecks();
   }).catch(() => { workshopDecks = []; workshopDecksLoading = false; });
 }
 
@@ -3360,7 +3366,7 @@ async function handleAuthChange(kind) {
     // logged out → revert to local
     collectionCache = getLocalCollection();
     updateStats(); renderBinders(); filterCards();
-    if (currentView === 'all' || currentView === 'decks') renderOwnedDecks();
+    if (currentView === 'vault' || currentView === 'decks') renderOwnedDecks();
   }
 }
 
@@ -3380,7 +3386,7 @@ async function hydrateCollection() {
   }
   ensureDefaultBinder();
   updateStats(); renderBinders(); filterCards();
-  if (currentView === 'all' || currentView === 'decks') renderOwnedDecks();
+  if (currentView === 'vault' || currentView === 'decks') renderOwnedDecks();
 }
 
 // On first login, offer to push local collection to the cloud (local wins)
