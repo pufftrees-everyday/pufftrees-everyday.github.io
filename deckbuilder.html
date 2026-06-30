@@ -364,7 +364,7 @@
   }
   .card-list-grid.list-view.sites-only { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .db-card-row {
-    display: grid; grid-template-columns: auto 1fr auto auto auto auto auto;
+    display: grid; grid-template-columns: auto 1fr auto auto auto auto auto auto;
     align-items: center; gap: 8px;
     background: #13111e; border: 1px solid var(--border);
     border-left: 3px solid var(--border-strong);
@@ -375,6 +375,7 @@
   .db-row-name { font-family: 'Crimson Pro', serif; font-size: 0.92rem; color: var(--parchment); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
   .db-row-meta { font-size: 0.68rem; color:var(--rune); white-space: nowrap; }
   .db-row-meta.set { color: var(--shimmer); }
+  .db-row-th { display: inline-flex; gap: 4px; align-items: center; white-space: nowrap; }
   /* Mana cost pip (shared style) */
   .cr-mana {
     display: inline-flex; align-items: center; justify-content: center;
@@ -2118,6 +2119,20 @@ function thIcons(thresholds) {
   });
   return h;
 }
+// Threshold pips for a card row. Sites *provide* elements rather than requiring
+// thresholds, so when a Site has no threshold map fall back to the elements it
+// supplies (one pip each) — otherwise its row would show no symbols at all.
+function rowThIcons(card) {
+  const hasTh = card.thresholds && TH_ELS.some(el => (card.thresholds[el] || 0) > 0);
+  if (hasTh) return thIcons(card.thresholds);
+  if (card.type === 'Site' && card.element) {
+    const t = {};
+    card.element.split(',').map(s => s.trim().toLowerCase()).filter(Boolean)
+      .forEach(el => { if (TH_IMG[el]) t[el] = (t[el] || 0) + 1; });
+    return thIcons(t);
+  }
+  return '';
+}
 // Clean Text row: mana cost · quick +/- in-deck count · name · threshold symbols
 function renderDbCardTextRow(card) {
   const inDeck = getDeckCountForCard(card.id);
@@ -2145,6 +2160,7 @@ function renderDbCardRow(card) {
     <span class="db-row-meta set db-set">${setBadge(card.set)}</span>
     <span class="db-row-rarity ${rarityClass}">${rarityAbbr(rarity)}</span>
     <span class="db-row-meta db-type">${card.type || ''}</span>
+    <span class="db-row-th">${rowThIcons(card)}</span>
     <span class="db-row-indeck">${inDeck > 0 ? '×'+inDeck : ''}</span>
     <button class="db-row-add" onclick="event.stopPropagation();quickAddToDeck('${escId(card.id)}')">+ Add</button>
   </div>`;
