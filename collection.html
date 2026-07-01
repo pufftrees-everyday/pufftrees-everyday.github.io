@@ -2052,23 +2052,23 @@ function activePrinting(card) {
   if (!activeFilters.set.size || !card || !card.printings) return null;
   return card.printings.find(p => activeFilters.set.has(p.set)) || null;
 }
-// Price for a card in a specific set + finish (bySet), falling back to headline.
-// For the Promotional set, special printings are keyed by qualifier in the promos
-// bucket (not bySet), so fall back to the cheapest promo price before headline —
-// that way filtering Promotional shows the actual promo printing's price.
+// Price for the EXACT printing (set) + finish selected. Returns null when that
+// specific printing+finish has no price — we deliberately do NOT fall back to a
+// cheaper/other printing (or the headline), so the price always matches the art
+// and version shown; if it isn't available we show no price at all.
 function setPrice(name, setName, foil) {
+  const fin = foil ? 'foil' : 'standard';
   const bs = priceBySet[name] && priceBySet[name][setName];
-  if (bs) { const v = foil ? bs.foil : bs.standard; if (v != null) return v; }
+  if (bs && bs[fin] != null) return bs[fin];
+  // The Promotional printing's price often lives in the promos bucket (keyed by
+  // qualifier) rather than bySet. Use it only when there's a single qualifier, so
+  // the price still unambiguously matches the one promo printing being shown.
   if (/promo/i.test(setName)) {
     const byQual = pricePromos[name];
-    if (byQual) {
-      let min = null;
-      for (const q of Object.values(byQual)) { const v = foil ? q.foil : q.standard; if (v != null && (min == null || v < min)) min = v; }
-      if (min != null) return min;
-    }
+    const quals = byQual ? Object.keys(byQual) : [];
+    if (quals.length === 1 && byQual[quals[0]][fin] != null) return byQual[quals[0]][fin];
   }
-  const hp = (foil ? foilPrices[name] : prices[name]);
-  return hp && hp.market != null ? hp.market : null;
+  return null; // no price for this exact printing + finish → show nothing
 }
 // Displayed price honoring the active browse printing (promo-aware in Card Search).
 function displayPrice(card, foil) {

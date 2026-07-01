@@ -362,11 +362,14 @@ NO blur/glow. Element symbols + moon are loaded as real PNGs from the site.
   does **not** match the few real card names whose parenthetical is part of the name (`Frog (Blue)`,
   `Foot Soldier (English)`, …) — those stay as normal cards. The fetch run logs the distinct promo
   qualifiers it detected (self-validating, since the parser is keyword-based). **Surfaced in the UI:**
-  when the **Vault Card Search** has the **Promotional** set filter active, each card's price + art
-  switch to the promo printing (`collection.html` `activePrinting`/`setPrice`/`displayPrice`/`displayArt`,
-  gated to `currentView==='search'`); `setPrice` reads `bySet[name]["Promotional"]` and falls back to the
-  cheapest `promos[name]` qualifier. Any other Set filter (Alpha/Beta/…) likewise shows that printing's
-  `bySet` price. Everywhere else — the Vault/Trades/Wants lists, binders, owned decks and all value
+  when the **Vault Card Search** has a Set filter active, each card's price + art + set label switch to
+  that exact printing (`collection.html` `activePrinting`/`setPrice`/`displayPrice`/`displayArt`, gated to
+  `currentView==='search'`). `setPrice(name,set,foil)` returns **only the exact printing+finish price** —
+  `bySet[name][set][finish]`, or for the Promotional set the `promos[name]` price when there's a single
+  qualifier — and returns **null (no price shown) if that exact printing+finish isn't priced**. It never
+  falls back to a cheaper printing or the headline, so the displayed price always matches the art/version
+  (e.g. Sorcerer Promotional std $36.03 / foil $139.69; a promo with only a foil price shows nothing in
+  standard mode). Everywhere else — the Vault/Trades/Wants lists, binders, owned decks and all value
   totals — stays on the headline (Beta/Gothic) price. index.html already swaps promo **art** on the same
   filter (it shows no prices). Deck value (deck.html/deckbuilder.html) uses the non-promo headline.
 - **Headline (default) price selection — Beta-preferred, non-promo:** the name-keyed `prices`/`foils`
