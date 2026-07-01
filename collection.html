@@ -1507,12 +1507,17 @@ function renderLoosePrompt() {
   const c = looseCardStats();
   if (!c.total) { el.style.display = 'none'; el.innerHTML = ''; return; }
   const vbinders = bindersFor('vault');
-  const opts = vbinders.map(b => `<option value="${b.id}">${bEsc(b.name)}${binderCardCount(b) ? ` (${binderCardCount(b)})` : ''}</option>`).join('');
+  const tbinders = bindersFor('trade');
+  const opt = b => `<option value="${b.id}">${bEsc(b.name)}${binderCardCount(b) ? ` (${binderCardCount(b)})` : ''}</option>`;
+  let opts = '';
+  if (vbinders.length) opts += `<optgroup label="Vault Binders">${vbinders.map(opt).join('')}</optgroup>`;
+  if (tbinders.length) opts += `<optgroup label="Trade Binders">${tbinders.map(opt).join('')}</optgroup>`;
+  const anyBinder = vbinders.length || tbinders.length;
   el.style.display = '';
   el.innerHTML = `
     <div class="loose-prompt-text">💡 You have <b>${c.total} loose card${c.total === 1 ? '' : 's'}</b>${c.val > 0 ? ` <span class="lp-val">$${c.val.toFixed(2)}</span>` : ''} not yet in a binder. Tuck them into one to keep your Vault organized.</div>
     <div class="loose-prompt-actions">
-      ${vbinders.length
+      ${anyBinder
         ? `<select id="loose-target" class="loose-select">${opts}</select><button class="btn btn-primary" onclick="moveLooseToBinder()">Move all to binder</button>`
         : `<button class="btn btn-primary" onclick="createBinderForLoose()">Create a binder</button>`}
     </div>`;
@@ -1539,7 +1544,8 @@ function moveLooseToBinder(binderId) {
   if (!moved) { toast('No loose cards to move'); return; }
   saveCollection(col); // binders live inside the collection object, so this persists them
   binderUI.collapsed[b.id] = false;     // open the binder so it's expanded when viewed
-  sectionCollapsed.vaultBinders = false; // make sure the binders section is expanded
+  // Expand whichever section the target binder lives in
+  sectionCollapsed[b.parent === 'trade' ? 'tradeBinders' : 'vaultBinders'] = false;
   updateStats(); renderBinders(); renderLoosePrompt(); filterCards();
   toast(`Moved ${moved} card${moved === 1 ? '' : 's'} into “${b.name}”`);
 }
