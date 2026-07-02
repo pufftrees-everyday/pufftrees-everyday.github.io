@@ -658,6 +658,15 @@
   /* DECK SIDE — LIST VIEW */
   .deck-card-list { display: flex; flex-direction: column; gap: 3px; }
   .sub-section-cards.list-mode { display: flex; flex-direction: column; gap: 3px; }
+  /* DECK SIDE — TEXT VIEW: flow rows into as many columns as fit so the whole
+     deck is visible at a glance. Scoped to compact-mode (Text only); Detailed
+     view (list-mode without compact-mode) stays a single column. */
+  .deck-card-list.compact-mode,
+  .sub-section-cards.list-mode.compact-mode {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 3px 8px;
+  }
   .deck-card-row {
     display: grid; grid-template-columns: auto 1fr auto auto auto;
     align-items: center; gap: 8px;
