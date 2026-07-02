@@ -1063,6 +1063,7 @@
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="cr-auth.js?v=14"></script>
+<script src="invoke.js?v=1"></script>
 </head>
 <body>
 
@@ -1140,7 +1141,7 @@
       <div class="explorer-search-top">
         <div class="search-input-wrap" style="flex:1">
           <svg viewBox="0 0 20 20"><path d="M12.9 14.32a8 8 0 111.41-1.41l4.42 4.41-1.41 1.42-4.42-4.42zM8 14A6 6 0 108 2a6 6 0 000 12z"/></svg>
-          <input type="text" id="search-input" placeholder="Search cards…" autocomplete="off">
+          <input type="text" id="search-input" placeholder="Search names & text — try banish, o:conjure, e:water pow>=4…" autocomplete="off">
         </div>
         <div class="viewmode-wrap">
           <span class="viewmode-label">Change View</span>
@@ -1993,14 +1994,16 @@ function updateAdvDot() {
 }
 
 function filterCards() {
-  const q = document.getElementById('search-input').value.toLowerCase();
+  // The explorer search box understands Invoke syntax (e:water, o:banish, pow>=4…);
+  // a bare word searches name + rules text + subtypes + type. Parsed once per call.
+  const searchAst = window.Invoke ? window.Invoke.parse(document.getElementById('search-input').value) : null;
   const costMin = document.getElementById('cost-min')?.value !== '' ? parseInt(document.getElementById('cost-min').value) : null;
   const costMax = document.getElementById('cost-max')?.value !== '' ? parseInt(document.getElementById('cost-max').value) : null;
   const powMin = document.getElementById('power-min')?.value !== '' ? parseInt(document.getElementById('power-min').value) : null;
   const powMax = document.getElementById('power-max')?.value !== '' ? parseInt(document.getElementById('power-max').value) : null;
 
   const filtered = allCards.filter(c => {
-    if (q && !c.name.toLowerCase().includes(q)) return false;
+    if (searchAst && !window.Invoke.match(c, searchAst)) return false;
     if (activeFilters.type.size && !activeFilters.type.has(c.type)) return false;
     if (activeFilters.set.size && !activeFilters.set.has(c.set)) return false;
     if (activeFilters.rarity.size && !activeFilters.rarity.has(c.rarity)) return false;

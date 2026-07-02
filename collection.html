@@ -869,6 +869,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="cr-auth.js?v=14"></script>
 <script src="price-chart.js?v=2"></script>
+<script src="invoke.js?v=1"></script>
 </head>
 <body>
 
@@ -969,7 +970,7 @@
     <div class="search-row">
       <div class="search-input-wrap">
         <svg viewBox="0 0 20 20"><path d="M12.9 14.32a8 8 0 111.41-1.41l4.42 4.41-1.41 1.42-4.42-4.42zM8 14A6 6 0 108 2a6 6 0 000 12z"/></svg>
-        <input type="text" id="search-input" placeholder="Search cards…" autocomplete="off">
+        <input type="text" id="search-input" placeholder="Search names & text — try banish, o:conjure, e:water pow>=4…" autocomplete="off">
       </div>
       <button class="clear-all-btn" onclick="clearAllFilters()">✕ Clear</button>
     </div>
@@ -2926,7 +2927,9 @@ function updateSummary() {
 }
 
 function filterCards() {
-  const q = document.getElementById('search-input').value.toLowerCase();
+  // The card search box understands Invoke syntax (e:water, o:banish, pow>=4…);
+  // a bare word searches name + rules text + subtypes + type. Parsed once per call.
+  const searchAst = window.Invoke ? window.Invoke.parse(document.getElementById('search-input').value) : null;
   const costMin = document.getElementById('cost-min')?.value !== '' ? parseInt(document.getElementById('cost-min').value) : null;
   const costMax = document.getElementById('cost-max')?.value !== '' ? parseInt(document.getElementById('cost-max').value) : null;
   const powMin = document.getElementById('power-min')?.value !== '' ? parseInt(document.getElementById('power-min').value) : null;
@@ -2946,8 +2949,8 @@ function filterCards() {
     if (currentView === 'want' && !(col[c.id]?.[wf] > 0)) return false;
     if (currentView === 'trade' && !(col[c.id]?.[tf] > 0)) return false;
     if (currentView === 'missing' && col[c.id]?.[hf] > 0) return false;
-    // Search
-    if (q && !c.name.toLowerCase().includes(q)) return false;
+    // Search (Invoke syntax + bare-word name/text search)
+    if (searchAst && !window.Invoke.match(c, searchAst)) return false;
     // Basic filters
     if (activeFilters.type.size && !activeFilters.type.has(c.type)) return false;
     // Match against every set the card is printed in (setNames), not just the

@@ -849,6 +849,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="cr-auth.js?v=14"></script>
 <script src="price-chart.js?v=2"></script>
+<script src="invoke.js?v=1"></script>
 </head>
 <body>
 
@@ -915,7 +916,7 @@
       <div class="search-row">
         <div class="search-input-wrap">
           <svg viewBox="0 0 20 20"><path d="M12.9 14.32a8 8 0 111.41-1.41l4.42 4.41-1.41 1.42-4.42-4.42zM8 14A6 6 0 108 2a6 6 0 000 12z"/></svg>
-          <input type="text" id="search-input" placeholder="Search cards…" autocomplete="off">
+          <input type="text" id="search-input" placeholder="Search names & text — try banish, o:conjure, e:water pow>=4…" autocomplete="off">
         </div>
         <button class="invoke-btn" onclick="openInvoke()" title="Advanced search syntax">Invoke</button>
         <button class="clear-all-btn" onclick="clearAllFilters()">✕ Clear all</button>
@@ -1176,7 +1177,7 @@
       <div class="invoke-title">Invoke — Advanced Search</div>
       <button class="invoke-x" onclick="closeInvoke()">✕</button>
     </div>
-    <p class="invoke-intro">Conjure precise queries with a powerful search syntax. Combine terms freely — they all must match unless you use <b>OR</b>.</p>
+    <p class="invoke-intro">Conjure precise queries with a powerful search syntax — it works right in the search box too, no need to open this. A <b>bare word</b> searches names <b>and</b> rules text (e.g. <b>banish</b>, <b>conjure</b>); combine terms freely — they all must match unless you use <b>OR</b>.</p>
     <div class="invoke-input-row">
       <input type="text" id="invoke-input" placeholder="e.g.  e:water c>=2 c<4 water>=1 t:magic" autocomplete="off" spellcheck="false"
         onkeydown="if(event.key==='Enter')runInvoke()">
@@ -1667,156 +1668,21 @@ function updateSummary() {
 
 // FILTER
 // ════════════════════════════════════════════════════════════
-//  INVOKE — advanced search query engine
+//  INVOKE — advanced search query engine (shared: invoke.js → window.Invoke)
+//  The engine now also powers the normal search box (see filterCards):
+//  bare words search name + rules text + subtypes + type, and the full
+//  field syntax (e:water, o:banish, pow>=4, …) works right in the box.
 // ════════════════════════════════════════════════════════════
-let invokeQuery = null; // parsed AST (array of OR-groups) or null when inactive
-
-// Field aliases → canonical
-const INVOKE_FIELDS = {
-  e: 'element', element: 'element', color: 'element',
-  t: 'type', type: 'type',
-  sub: 'subtype', subtype: 'subtype',
-  c: 'cost', cost: 'cost', cmc: 'cost', mv: 'cost',
-  pow: 'attack', power: 'attack', atk: 'attack', attack: 'attack',
-  def: 'defence', defence: 'defence', defense: 'defence', tou: 'defence', toughness: 'defence',
-  life: 'life',
-  r: 'rarity', rarity: 'rarity',
-  s: 'set', set: 'set', e_set: 'set',
-  o: 'text', text: 'text', oracle: 'text', rules: 'text',
-  a: 'artist', artist: 'artist', art: 'artist', illus: 'artist', illustrator: 'artist',
-  // thresholds
-  water: 'th_water', wt: 'th_water',
-  fire: 'th_fire', ft: 'th_fire',
-  earth: 'th_earth', et: 'th_earth',
-  air: 'th_air', at: 'th_air',
-};
-const INVOKE_NUMERIC = new Set(['cost','attack','defence','life','th_water','th_fire','th_earth','th_air']);
-
-// Tokenize: split on spaces but keep quoted strings together
-function invokeTokenize(str) {
-  const tokens = []; let i = 0;
-  while (i < str.length) {
-    while (i < str.length && str[i] === ' ') i++;
-    if (i >= str.length) break;
-    let tok = ''; let inQuote = false;
-    // capture leading -, field:, operator, then value (which may be quoted)
-    while (i < str.length && (str[i] !== ' ' || inQuote)) {
-      const ch = str[i];
-      if (ch === '"') { inQuote = !inQuote; i++; continue; }
-      tok += ch; i++;
-    }
-    if (tok) tokens.push(tok);
-  }
-  return tokens;
-}
-
-// Parse one token into a predicate object
-function invokeParseToken(raw) {
-  let negate = false;
-  let tok = raw;
-  if (tok.startsWith('-')) { negate = true; tok = tok.slice(1); }
-
-  // find field + operator
-  const m = tok.match(/^([a-z_]+)\s*(>=|<=|!=|=|:|>|<)\s*(.*)$/i);
-  if (!m) {
-    // bare word → name contains
-    return { field: 'name', op: ':', value: tok.toLowerCase(), negate };
-  }
-  const rawField = m[1].toLowerCase();
-  let op = m[2];
-  const value = m[3];
-  const field = INVOKE_FIELDS[rawField];
-  if (!field) {
-    // unknown field → treat whole thing as a name search
-    return { field: 'name', op: ':', value: tok.toLowerCase(), negate };
-  }
-  if (op === ':') op = (INVOKE_NUMERIC.has(field)) ? '=' : ':';
-  return { field, op, value: value.toLowerCase(), negate };
-}
-
-// Parse full query string into OR-groups of AND-predicates
-function invokeParse(str) {
-  const tokens = invokeTokenize(str.trim());
-  if (!tokens.length) return null;
-  const orGroups = [[]];
-  for (const t of tokens) {
-    if (t.toLowerCase() === 'or') { orGroups.push([]); continue; }
-    if (t.toLowerCase() === 'and') continue; // implicit
-    orGroups[orGroups.length - 1].push(invokeParseToken(t));
-  }
-  return orGroups.filter(g => g.length);
-}
-
-function invokeCardValue(card, field) {
-  switch (field) {
-    case 'name': return (card.name || '').toLowerCase();
-    case 'element': return (card.element || '').toLowerCase();
-    case 'type': return (card.type || '').toLowerCase();
-    case 'subtype': return (card.subTypes || '').toLowerCase();
-    case 'rarity': return (card.rarity || '').toLowerCase();
-    case 'set': return (card.set || '').toLowerCase();
-    case 'artist': return (card.artist || '').toLowerCase();
-    case 'text': return (card.rules_text || '').toLowerCase();
-    case 'cost': return card.cost;
-    case 'attack': return card.attack;
-    case 'defence': return card.defence;
-    case 'life': return card.life;
-    case 'th_water': return (card.thresholds || {}).water || 0;
-    case 'th_fire': return (card.thresholds || {}).fire || 0;
-    case 'th_earth': return (card.thresholds || {}).earth || 0;
-    case 'th_air': return (card.thresholds || {}).air || 0;
-    default: return null;
-  }
-}
-
-function invokeMatchPredicate(card, pred) {
-  const cv = invokeCardValue(card, pred.field);
-  let result;
-  if (INVOKE_NUMERIC.has(pred.field)) {
-    if (pred.value === 'x') {
-      // Variable cost/stat: match cards whose value is literally "X"
-      result = ((cv == null ? '' : String(cv)).trim().toLowerCase() === 'x');
-    } else {
-      const target = parseFloat(pred.value);
-      const num = (cv == null ? null : Number(cv));
-      if (isNaN(target)) result = false;
-      else if (num == null) result = false;
-      else switch (pred.op) {
-        case '>': result = num > target; break;
-        case '<': result = num < target; break;
-        case '>=': result = num >= target; break;
-        case '<=': result = num <= target; break;
-        case '!=': result = num !== target; break;
-        default: result = num === target;
-      }
-    }
-  } else {
-    const text = cv || '';
-    if (pred.field === 'element' && pred.value.includes(',')) {
-      // comma = OR list for elements
-      const opts = pred.value.split(',').map(s => s.trim()).filter(Boolean);
-      result = opts.some(o => text.includes(o));
-    } else if (pred.op === '=') {
-      result = text === pred.value;
-    } else {
-      result = text.includes(pred.value);
-    }
-  }
-  return pred.negate ? !result : result;
-}
-
-function invokeMatch(card, ast) {
-  // ast = array of OR-groups; each group = AND of predicates
-  return ast.some(group => group.every(p => invokeMatchPredicate(card, p)));
-}
+let invokeQuery = null; // parsed AST from the Invoke modal (ANDed with the box)
 
 // ── Modal controls ──
 function openInvoke() {
   const ov = document.getElementById('invoke-overlay');
   const input = document.getElementById('invoke-input');
   document.getElementById('invoke-error').textContent = '';
-  // Pre-fill with the active query if editing
-  if (invokeQueryRaw) input.value = invokeQueryRaw;
+  // Pre-fill with whatever is already in the search box (the box is the query now)
+  const si = document.getElementById('search-input');
+  input.value = (si && si.value) || invokeQueryRaw || '';
   ov.classList.add('open');
   const isTouch = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
   if (!isTouch) setTimeout(() => input.focus(), 80);
@@ -1828,44 +1694,36 @@ function useInvokeExample(btn) {
 }
 let invokeQueryRaw = '';
 function runInvoke() {
+  // The modal is now a query builder — it just fills the search box, which
+  // understands Invoke syntax directly.
   const raw = document.getElementById('invoke-input').value.trim();
-  const errEl = document.getElementById('invoke-error');
-  if (!raw) { clearInvoke(); closeInvoke(); return; }
-  try {
-    const ast = invokeParse(raw);
-    if (!ast || !ast.length) { clearInvoke(); closeInvoke(); return; }
-    invokeQuery = ast;
-    invokeQueryRaw = raw;
-    // Reflect in the active bar
-    document.getElementById('invoke-active-query').textContent = raw;
-    document.getElementById('invoke-active-bar').style.display = '';
-    // Clear the plain search box so they don't fight
-    const si = document.getElementById('search-input'); if (si) si.value = '';
-    errEl.textContent = '';
-    closeInvoke();
-    filterCards();
-  } catch (e) {
-    errEl.textContent = 'Could not parse that query. Check the syntax above.';
-  }
+  const si = document.getElementById('search-input');
+  if (si) si.value = raw;
+  document.getElementById('invoke-error').textContent = '';
+  closeInvoke();
+  filterCards();
 }
 function clearInvoke() {
   invokeQuery = null; invokeQueryRaw = '';
-  document.getElementById('invoke-active-bar').style.display = 'none';
+  const iab = document.getElementById('invoke-active-bar'); if (iab) iab.style.display = 'none';
   document.getElementById('invoke-input').value = '';
+  const si = document.getElementById('search-input'); if (si) si.value = '';
   filterCards();
 }
 
 function filterCards() {
-  const q = document.getElementById('search-input').value.toLowerCase();
+  // The search box itself understands Invoke syntax (e:water, o:banish, pow>=4…);
+  // a bare word searches name + rules text + subtypes + type. Parsed once per call.
+  const searchAst = window.Invoke ? window.Invoke.parse(document.getElementById('search-input').value) : null;
   const costMin = document.getElementById('cost-min')?.value !== '' ? parseInt(document.getElementById('cost-min').value) : null;
   const costMax = document.getElementById('cost-max')?.value !== '' ? parseInt(document.getElementById('cost-max').value) : null;
   const powMin = document.getElementById('power-min')?.value !== '' ? parseInt(document.getElementById('power-min').value) : null;
   const powMax = document.getElementById('power-max')?.value !== '' ? parseInt(document.getElementById('power-max').value) : null;
 
   const filtered = allCards.filter(c => {
-    if (q && !c.name.toLowerCase().includes(q)) return false;
-    // Invoke advanced query (applied alongside the normal UI filters)
-    if (invokeQuery && !invokeMatch(c, invokeQuery)) return false;
+    if (searchAst && !window.Invoke.match(c, searchAst)) return false;
+    // Invoke modal query (ANDed alongside the search box + normal UI filters)
+    if (invokeQuery && !window.Invoke.match(c, invokeQuery)) return false;
     if (activeFilters.type.size && !activeFilters.type.has(c.type)) return false;
     if (activeFilters.set.size && !(c.sets || [c.set]).some(s => activeFilters.set.has(s))) return false;
     if (activeFilters.rarity.size && !activeFilters.rarity.has(c.rarity)) return false;
