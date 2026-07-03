@@ -29,47 +29,14 @@
 <link rel="icon" type="image/png" href="favicon-32.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cinzel+Decorative:wght@700;900&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="site-base.css?v=1">
 <style>
-  :root {
-    --void: #0b0a0f; --abyss: #111018; --dusk: #1a1826; --twilight: #252338;
-    --mist: #3a3658; --rune: #6b5fa0; --arcane: #9b87d4; --shimmer: #c9bfee;
-    --parchment: #e8e0cc; --gold: #c8a96e; --ember: #c4614a; --sage: #5a8a6a;
-    --border: rgba(155, 135, 212, 0.18); --border-strong: rgba(155, 135, 212, 0.35);
-  }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  html, body { overflow-x: clip; max-width: 100%; }
-  body { background: var(--void); color: var(--parchment); font-family: 'Crimson Pro', serif; min-height: 100vh; }
   a { color: inherit; }
-
-  header {
-    background: linear-gradient(180deg, #0d0b14 0%, var(--void) 100%);
-    border-bottom: 1px solid var(--border); padding: 0 24px;
-    display: flex; align-items: center; justify-content: space-between; gap: 16px;
-    height: 60px; position: sticky; top: 0; z-index: 100; backdrop-filter: blur(8px);
-  }
-  .header-main { min-width: 0; flex-wrap: wrap; }
-  #auth-bar { flex-shrink: 0; }
-  .logo { font-family: 'Cinzel', serif; font-size: 1.3rem; font-weight: 700; }
-  .header-nav { display: flex; gap: 12px; align-items: center; }
-  .header-link { font-family: 'Cinzel', serif; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--rune); text-decoration: none; transition: color 0.2s; white-space: nowrap; }
-  .header-link:hover { color: var(--arcane); }
-
-  .hamburger { display: none; background: none; border: 1px solid var(--border-strong); color: var(--gold); font-size: 1.3rem; line-height: 1; padding: 4px 12px; border-radius: 4px; cursor: pointer; }
-  .mobile-nav { display: none; position: sticky; top: 60px; z-index: 99; background: #0d0b14; border-bottom: 1px solid var(--border); flex-direction: column; padding: 8px 0; }
-  .mobile-nav.open { display: flex; }
-  .mobile-nav .header-link { padding: 13px 24px; font-size: 0.85rem; border-bottom: 1px solid rgba(155,135,212,0.06); }
-  .mobile-nav-divider { height: 1px; background: var(--border); margin: 4px 16px; }
   @media (max-width: 980px) {
     .nav-collapsible { display: none !important; }
     .hamburger { display: block; }
     header { padding: 0 16px; }
   }
-
-  .btn { padding: 7px 16px; font-family: 'Cinzel', serif; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; border-radius: 4px; cursor: pointer; border: 1px solid transparent; transition: all 0.2s; }
-  .btn-primary { background: var(--rune); border-color: var(--arcane); color: #fff; }
-  .btn-primary:hover { background: var(--arcane); }
-  .btn-ghost { background: transparent; border-color: var(--border-strong); color: var(--rune); }
-  .btn-ghost:hover { color: var(--arcane); border-color: var(--arcane); }
 
   .page { max-width: 1100px; margin: 0 auto; padding: 28px 24px 60px; }
 
@@ -204,20 +171,6 @@
 
   .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--dusk); border: 1px solid var(--border-strong); color: var(--parchment); padding: 12px 22px; border-radius: 6px; font-size: 0.95rem; opacity: 0; transition: all 0.3s; z-index: 400; }
   .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
-
-  /* More dropdown menu */
-  .more-menu { position: relative; display: inline-block; }
-  .more-trigger { background: none; border: none; cursor: pointer; font-family: inherit; font-size: inherit; color: var(--rune); display: inline-flex; align-items: center; gap: 4px; }
-  .more-trigger:hover { color: var(--arcane); }
-  .more-dropdown { position: absolute; top: calc(100% + 6px); right: 0; min-width: 170px; background: var(--dusk); border: 1px solid var(--border-strong); border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); padding: 6px; opacity: 0; transform: translateY(-6px); pointer-events: none; transition: opacity 0.14s, transform 0.14s; z-index: 300; }
-  .more-dropdown.open { opacity: 1; transform: translateY(0); pointer-events: auto; }
-  .more-item { display: block; font-family: 'Crimson Pro', serif; font-size: 0.92rem; color: var(--parchment); padding: 8px 12px; border-radius: 5px; text-decoration: none; white-space: nowrap; transition: background 0.12s, color 0.12s; }
-  .more-item:hover { background: rgba(155,135,212,0.12); color: var(--shimmer); }
-  .more-discord { color: #b9c0ff !important; font-weight: 600; }
-  .more-discord:hover { color: #d4d8ff !important; }
-  .more-item[target="_blank"]::after,
-  .mobile-nav a[target="_blank"]::after { content: "\2197"; font-size: 0.72em; margin-left: 4px; opacity: 0.55; vertical-align: 1px; }
-  .mobile-discord { color: #b9c0ff !important; font-weight: 600; }
 
   /* ── Import from Curiosa panel ── */
   #curiosa-import.cr-panel{background:var(--dusk);border:1px solid var(--twilight);
