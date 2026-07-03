@@ -1829,7 +1829,7 @@ function getImageUrl(card) {
   return `${IMAGE_BASE}${(card.name||'').toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'')}.png`;
 }
 
-// ── HOVER PREVIEW (desktop, list view only) ──
+// ── HOVER PREVIEW (desktop; all views) ──
 let _hpEl, _hpImg, _hpVisible = false;
 function hpShow(id, x, y) {
   const card = allCards.find(c => c.id === id || c.name === id);
@@ -1852,17 +1852,19 @@ function hpMove(x, y) {
   _hpEl.style.top = top + 'px';
 }
 function hpHide() { if (_hpEl) _hpEl.classList.remove('show'); _hpVisible = false; }
-// Wire hover preview on a container. `gate` returns true when previews are allowed
-// (we only want them in the list/text views, where the card image isn't already shown).
+// Wire hover preview on a container. `gate` returns true when previews are
+// allowed. Enabled on every view (Text, Detailed, Card, Large) — any element
+// carrying a data-card-id shows its full art on hover.
 function wireHoverOn(rootId, gate) {
   const root = document.getElementById(rootId);
   if (!root) return;
+  gate = gate || (() => true);
   root.addEventListener('mouseover', e => { if (!gate()) return; const r = e.target.closest('[data-card-id]'); if (r) hpShow(r.getAttribute('data-card-id'), e.clientX, e.clientY); });
   root.addEventListener('mousemove', e => { if (!_hpVisible) return; const r = e.target.closest('[data-card-id]'); if (!r) { hpHide(); return; } hpMove(e.clientX, e.clientY); });
   root.addEventListener('mouseout', e => { const to = e.relatedTarget; if (!to || !to.closest || !to.closest('[data-card-id]')) hpHide(); });
 }
-wireHoverOn('card-grid', () => viewMode === 'list');        // left explorer
-wireHoverOn('deck-body', () => deckViewMode === 'list');    // right deck panel
+wireHoverOn('card-grid');   // left explorer — all views
+wireHoverOn('deck-body');   // right deck panel — all views
 
 function escId(id) { return String(id).replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
 
