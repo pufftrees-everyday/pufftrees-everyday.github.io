@@ -1067,51 +1067,9 @@
 </head>
 <body>
 
-<header>
-  <div class="header-main" style="display:flex;align-items:center;gap:16px;">
-    <div class="logo"><a href="index.html" style="color:var(--gold);text-decoration:none;font-family:'Cinzel Decorative',serif;font-weight:700;letter-spacing:0.04em;display:flex;align-items:center;gap:9px;"><img src="icon-192.png" alt="" style="width:30px;height:30px;border-radius:6px;display:block;">Cursed Realm</a></div>
-        <a href="collection.html" class="header-link nav-collapsible">My Vault</a>
-    <button class="btn btn-ghost nav-collapsible" onclick="navGuard('decks.html')">My Workshop</button>
-    <a href="archive.html" class="header-link nav-collapsible">The Archive</a>
-    <button class="btn btn-primary nav-collapsible" onclick="navGuard('deckbuilder.html')">New Deck</button>
-    <div class="more-menu">
-      <button class="more-trigger header-link nav-collapsible" onclick="toggleMoreMenu(event)">More <span style="font-size:0.6rem;">▾</span></button>
-      <div class="more-dropdown" id="more-dropdown">
-        <a href="videos.html" class="more-item">Videos</a>
-        <a href="artists.html" class="more-item">Artists</a>
-        <a href="tokens.html" class="more-item">Tokens</a>
-        <a href="tracker.html" class="more-item">Life Tracker</a>
-        <a href="rulebook.html" class="more-item">Rulebook</a>
-        <a href="event-guide.html" class="more-item">Event Guide</a>
-        <a href="about.html" class="more-item">About</a>
-        <a href="https://play.sorcerytcg.com/" target="_blank" rel="noopener" class="more-item">Play Network</a>
-        <a href="https://sorcerytcg.com/" target="_blank" rel="noopener" class="more-item">Sorcery TCG</a>
-        <a href="https://discord.gg/Ry84Dnd8X" target="_blank" rel="noopener" class="more-item more-discord">Join our Discord</a>
-      </div>
-    </div>
-  </div>
-  <div class="header-nav nav-collapsible" id="auth-bar"></div>
-
-  <button class="hamburger" onclick="toggleMobileNav()" aria-label="Menu">☰</button>
-</header>
-
-<div class="mobile-nav" id="mobile-nav">
-  <a href="collection.html" class="header-link">My Vault</a>
-  <a href="decks.html" class="header-link">My Workshop</a>
-  <a href="archive.html" class="header-link">The Archive</a>
-  <a href="deckbuilder.html" class="header-link">New Deck</a>
-  <div class="mobile-nav-divider"></div>
-  <a href="videos.html" class="header-link">Videos</a>
-  <a href="artists.html" class="header-link">Artists</a>
-  <a href="tokens.html" class="header-link">Tokens</a>
-  <a href="tracker.html" class="header-link">Life Tracker</a>
-  <a href="rulebook.html" class="header-link">Rulebook</a>
-  <a href="event-guide.html" class="header-link">Event Guide</a>
-  <a href="about.html" class="header-link">About</a>
-  <a href="https://play.sorcerytcg.com/" target="_blank" class="header-link">Play Network</a>
-  <a href="https://sorcerytcg.com/" target="_blank" class="header-link">Sorcery TCG</a>
-  <a href="https://discord.gg/Ry84Dnd8X" target="_blank" rel="noopener" class="header-link mobile-discord">Join our Discord</a>
-</div>
+<script>window.CRNav={active:'newdeck',guard:true};</script>
+<div id="cr-nav-mount"></div>
+<script src="site-nav.js?v=1"></script>
 
 <!-- GUEST WARNING (shown only when logged out) -->
 <div id="guest-banner" class="guest-banner" style="display:none;">
