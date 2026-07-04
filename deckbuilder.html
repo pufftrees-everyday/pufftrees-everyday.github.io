@@ -962,7 +962,10 @@
   }
   .mobile-nav { display: none; position: sticky; top: 54px; z-index: 99; background: #0d0b14; border-bottom: 1px solid var(--border); flex-direction: column; padding: 8px 0; }
 
-  /* MOBILE LAYOUT — deck on top, browse below, page scrolls */
+  /* Deck / Add-Cards switcher — mobile only (revealed inside the media query below) */
+  .mobile-view-switch { display: none; }
+
+  /* MOBILE LAYOUT — one panel at a time via the Deck/Cards switch, page scrolls */
   @media (max-width: 760px) {
     body { overflow: auto; position: static; }
     .app {
@@ -973,6 +976,27 @@
     }
     .divider { display: none; }
     .deck-panel { order: 1; }
+
+    /* Sticky segmented control so the card explorer is always one tap away
+       instead of being buried below a large deck. Hidden in read-only view
+       (there's no explorer to switch to). */
+    .mobile-view-switch {
+      display: flex; order: 0; gap: 6px;
+      position: sticky; top: 54px; z-index: 40;
+      padding: 8px 10px; background: var(--void);
+      border-bottom: 1px solid var(--border);
+    }
+    .mvs-btn {
+      flex: 1; padding: 11px 8px; border-radius: 6px; cursor: pointer;
+      font-family: 'Cinzel', serif; font-size: 0.72rem; font-weight: 600;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      border: 1px solid var(--border-strong); background: transparent; color: var(--rune);
+    }
+    .mvs-btn.active { background: var(--rune); border-color: var(--arcane); color: #fff; }
+    /* Show only the selected panel (never hides a panel in read-only mode). */
+    body.m-cards:not(.viewing-deck) .deck-panel { display: none; }
+    body.m-deck:not(.viewing-deck)  .explorer   { display: none; }
+    body.viewing-deck .mobile-view-switch { display: none !important; }
     /* Make the deck-name field obvious and full-width above the action buttons */
     .deck-name-field { flex: 1 1 100%; }
     #deck-name-input {
@@ -1033,6 +1057,12 @@
 </div>
 
 <div class="app">
+
+  <!-- MOBILE ONLY: switch between the deck and the card explorer -->
+  <div class="mobile-view-switch">
+    <button class="mvs-btn" id="mvs-deck" onclick="setMobileView('deck')">🃏 Deck</button>
+    <button class="mvs-btn" id="mvs-cards" onclick="setMobileView('cards')">🔍 Add Cards</button>
+  </div>
 
   <!-- LEFT: CARD EXPLORER -->
   <div class="explorer">
@@ -3744,6 +3774,21 @@ function copyViewedDeck() {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+// ── MOBILE DECK / CARDS SWITCH ──
+// On narrow screens the deck and the explorer stack into one long scroll, so a
+// large deck buries the card browser. This shows one at a time; no effect on
+// desktop (the switch is hidden and the hide-rules live inside a mobile media query).
+function setMobileView(v) {
+  if (v !== 'cards') v = 'deck';
+  document.body.classList.toggle('m-deck', v === 'deck');
+  document.body.classList.toggle('m-cards', v === 'cards');
+  const d = document.getElementById('mvs-deck'), c = document.getElementById('mvs-cards');
+  if (d) d.classList.toggle('active', v === 'deck');
+  if (c) c.classList.toggle('active', v === 'cards');
+  try { localStorage.setItem('grimoire_mobile_view', v); } catch (e) {}
+  window.scrollTo(0, 0);
+}
+
 // ── DECK PANEL VIEW MODE (grid / text) ──
 function setDeckViewMode(mode) {
   deckViewMode = mode;
@@ -4003,6 +4048,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupDivider();
   syncDeckViewToggle();
   refreshDeckNameState();
+  setMobileView(localStorage.getItem('grimoire_mobile_view') || 'deck');
   if (showThresholds) document.body.classList.add('show-thresholds');
   document.querySelector('.card-list').addEventListener('scroll', function() {
     if (visibleCount >= currentCards.length) return;
