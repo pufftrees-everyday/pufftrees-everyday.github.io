@@ -1645,6 +1645,22 @@ function entryEmpty(e) {
   return !e.have && !e.want && !e.trade && !e.haveFoil && !e.wantFoil && !e.tradeFoil;
 }
 
+// The version (set name) currently being shown for a card in Card Search, so a new
+// Want remembers which printing you were looking at (e.g. Promotional). Falls back
+// to the card's default printing when no Set filter narrows it down.
+function currentWantSet(cardId) {
+  const card = allCards.find(c => c.id === cardId);
+  if (!card) return null;
+  const p = activePrinting(card);
+  return p ? p.set : (card.set || null);
+}
+// Record (cardId set) or clear (null) the wanted printing for the given finish.
+function setWantVersion(entry, foil, cardId) {
+  const field = foil ? 'wantFoilSet' : 'wantSet';
+  if (cardId) { const s = currentWantSet(cardId); if (s) entry[field] = s; else delete entry[field]; }
+  else delete entry[field];
+}
+
 function toggleFlag(cardId, flag) {
   const col = getCollection();
   if (!col[cardId]) col[cardId] = { have: 0, want: 0 };
@@ -1652,8 +1668,11 @@ function toggleFlag(cardId, flag) {
   // Resolve the storage fields for the current finish (standard vs foil)
   const haveF = finishField('have'), tradeF = finishField('trade'), wantF = finishField('want');
   if (flag === 'want') {
-    // Wants are independent of ownership
-    e[wantF] = (e[wantF] || 0) > 0 ? 0 : 1;
+    // Wants are independent of ownership. Remember the exact version being shown
+    // (promo/foil/etc.) so the Wants folder shows that printing's art + price.
+    const turningOn = !((e[wantF] || 0) > 0);
+    e[wantF] = turningOn ? 1 : 0;
+    setWantVersion(e, finishMode === 'foil', turningOn ? cardId : null);
   } else if (flag === 'have') {
     // Vault and Trades are mutually exclusive buckets of owned cards
     if ((e[haveF] || 0) > 0) e[haveF] = 0;            // remove from Vault entirely
@@ -1688,7 +1707,13 @@ function changeQty(cardId, flag, delta) {
   const col = getCollection();
   if (!col[cardId]) col[cardId] = { have: 0, want: 0 };
   const field = finishField(flag);
-  col[cardId][field] = Math.max(0, (col[cardId][field] || 0) + delta);
+  const before = col[cardId][field] || 0;
+  col[cardId][field] = Math.max(0, before + delta);
+  // Tag the wanted version when a want first appears; clear it when it hits zero.
+  if (flag === 'want') {
+    if (before === 0 && col[cardId][field] > 0) setWantVersion(col[cardId], finishMode === 'foil', cardId);
+    else if (col[cardId][field] === 0) setWantVersion(col[cardId], finishMode === 'foil', null);
+  }
   if (entryEmpty(col[cardId])) delete col[cardId];
   saveCollection(col);
   updateStats();
@@ -1917,15 +1942,27 @@ function getImageUrl(card) {
   return `${IMAGE_BASE}${(card.name||'').toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'')}.png`;
 }
 
-// ── PRINTING-AWARE DISPLAY (Card Search only) ──
+// ── PRINTING-AWARE DISPLAY ──
 // When browsing Card Search with a Set filter active, show that printing's art +
-// price (e.g. the Promotional filter shows the promo printing). Everywhere else —
-// the Vault, Trades, Wants, binders, decks and all value totals — keeps using the
-// default headline price, which is Beta/Gothic-preferred and never a promo.
+// price (e.g. the Promotional filter shows the promo printing).
 function activePrinting(card) {
   if (currentView !== 'search') return null;              // only in the browse/search view
   if (!activeFilters.set.size || !card || !card.printings) return null;
   return card.printings.find(p => activeFilters.set.has(p.set)) || null;
+}
+// The printing to show for this card in the CURRENT context + finish. In Card
+// Search that's the Set-filtered printing; in the Wants folder it's the exact
+// version stored on the want (so a promo/foil you added shows its own art, badge
+// and price). Elsewhere → null = default Beta/Gothic headline.
+function effectivePrinting(card, foil) {
+  if (!card || !card.printings) return null;
+  if (currentView === 'search') return activePrinting(card);
+  if (currentView === 'want') {
+    const e = getCollection()[card.id];
+    const set = e && (foil ? e.wantFoilSet : e.wantSet);
+    if (set) return card.printings.find(p => p.set === set) || null;
+  }
+  return null;
 }
 // Price for the EXACT printing (set) + finish selected. Returns null when that
 // specific printing+finish has no price — we deliberately do NOT fall back to a
@@ -1945,21 +1982,27 @@ function setPrice(name, setName, foil) {
   }
   return null; // no price for this exact printing + finish → show nothing
 }
-// Displayed price honoring the active browse printing (promo-aware in Card Search).
+// Displayed price honoring the effective printing (promo-aware in Card Search and
+// in the Wants folder, where it follows the version stored on the want).
 function displayPrice(card, foil) {
-  const p = activePrinting(card);
+  const p = effectivePrinting(card, foil);
   if (p) return setPrice(card.name, p.set, foil);
   const hp = (foil ? foilPrices[card.name] : prices[card.name]);
   return hp && hp.market != null ? hp.market : null;
 }
-// Displayed art URL honoring the active browse printing + finish.
+// Displayed art URL honoring the effective printing + finish.
 function displayArt(card, foil) {
-  const p = activePrinting(card);
+  const p = effectivePrinting(card, foil);
   if (p) { const s = (foil && p.foilSlug) ? p.foilSlug : p.slug; if (s) return `${IMAGE_BASE}${s}.png`; }
   return (foil && card.foilSlug) ? `${IMAGE_BASE}${card.foilSlug}.png` : getImageUrl(card);
 }
-// Displayed set name honoring the active browse printing.
-function displaySet(card) { const p = activePrinting(card); return p ? p.set : card.set; }
+// Displayed set name honoring the effective printing. `foil` defaults to the
+// current finish so callers that don't care about finish still get the right set.
+function displaySet(card, foil) {
+  if (foil === undefined) foil = finishMode === 'foil';
+  const p = effectivePrinting(card, foil);
+  return p ? p.set : card.set;
+}
 
 // ── HOVER PREVIEW (desktop, list view only) ──
 let _hpEl, _hpImg, _hpVisible = false;
