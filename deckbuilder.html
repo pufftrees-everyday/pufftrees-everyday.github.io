@@ -2933,10 +2933,11 @@ function renderSection(title, section, entries, reqMsg, isOk, req, groups) {
 function renderDeckCard(section, key, card, qty) {
   if (deckViewMode === 'list' || deckViewMode === 'details') return renderDeckCardRow(section, key, card, qty);
   const isSite = card.type === 'Site';
+  const k = escId(key);
   const controls = readOnly ? '' : `<div class="dvg-controls">
-      ${section !== 'avatar' ? `<button class="qty-btn" onclick="event.stopPropagation();changeQty('${section}','${key}',-1)">−</button>
-      <button class="qty-btn" onclick="event.stopPropagation();changeQty('${section}','${key}',1)">+</button>` : ''}
-      <button class="del-btn" onclick="event.stopPropagation();removeCard('${section}','${key}')">✕</button>
+      ${section !== 'avatar' ? `<button class="qty-btn" onclick="event.stopPropagation();changeQty('${section}','${k}',-1)">−</button>
+      <button class="qty-btn" onclick="event.stopPropagation();changeQty('${section}','${k}',1)">+</button>` : ''}
+      <button class="del-btn" onclick="event.stopPropagation();removeCard('${section}','${k}')">✕</button>
     </div>`;
   return `<div class="dvg-card${isSite ? ' is-site' : ''}" data-card-id="${escId(card.id)}" draggable="${readOnly ? 'false' : 'true'}" ondragstart="onDeckCardDragStart(event,'${section}','${escId(key)}')" ondragend="onCardDragEnd(event)" onclick="openModal('${escId(card.id)}')">
     <img src="${getImageUrl(card)}" alt="${card.name}" loading="lazy" onerror="this.style.opacity='0.2'" draggable="false">
@@ -2987,10 +2988,11 @@ function renderDeckCardRow(section, key, card, qty) {
   const rarity = card.rarity || '';
   const rarityClass = rarity.toLowerCase();
   const thr = thresholdPills(card);
+  const k = escId(key);
   const controls = readOnly ? '' : `<div class="dr-controls">
-      ${section !== 'avatar' ? `<button class="dr-qty-btn" onclick="event.stopPropagation();changeQty('${section}','${key}',-1)">−</button>
-      <button class="dr-qty-btn" onclick="event.stopPropagation();changeQty('${section}','${key}',1)">+</button>` : ''}
-      <button class="dr-del-btn" onclick="event.stopPropagation();removeCard('${section}','${key}')">✕</button>
+      ${section !== 'avatar' ? `<button class="dr-qty-btn" onclick="event.stopPropagation();changeQty('${section}','${k}',-1)">−</button>
+      <button class="dr-qty-btn" onclick="event.stopPropagation();changeQty('${section}','${k}',1)">+</button>` : ''}
+      <button class="dr-del-btn" onclick="event.stopPropagation();removeCard('${section}','${k}')">✕</button>
     </div>`;
   return `<div class="deck-card-row" data-card-id="${escId(card.id)}" draggable="${readOnly ? 'false' : 'true'}" ondragstart="onDeckCardDragStart(event,'${section}','${escId(key)}')" ondragend="onCardDragEnd(event)" onclick="openModal('${escId(card.id)}')">
     <span class="dr-qty">${qty}×</span>
