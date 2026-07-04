@@ -1617,6 +1617,11 @@ let activeDeckCode = null; // short_code of the current deck if it's a cloud-sav
 let activeDeckPublic = false; // whether the current saved deck is public
 let readOnly = false;         // true when viewing a deck you don't own
 let viewDeckAuthor = null;    // author name when viewing someone's deck
+// When a shared deck loads read-only because auth wasn't resolved (or the wrong
+// user was signed in), remember its ownership so that if the real owner signs in
+// afterwards we can flip straight into edit mode instead of leaving them stuck on
+// the read-only "Copy to My Workshop" view. Cleared once reconciled.
+let pendingOwnDeck = null;    // { code, ownerId, isPublic } | null
 let deckViewMode = localStorage.getItem('grimoire_deck_view') || 'grid'; // grid | list (deck panel display)
 let spellTypeGroup = localStorage.getItem('grimoire_spell_typegroup') === '1'; // group spellbook by card type
 let deckSortMode = localStorage.getItem('grimoire_deck_sort') || 'cost'; // deck-side sort: 'az' | 'cost'
@@ -3575,6 +3580,7 @@ async function loadSharedDeck(code, forceView) {
         const isOwner = currentUser && data.owner_id === currentUser.id;
         if (isOwner && !forceView) {
           // Owner → editable, claim it so Save updates it
+          pendingOwnDeck = null;
           activeDeckCode = code;
           activeDeckPublic = !!data.is_public;
           renderVisibilityBar();
@@ -3586,7 +3592,9 @@ async function loadSharedDeck(code, forceView) {
           activeDeckPublic = !!data.is_public;
           enterReadOnly('', code);
         } else {
-          // Not the owner → read-only viewing mode
+          // Not the owner (or not signed in yet) → read-only viewing mode.
+          // Stash the ownership so a later sign-in as the owner can flip to edit.
+          if (data.owner_id) pendingOwnDeck = { code, ownerId: data.owner_id, isPublic: !!data.is_public };
           // Look up the author's display name
           let author = 'Anonymous';
           if (data.owner_id) {
@@ -3699,6 +3707,22 @@ function exitReadOnly() {
   document.body.classList.remove('show-prices');
   const pc = document.getElementById('db-price-control');
   if (pc) pc.style.display = 'none';
+}
+
+// If a shared deck was opened read-only before we knew who was signed in, and the
+// now-signed-in user turns out to be its owner, flip straight into edit mode so they
+// don't have to reload. Called after auth resolves (sign-in / late session restore).
+function reconcileOwnedDeck() {
+  if (!pendingOwnDeck || !currentUser || !readOnly) return;
+  if (currentUser.id !== pendingOwnDeck.ownerId) return;
+  activeDeckCode = pendingOwnDeck.code;
+  activeDeckPublic = !!pendingOwnDeck.isPublic;
+  pendingOwnDeck = null;
+  exitReadOnly();
+  renderVisibilityBar();
+  renderDeck();
+  renderCardGrid();
+  toast('Editing your deck — changes save here.');
 }
 
 // Copy the viewed deck into the user's own builder (editable)
@@ -4065,8 +4089,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   renderVisibilityBar();
   if (supa) {
     supa.auth.onAuthStateChange((event) => {
-      if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
-        refreshUser().then(() => renderVisibilityBar());
+      if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED') {
+        refreshUser().then(() => { renderVisibilityBar(); reconcileOwnedDeck(); });
       }
     });
   }
