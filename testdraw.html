@@ -67,13 +67,19 @@
   .hand-empty { color: var(--rune); font-style: italic; text-align: center; width: 100%; align-self: center; }
 
   @media (max-width: 640px) {
-    .tb-title { max-width: 48vw; font-size: 0.92rem; }
+    .tb-title { max-width: 60vw; font-size: 0.92rem; }
     .btn { padding: 8px 11px; font-size: 0.6rem; }
     .topbar { padding: 8px 12px; }
-    /* Controls become a full-width 2×2 grid so all four fit with big tap
-       targets (a single flex row clipped "Close" on narrow screens). */
+    /* The two-pile counter is longer now — give it its own full-width line so
+       "Atlas N" isn't clipped, and drop the spacer that would waste a line. */
+    .tb-cards { width: 100%; order: 1; }
+    .tb-spacer { display: none; }
+    /* Controls become a full-width 2-col grid so all five fit with big tap
+       targets (a single flex row clipped buttons on narrow screens). Close
+       spans the full width on its own row. */
     .controls { width: 100%; display: grid; grid-template-columns: repeat(2, 1fr); gap: 7px; }
     .controls .btn { text-align: center; min-height: 46px; padding-left: 6px; padding-right: 6px; }
+    #btn-close { grid-column: 1 / -1; }
     .hand-hint { font-size: 0.78rem; padding-left: 10px; padding-right: 10px; }
     .hand-area { padding: 10px; }
     .hand-grid { gap: 8px; }
@@ -90,7 +96,8 @@
     <div class="controls" id="controls" style="display:none;">
       <button class="btn btn-primary" onclick="drawFreshHand()" id="btn-fresh">Fresh Hand</button>
       <button class="btn btn-ember" onclick="toggleMulligan()" id="btn-mull">Mulligan</button>
-      <button class="btn btn-ghost" onclick="drawCard()" id="btn-draw" title="Draw the top card of the spellbook">Draw</button>
+      <button class="btn btn-ghost" onclick="drawCard('spellbook')" id="btn-draw-s" title="Draw the top card of the spellbook">Draw Spell</button>
+      <button class="btn btn-ghost" onclick="drawCard('atlas')" id="btn-draw-a" title="Draw the top site from the atlas">Draw Site</button>
       <button class="btn btn-ghost" onclick="closeDraw()" id="btn-close">Close</button>
     </div>
   </div>
@@ -111,8 +118,7 @@
   // lives (parked, unlinked) in testdeck.html; this file reuses its proven
   // deck-reading, shuffle and mulligan internals but drops the board/grid.
   // Opening hand = 3 spellbook + 3 atlas (sites), matching testdeck.html.
-  // A single "Draw" pulls from the spellbook; sites arrive only via the opening
-  // hand / mulligan for now (add a site-draw button later if wanted).
+  // "Draw Spell" pulls the top of the spellbook; "Draw Site" the top of the atlas.
   const IMAGE_BASE = 'https://pub-5999238092ad418ca60e7a9ad641cf57.r2.dev/';
   const supa = (window.CR && window.CR.supa) || null;
 
@@ -157,12 +163,11 @@
   function shuffle(a){ for (let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
 
   // ── Draw / hand / mulligan (reused from testdeck.html) ──
-  // Single "Draw" — pull the top card of the spellbook. (Sites come via the
-  // opening hand / mulligan only in this v1.)
-  function drawCard() {
+  // Draw the top card of a pile — 'spellbook' (Draw Spell) or 'atlas' (Draw Site).
+  function drawCard(type) {
     if (mulligan) return;
-    if (!remain.spellbook.length) return; // button is disabled when empty
-    hand.push({ name: remain.spellbook.pop(), type: 'spellbook' });
+    if (!remain[type] || !remain[type].length) return; // button is disabled when empty
+    hand.push({ name: remain[type].pop(), type });
     renderHand();
   }
   // Fresh Hand — reshuffle the full deck and deal a new opening hand
@@ -229,12 +234,13 @@
   }
 
   function updateControls() {
-    const n = remain.spellbook.length;
+    const s = remain.spellbook.length, a = remain.atlas.length;
     const cl = document.getElementById('cards-left');
-    cl.textContent = n ? `Cards left: ${n}` : 'Deck empty';
-    cl.classList.toggle('empty', !n);
-    const bd = document.getElementById('btn-draw');
-    if (bd) bd.disabled = mulligan || !n;
+    cl.textContent = (s || a) ? `Spellbook ${s} · Atlas ${a}` : 'Deck empty';
+    cl.classList.toggle('empty', !s && !a);
+    const bs = document.getElementById('btn-draw-s'), ba = document.getElementById('btn-draw-a');
+    if (bs) bs.disabled = mulligan || !s;
+    if (ba) ba.disabled = mulligan || !a;
     updateMullButton();
   }
   function updateMullButton() {
@@ -246,7 +252,7 @@
   function updateHint() {
     const hint = document.getElementById('hand-hint');
     if (mulligan) { hint.textContent = `Select up to 3 cards to replace (${selected.size}/3), then confirm.`; hint.classList.add('warn'); }
-    else { hint.textContent = 'Draw from the spellbook, mulligan, or deal a fresh hand.'; hint.classList.remove('warn'); }
+    else { hint.textContent = 'Draw a spell or site, mulligan, or deal a fresh hand.'; hint.classList.remove('warn'); }
   }
   let hintTimer = null;
   function flashHint(msg) {
