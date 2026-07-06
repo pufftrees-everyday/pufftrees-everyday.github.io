@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Test Draw — Cursed Realm</title>
+<meta name="description" content="Shuffle a Sorcery: Contested Realm deck and draw a simulated opening hand.">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#0b0a0f">
+<link rel="icon" type="image/png" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cinzel+Decorative:wght@700;900&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+  /* Palette + fonts mirror testdeck.html / the rest of the site — no new colors. */
+  :root {
+    --void: #0b0a0f; --abyss: #111018; --dusk: #1a1826; --twilight: #252338;
+    --mist: #3a3658; --rune: #6b5fa0; --arcane: #9b87d4; --shimmer: #c9bfee;
+    --parchment: #e8e0cc; --gold: #c8a96e; --ember: #c4614a; --sage: #5a8a6a;
+    --border: rgba(155, 135, 212, 0.18); --border-strong: rgba(155, 135, 212, 0.35);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; overflow: hidden; }
+  body { color: var(--parchment); font-family: 'Crimson Pro', serif; background: var(--void); }
+  a { color: inherit; }
+
+  .app { display: flex; flex-direction: column; height: 100vh; height: 100dvh; }
+
+  /* Top bar + controls (same styling as testdeck.html) */
+  .topbar { display: flex; align-items: center; gap: 10px 14px; padding: 9px 16px; background: linear-gradient(180deg, #0d0b14, var(--abyss)); border-bottom: 1px solid var(--border); flex-wrap: wrap; flex-shrink: 0; z-index: 10; }
+  .tb-back { font-family: 'Cinzel', serif; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--rune); text-decoration: none; white-space: nowrap; }
+  .tb-back:hover { color: var(--arcane); }
+  .tb-title { font-family: 'Cinzel Decorative', serif; font-size: 1.05rem; font-weight: 700; color: var(--gold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 34vw; }
+  .tb-cards { font-family: 'Cinzel', serif; font-size: 0.66rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--shimmer); white-space: nowrap; }
+  .tb-cards.empty { color: var(--ember); }
+  .tb-spacer { flex: 1; }
+  .controls { display: flex; gap: 7px; flex-wrap: wrap; }
+  .btn { padding: 8px 13px; font-family: 'Cinzel', serif; font-size: 0.64rem; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; border-radius: 5px; cursor: pointer; border: 1px solid transparent; transition: background 0.16s, border-color 0.16s, color 0.16s; white-space: nowrap; }
+  .btn:disabled { opacity: 0.4; cursor: default; }
+  .btn-primary { background: var(--rune); border-color: var(--arcane); color: #fff; }
+  .btn-primary:hover:not(:disabled) { background: var(--arcane); }
+  .btn-ghost { background: rgba(155,135,212,0.06); border-color: var(--border-strong); color: var(--shimmer); }
+  .btn-ghost:hover:not(:disabled) { border-color: var(--arcane); color: var(--gold); }
+  .btn-ember { background: rgba(196,97,74,0.14); border-color: var(--ember); color: var(--ember); }
+  .btn-ember:hover:not(:disabled) { background: var(--ember); color: #fff; }
+  .btn.active { background: var(--ember); border-color: var(--ember); color: #fff; }
+
+  .status { text-align: center; color: var(--shimmer); padding: 80px 20px; font-style: italic; font-size: 1.1rem; }
+
+  /* Hint line under the top bar — mulligan instructions / status. */
+  .hand-hint { flex-shrink: 0; text-align: center; padding: 6px 16px 0; font-size: 0.86rem; color: var(--rune); font-style: italic; min-height: 1.2em; }
+  .hand-hint.warn { color: var(--gold); font-style: normal; }
+
+  /* Hand area — the star. Cards fill the screen; JS sizes --card-h so the
+     current hand fits without scrolling, then it wraps/scrolls as more are drawn. */
+  .hand-area { flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; display: flex; padding: 16px; background: radial-gradient(circle at 50% 35%, #16162a, #0b0a0f 78%); }
+  .hand-grid { display: flex; flex-wrap: wrap; align-content: center; justify-content: center; gap: 14px; width: 100%; margin: auto; }
+
+  .hcard { height: var(--card-h, 260px); aspect-ratio: 3 / 4; position: relative; border-radius: 9px; overflow: hidden; border: 1px solid var(--border-strong); box-shadow: 0 6px 20px rgba(0,0,0,0.55); background: var(--twilight); transition: box-shadow 0.15s, outline-color 0.15s, transform 0.12s; outline: 2px solid transparent; outline-offset: 2px; }
+  /* Sites are landscape; their art asset is stored portrait, so rotate it 90°
+     to read as a landscape card (identical treatment to testdeck.html). */
+  .hcard.site { aspect-ratio: 88 / 63; }
+  .hcard img { width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; }
+  .hcard.site img { position: absolute; top: 50%; left: 50%; width: auto; height: 142%; transform: translate(-50%,-50%) rotate(90deg); }
+  .hcard.selectable { cursor: pointer; }
+  .hcard.selectable:hover { transform: translateY(-3px); }
+  .hcard.selected { outline-color: var(--gold); box-shadow: 0 0 18px rgba(200,169,110,0.6); }
+  .hand-empty { color: var(--rune); font-style: italic; text-align: center; width: 100%; align-self: center; }
+
+  @media (max-width: 640px) {
+    .tb-title { max-width: 48vw; font-size: 0.92rem; }
+    .btn { padding: 8px 11px; font-size: 0.6rem; }
+    .topbar { padding: 8px 12px; }
+    /* Controls become a full-width 2×2 grid so all four fit with big tap
+       targets (a single flex row clipped "Close" on narrow screens). */
+    .controls { width: 100%; display: grid; grid-template-columns: repeat(2, 1fr); gap: 7px; }
+    .controls .btn { text-align: center; min-height: 46px; padding-left: 6px; padding-right: 6px; }
+    .hand-hint { font-size: 0.78rem; padding-left: 10px; padding-right: 10px; }
+    .hand-area { padding: 10px; }
+    .hand-grid { gap: 8px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <a class="tb-back" id="back-link" href="archive.html">← Deck</a>
+    <div class="tb-title" id="deck-title">Test Draw</div>
+    <span class="tb-cards" id="cards-left"></span>
+    <div class="tb-spacer"></div>
+    <div class="controls" id="controls" style="display:none;">
+      <button class="btn btn-primary" onclick="drawFreshHand()" id="btn-fresh">Fresh Hand</button>
+      <button class="btn btn-ember" onclick="toggleMulligan()" id="btn-mull">Mulligan</button>
+      <button class="btn btn-ghost" onclick="drawCard()" id="btn-draw" title="Draw the top card of the spellbook">Draw</button>
+      <button class="btn btn-ghost" onclick="closeDraw()" id="btn-close">Close</button>
+    </div>
+  </div>
+
+  <div class="status" id="status">Shuffling…</div>
+
+  <div class="hand-hint" id="hand-hint" style="display:none;"></div>
+  <div class="hand-area" id="hand-area" style="display:none;">
+    <div class="hand-grid" id="hand-grid"></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="cr-auth.js?v=14"></script>
+<script>
+  // ── Test Draw ──────────────────────────────────────────────────────────
+  // A focused opening-hand / draw simulator. The unfinished play-area prototype
+  // lives (parked, unlinked) in testdeck.html; this file reuses its proven
+  // deck-reading, shuffle and mulligan internals but drops the board/grid.
+  // Opening hand = 3 spellbook + 3 atlas (sites), matching testdeck.html.
+  // A single "Draw" pulls from the spellbook; sites arrive only via the opening
+  // hand / mulligan for now (add a site-draw button later if wanted).
+  const IMAGE_BASE = 'https://pub-5999238092ad418ca60e7a9ad641cf57.r2.dev/';
+  const supa = (window.CR && window.CR.supa) || null;
+
+  function escHtml(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  function getParam(n){ return new URLSearchParams(location.search).get(n); }
+
+  // ── Card image lookup (identical to testdeck.html / the rest of the site) ──
+  const cardSlugMap = {};
+  async function loadCards() {
+    try {
+      const res = await fetch('cards.json');
+      let cards = await res.json();
+      if (!Array.isArray(cards)) cards = cards.data || cards.cards || [];
+      cards.forEach(c => {
+        const key = (c.name || '').toLowerCase();
+        const sets = c.sets || [];
+        const chosen = sets.find(s => /beta/i.test(s.name||'')) || sets.find(s => /alpha/i.test(s.name||'')) || sets[0];
+        let slug = null;
+        if (chosen && chosen.variants && chosen.variants.length) {
+          const v = chosen.variants.find(v => v.finish === 'Standard' && v.product === 'Booster') || chosen.variants[0];
+          slug = v ? v.slug : null;
+        }
+        cardSlugMap[key] = slug;
+      });
+    } catch (e) { console.warn('cards.json failed', e); }
+  }
+  function imgUrl(name) {
+    const slug = cardSlugMap[(name||'').toLowerCase()];
+    if (slug) return IMAGE_BASE + slug + '.png';
+    return IMAGE_BASE + (name||'').toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'') + '.png';
+  }
+
+  // ── State ──
+  let code = null;
+  const full = { spellbook: [], atlas: [] }; // full expanded decklists
+  const remain = { spellbook: [], atlas: [] }; // remaining (drawable) piles
+  let hand = [];          // [{ name, type:'spellbook'|'atlas' }]
+  let mulligan = false;   // selecting cards to replace?
+  const selected = new Set();
+
+  const expand = (arr) => { const out = []; (arr||[]).forEach(([n,q]) => { for (let i=0;i<(q||1);i++) out.push(n); }); return out; };
+  function shuffle(a){ for (let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+
+  // ── Draw / hand / mulligan (reused from testdeck.html) ──
+  // Single "Draw" — pull the top card of the spellbook. (Sites come via the
+  // opening hand / mulligan only in this v1.)
+  function drawCard() {
+    if (mulligan) return;
+    if (!remain.spellbook.length) return; // button is disabled when empty
+    hand.push({ name: remain.spellbook.pop(), type: 'spellbook' });
+    renderHand();
+  }
+  // Fresh Hand — reshuffle the full deck and deal a new opening hand
+  // (3 spellbook + 3 atlas), exactly as testdeck.html's drawFreshHand.
+  function drawFreshHand() {
+    remain.spellbook = shuffle(full.spellbook.slice());
+    remain.atlas = shuffle(full.atlas.slice());
+    hand = [];
+    for (let i = 0; i < 3 && remain.spellbook.length; i++) hand.push({ name: remain.spellbook.pop(), type: 'spellbook' });
+    for (let i = 0; i < 3 && remain.atlas.length; i++) hand.push({ name: remain.atlas.pop(), type: 'atlas' });
+    exitMulligan();
+    renderHand();
+  }
+  function toggleMulligan() {
+    if (mulligan) { exitMulligan(); renderHand(); return; }
+    if (!hand.length) { flashHint('Draw a hand first'); return; }
+    mulligan = true; selected.clear(); renderHand();
+  }
+  function exitMulligan() { mulligan = false; selected.clear(); updateMullButton(); }
+  function toggleSelect(i) {
+    if (!mulligan) return;
+    if (selected.has(i)) selected.delete(i);
+    else { if (selected.size >= 3) { flashHint('Mulligan replaces at most 3'); return; } selected.add(i); }
+    renderHand();
+  }
+  // Each selected card returns to its own pile; draw a fresh one of the same
+  // type (so the 3-spells + 3-sites composition is preserved). Verbatim rule
+  // from testdeck.html's confirmMulligan.
+  function confirmMulligan() {
+    [...selected].sort((a,b)=>a-b).forEach(i => {
+      const c = hand[i]; if (!c) return;
+      remain[c.type].push(c.name); shuffle(remain[c.type]);
+      hand[i] = remain[c.type].length ? { name: remain[c.type].pop(), type: c.type } : c;
+    });
+    exitMulligan(); renderHand();
+  }
+
+  function closeDraw() {
+    if (code) window.location.href = 'deck.html?d=' + encodeURIComponent(code);
+    else if (history.length > 1) history.back();
+    else window.location.href = 'archive.html';
+  }
+
+  // ── Render ──
+  function renderHand() {
+    const grid = document.getElementById('hand-grid');
+    if (!hand.length) {
+      grid.innerHTML = `<div class="hand-empty">Your hand is empty — “Fresh Hand” to deal a new opening hand.</div>`;
+    } else {
+      grid.innerHTML = hand.map((c, i) =>
+        `<div class="hcard${c.type==='atlas'?' site':''}${mulligan?' selectable':''}${selected.has(i)?' selected':''}" data-i="${i}" title="${escHtml(c.name)}">
+          <img src="${imgUrl(c.name)}" alt="${escHtml(c.name)}" loading="lazy" onerror="this.style.opacity='0.15'">
+        </div>`).join('');
+      if (mulligan) {
+        grid.querySelectorAll('.hcard').forEach(el => {
+          const i = +el.dataset.i;
+          el.addEventListener('click', () => toggleSelect(i));
+        });
+      }
+    }
+    updateControls();
+    updateHint();
+    fitHand();
+  }
+
+  function updateControls() {
+    const n = remain.spellbook.length;
+    const cl = document.getElementById('cards-left');
+    cl.textContent = n ? `Cards left: ${n}` : 'Deck empty';
+    cl.classList.toggle('empty', !n);
+    const bd = document.getElementById('btn-draw');
+    if (bd) bd.disabled = mulligan || !n;
+    updateMullButton();
+  }
+  function updateMullButton() {
+    const b = document.getElementById('btn-mull');
+    if (!b) return;
+    if (mulligan) { b.textContent = selected.size ? `Replace ${selected.size}` : 'Cancel'; b.classList.add('active'); b.onclick = selected.size ? confirmMulligan : toggleMulligan; }
+    else { b.textContent = 'Mulligan'; b.classList.remove('active'); b.onclick = toggleMulligan; }
+  }
+  function updateHint() {
+    const hint = document.getElementById('hand-hint');
+    if (mulligan) { hint.textContent = `Select up to 3 cards to replace (${selected.size}/3), then confirm.`; hint.classList.add('warn'); }
+    else { hint.textContent = 'Draw from the spellbook, mulligan, or deal a fresh hand.'; hint.classList.remove('warn'); }
+  }
+  let hintTimer = null;
+  function flashHint(msg) {
+    const hint = document.getElementById('hand-hint');
+    hint.textContent = msg; hint.classList.add('warn');
+    clearTimeout(hintTimer);
+    hintTimer = setTimeout(updateHint, 1600);
+  }
+
+  // Size --card-h so the current hand fits the available area without scrolling
+  // (up to a max), by greedily packing rows at each candidate height. As "Draw"
+  // adds cards, cards shrink / wrap; if they can't fit even at the min, the area
+  // scrolls. Sites are wider (88/63) but the same height as spells.
+  function fitHand() {
+    const area = document.getElementById('hand-area');
+    if (!area || area.style.display === 'none' || !hand.length) return;
+    const W = area.clientWidth - 32;   // minus .hand-area padding (16 each side)
+    const H = area.clientHeight - 32;
+    if (W <= 0 || H <= 0) return;
+    const gap = 14;
+    const ratios = hand.map(c => c.type === 'atlas' ? (88/63) : (3/4)); // width / height
+    const MINH = 120, MAXH = 380;
+    let best = MINH;
+    for (let ch = MAXH; ch >= MINH; ch -= 2) {
+      let rows = 1, rowW = 0, fits = true;
+      for (const r of ratios) {
+        const cw = ch * r;
+        if (cw > W) { fits = false; break; }
+        if (rowW === 0) rowW = cw;
+        else if (rowW + gap + cw <= W) rowW += gap + cw;
+        else { rows++; rowW = cw; }
+      }
+      if (!fits) continue;
+      if (rows * ch + (rows - 1) * gap <= H) { best = ch; break; }
+    }
+    area.style.setProperty('--card-h', best + 'px');
+  }
+  window.addEventListener('resize', fitHand);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && mulligan) { exitMulligan(); renderHand(); } });
+
+  // ── Load ──
+  async function run() {
+    code = getParam('d');
+    const statusEl = document.getElementById('status');
+    if (!code) { statusEl.textContent = 'No deck specified.'; return; }
+    document.getElementById('back-link').href = 'deck.html?d=' + encodeURIComponent(code);
+    if (!supa) { statusEl.textContent = 'Could not connect.'; return; }
+    await loadCards();
+    try {
+      const { data, error } = await supa.from('decks').select('short_code, name, deck_data').eq('short_code', code).single();
+      if (error || !data) { statusEl.textContent = 'Deck not found.'; return; }
+      const dd = data.deck_data || {};
+      full.spellbook = expand(dd.s);
+      full.atlas = expand(dd.t);
+      remain.spellbook = shuffle(full.spellbook.slice());
+      remain.atlas = shuffle(full.atlas.slice());
+      document.getElementById('deck-title').textContent = data.name || 'Test Draw';
+      document.title = `Test Draw: ${data.name || 'Deck'} — Cursed Realm`;
+      // Deal the opening hand.
+      drawFreshHand();
+      statusEl.style.display = 'none';
+      document.getElementById('hand-hint').style.display = '';
+      document.getElementById('hand-area').style.display = '';
+      document.getElementById('controls').style.display = '';
+      renderHand();
+      setTimeout(fitHand, 80);
+      setTimeout(fitHand, 350); // re-fit after layout / fonts settle
+    } catch (e) {
+      console.warn(e);
+      statusEl.textContent = 'Could not load the deck.';
+    }
+  }
+  run();
+</script>
+</body>
+</html>
