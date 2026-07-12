@@ -1184,7 +1184,7 @@ function normalizeCollection(col) {
 }
 
 // ── BINDERS ──
-// binder = { id, name, parent:'vault'|'trade', cards:{ [cardName]:{std,foil} } }
+// binder = { id, name, parent:'vault'|'trade'|'want', cards:{ [cardName]:{std,foil} } }
 function getBinders() {
   const col = getCollection();
   if (!Array.isArray(col[BINDERS_KEY])) col[BINDERS_KEY] = [];
@@ -1231,9 +1231,9 @@ function bEsc(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;
 const binderUI = { collapsed: {}, addFinish: {}, sort: {}, search: {}, searchSet: {} }; // transient per-binder UI state
 // Whole-section collapse state (Vault Binders / Trade Binders / Owned Decks).
 // Collapsed by default — expand to reveal the contents.
-const sectionCollapsed = { vaultBinders: false, tradeBinders: true, ownedDecks: true };
+const sectionCollapsed = { vaultBinders: false, tradeBinders: true, wantBinders: true, ownedDecks: true };
 function toggleBindersSection(parent) {
-  const k = parent === 'trade' ? 'tradeBinders' : 'vaultBinders';
+  const k = parent === 'trade' ? 'tradeBinders' : parent === 'want' ? 'wantBinders' : 'vaultBinders';
   sectionCollapsed[k] = !sectionCollapsed[k];
   renderBinders();
 }
@@ -1251,21 +1251,24 @@ function renderBinders() {
   const isTW = (currentView === 'trade' || currentView === 'want');
   if (currentView !== 'binders' && currentView !== 'vault' && !isTW) { panel.style.display = 'none'; panel.innerHTML = ''; return; }
   panel.style.display = '';
-  // On the Trades & Wants tab only the trade binders are relevant; the Binders
-  // tab and My Vault overview show both vault + trade binders.
+  // On the Trades & Wants tab only the relevant sub-view's binders show (trade
+  // binders under My Trades, want binders under Wants); the Binders tab and My
+  // Vault overview show both vault + trade binders.
   panel.innerHTML = isTW
-    ? renderBinderSection('trade')
+    ? renderBinderSection(currentView === 'want' ? 'want' : 'trade')
     : renderBinderSection('vault') + '<div style="height:22px"></div>' + renderBinderSection('trade');
 }
 function renderBinderSection(parent) {
   const list = bindersFor(parent);
   // Binders are collapsed by default; only expand ones the user has opened this session
   list.forEach(b => { if (!(b.id in binderUI.collapsed)) binderUI.collapsed[b.id] = true; });
-  const label = parent === 'trade' ? 'Trade Binders' : 'Vault Binders';
-  const secKey = parent === 'trade' ? 'tradeBinders' : 'vaultBinders';
+  const label = parent === 'trade' ? 'Trade Binders' : parent === 'want' ? 'Want Binders' : 'Vault Binders';
+  const secKey = parent === 'trade' ? 'tradeBinders' : parent === 'want' ? 'wantBinders' : 'vaultBinders';
   const collapsed = !!sectionCollapsed[secKey];
   const empty = parent === 'trade'
     ? 'No trade binders yet. Create one to group cards you’re offering for trade.'
+    : parent === 'want'
+    ? 'No want binders yet. Create one to group the cards you’re hunting for — e.g. a specific set or deck you’re building toward.'
     : 'No binders yet. Create one to organize the cards you own — e.g. a full Beta set — and track its value.';
   return `
     <div class="binders-head">
@@ -1375,7 +1378,7 @@ function renderBinderCard(b) {
 }
 
 function createBinder(parent) {
-  const name = (prompt('Name this binder:', parent === 'trade' ? 'New Trade Binder' : 'New Binder') || '').trim();
+  const name = (prompt('Name this binder:', parent === 'trade' ? 'New Trade Binder' : parent === 'want' ? 'New Want Binder' : 'New Binder') || '').trim();
   if (!name) return;
   const binders = getBinders();
   const newId = 'b' + Date.now().toString(36) + Math.floor(Math.random()*1e4).toString(36);
@@ -1820,9 +1823,11 @@ function updateStats() {
     const statsBar = document.querySelector('.collection-stats');
     if (statsBar) statsBar.appendChild(totalEl);
   }
-  // Binders add to the total (vault binders → Vault value, trade binders → Trades value)
+  // Binders add to the total (vault binders → Vault value, trade binders → Trades value).
+  // Want binders are aspirational (cards you don't own yet) so they're excluded here,
+  // just like the loose `want` flags — their value shows only in the Wants section stats.
   let binderVaultVal = 0, binderTradeVal = 0;
-  getBinders().forEach(b => { if (b.parent === 'trade') binderTradeVal += binderValue(b); else binderVaultVal += binderValue(b); });
+  getBinders().forEach(b => { if (b.parent === 'trade') binderTradeVal += binderValue(b); else if (b.parent === 'vault') binderVaultVal += binderValue(b); });
   // Owned decks roll into the Vault value, like vault binders.
   const ownedDecksVal = ownedDecksTotalValue();
   const vaultVal = stdHaveVal + foilHaveVal + binderVaultVal + ownedDecksVal;
@@ -2490,7 +2495,12 @@ function renderSectionStats(view) {
     bindersFor('trade').forEach(b => Object.entries(b.cards || {}).forEach(([n, q]) => { if (q.std) std[n] = (std[n] || 0) + q.std; if (q.foil) foil[n] = (foil[n] || 0) + q.foil; }));
     new Set([...Object.keys(std), ...Object.keys(foil)]).forEach(n => tally(n, std[n] || 0, foil[n] || 0));
   } else {
-    allCards.forEach(c => { const e = col[c.id]; if (!e) return; tally(c.id, e.want || 0, e.wantFoil || 0); });
+    // Wants = loose want cards + everything in the Want Binders, merged per card
+    // so quantities (and the total value) roll up together.
+    const std = {}, foil = {};
+    allCards.forEach(c => { const e = col[c.id]; if (!e) return; if (e.want) std[c.id] = (std[c.id] || 0) + e.want; if (e.wantFoil) foil[c.id] = (foil[c.id] || 0) + e.wantFoil; });
+    bindersFor('want').forEach(b => Object.entries(b.cards || {}).forEach(([n, q]) => { if (q.std) std[n] = (std[n] || 0) + q.std; if (q.foil) foil[n] = (foil[n] || 0) + q.foil; }));
+    new Set([...Object.keys(std), ...Object.keys(foil)]).forEach(n => tally(n, std[n] || 0, foil[n] || 0));
   }
   const totalCards = stdCount + foilCount;
 
@@ -2506,7 +2516,8 @@ function renderSectionStats(view) {
   const headNote = view === 'vault'
     ? 'Loose cards + binders + owned decks'
     : view === 'all' ? 'Loose cards only — not yet in a binder'
-    : (view === 'trade' && bindersFor('trade').length) ? 'Loose trades + trade binders' : '';
+    : (view === 'trade' && bindersFor('trade').length) ? 'Loose trades + trade binders'
+    : (view === 'want' && bindersFor('want').length) ? 'Loose wants + want binders' : '';
 
   // My Vault: break the total value down by source (loose / binders / owned decks)
   let breakdownHtml = '';
@@ -2530,6 +2541,16 @@ function renderSectionStats(view) {
     const tbVal = bindersFor('trade').reduce((s, b) => s + binderValue(b), 0);
     const parts = [['Loose Trades', looseVal], ['Trade Binders', tbVal]].filter(([, v]) => v > 0);
     if (tbVal > 0 && parts.length) {
+      breakdownHtml = `<div class="ss-breakdown">` + parts.map(([l, v]) =>
+        `<span class="ss-bd"><span class="ss-bd-lbl">${l}</span><span class="ss-bd-val">$${v.toFixed(2)}</span></span>`).join('') + `</div>`;
+    }
+  } else if (view === 'want') {
+    // Wants: split the value into loose want cards vs want binders.
+    let looseVal = 0;
+    allCards.forEach(c => { const e = col[c.id]; if (!e) return; looseVal += (prices[c.id]?.market || 0) * (e.want || 0) + (foilPrices[c.id]?.market || 0) * (e.wantFoil || 0); });
+    const wbVal = bindersFor('want').reduce((s, b) => s + binderValue(b), 0);
+    const parts = [['Loose Wants', looseVal], ['Want Binders', wbVal]].filter(([, v]) => v > 0);
+    if (wbVal > 0 && parts.length) {
       breakdownHtml = `<div class="ss-breakdown">` + parts.map(([l, v]) =>
         `<span class="ss-bd"><span class="ss-bd-lbl">${l}</span><span class="ss-bd-val">$${v.toFixed(2)}</span></span>`).join('') + `</div>`;
     }
