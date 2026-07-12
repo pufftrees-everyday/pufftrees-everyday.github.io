@@ -108,10 +108,10 @@
   #sec-vault.active { background: var(--shimmer); color: #1a1410; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.25), 0 0 12px rgba(201,191,238,0.45); }
   /* Collection active = sage */
   #sec-collection.active { background: var(--sage); color: #fff; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.15), 0 0 12px rgba(90,138,106,0.4); }
-  /* Trades & Wants active = arcane purple */
-  #sec-tw.active { background: var(--arcane); color: #1a1410; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2), 0 0 12px rgba(155,135,212,0.45); }
-  /* Binders active = gold */
-  #sec-binders.active { background: var(--gold); color: #1a1410; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2), 0 0 12px rgba(200,169,110,0.4); }
+  /* Trades active = arcane purple */
+  #sec-trade.active { background: var(--arcane); color: #1a1410; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2), 0 0 12px rgba(155,135,212,0.45); }
+  /* Wants active = ember */
+  #sec-want.active { background: var(--ember); color: #1a1410; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2), 0 0 12px rgba(200,110,90,0.4); }
   /* When a vault section (not search) is active, give the whole switcher a lifted look */
   body.in-vault-section .section-switcher { box-shadow: 0 0 0 1px var(--border-strong); }
 
@@ -821,8 +821,8 @@
       <button class="view-btn" id="sec-search" onclick="setView('search')">Card Search</button>
       <button class="view-btn active" id="sec-vault" onclick="setView('vault')">My Vault</button>
       <button class="view-btn" id="sec-collection" onclick="setView('all')">Loose Cards</button>
-      <button class="view-btn" id="sec-tw" onclick="openTradesWants()">Trades &amp; Wants</button>
-      <button class="view-btn" id="sec-binders" onclick="setView('binders')">Binders</button>
+      <button class="view-btn" id="sec-trade" onclick="setView('trade')">Trades</button>
+      <button class="view-btn" id="sec-want" onclick="setView('want')">Wants</button>
       <button class="view-btn" id="sec-decks" onclick="setView('decks')">Owned Decks</button>
     </div>
     <div class="collection-actions">
@@ -1243,20 +1243,15 @@ function toggleOwnedDecksSection() {
 }
 const MASTER_COUNTS = { Unique: 1, Elite: 2, Exceptional: 3, Ordinary: 4 };
 
-// All binder management now lives on the dedicated Binders tab, which shows both
-// the Vault Binders (organize cards you own) and Trade Binders (group cards you offer).
+// Binders now live inside the section they belong to: Vault Binders on My Vault,
+// Trade Binders on Trades, Want Binders on Wants. Each tab shows only its own.
 function renderBinders() {
   const panel = document.getElementById('binders-panel');
   if (!panel) return;
-  const isTW = (currentView === 'trade' || currentView === 'want');
-  if (currentView !== 'binders' && currentView !== 'vault' && !isTW) { panel.style.display = 'none'; panel.innerHTML = ''; return; }
+  const parent = { vault: 'vault', trade: 'trade', want: 'want' }[currentView];
+  if (!parent) { panel.style.display = 'none'; panel.innerHTML = ''; return; }
   panel.style.display = '';
-  // On the Trades & Wants tab only the relevant sub-view's binders show (trade
-  // binders under My Trades, want binders under Wants); the Binders tab and My
-  // Vault overview show both vault + trade binders.
-  panel.innerHTML = isTW
-    ? renderBinderSection(currentView === 'want' ? 'want' : 'trade')
-    : renderBinderSection('vault') + '<div style="height:22px"></div>' + renderBinderSection('trade');
+  panel.innerHTML = renderBinderSection(parent);
 }
 function renderBinderSection(parent) {
   const list = bindersFor(parent);
@@ -2395,28 +2390,21 @@ function setFinish(mode) {
 }
 
 // ── VIEW ──
-// The combined "Trades & Wants" tab is backed by the two underlying views
-// ('trade' / 'want'); a sub-toggle switches between them. Remember the last one.
-let lastTW = 'trade';
-function openTradesWants() { setView(lastTW); }
+// Trades and Wants are now their own top-level tabs. A small contextual hint
+// sits under the tab bar to explain how to add cards to each.
 function renderTWSubToggle() {
   const el = document.getElementById('tw-subtoggle');
   if (!el) return;
   const t = currentView; // 'trade' | 'want'
-  el.innerHTML = `
-    <button class="tw-sub-btn${t === 'trade' ? ' active' : ''}" onclick="setView('trade')">⇄ My Trades</button>
-    <button class="tw-sub-btn tw-want${t === 'want' ? ' active' : ''}" onclick="setView('want')">♡ Wants</button>
-    <div class="tw-sub-hint">${t === 'trade'
-      ? 'Cards you’re offering. Tap <b>⇄ Trade</b> on a card you own to move it here — it leaves your Vault.'
-      : 'Cards you’re hunting. Tap <b>♡ Want</b> on any card in <b>Card Search</b> to add it here.'}</div>`;
+  el.innerHTML = `<div class="tw-sub-hint">${t === 'trade'
+    ? 'Cards you’re offering. Tap <b>⇄ Trade</b> on a card you own to move it here — it leaves your Vault. Or group offers into a <b>Trade Binder</b> below.'
+    : 'Cards you’re hunting. Tap <b>♡ Want</b> on any card in <b>Card Search</b> to add it here. Or group targets into a <b>Want Binder</b> below.'}</div>`;
 }
 
 function setView(view) {
   currentView = view;
-  if (view === 'trade' || view === 'want') lastTW = view;
   document.querySelectorAll('.section-switcher .view-btn').forEach(b => b.classList.remove('active'));
-  // 'trade'/'want' both light up the combined Trades & Wants tab
-  const idMap = { search: 'sec-search', vault: 'sec-vault', all: 'sec-collection', want: 'sec-tw', trade: 'sec-tw', binders: 'sec-binders', decks: 'sec-decks' };
+  const idMap = { search: 'sec-search', vault: 'sec-vault', all: 'sec-collection', want: 'sec-want', trade: 'sec-trade', decks: 'sec-decks' };
   const btn = document.getElementById(idMap[view]);
   if (btn) btn.classList.add('active');
   // Update export button label to match the section
@@ -2427,14 +2415,12 @@ function setView(view) {
   // Sections with a card grid + stats panel (My Vault / Loose Cards / trades / wants)
   const inVaultSection = (view === 'vault' || view === 'all' || view === 'trade' || view === 'want');
   document.body.classList.toggle('in-vault-section', inVaultSection);
-  // Owned Decks + Binders tabs swap the card browser out for their own panels
+  // Owned Decks tab swaps the card browser out for its own panel
   const inDecks = (view === 'decks');
-  const inBinders = (view === 'binders');
   document.body.classList.toggle('in-decks-section', inDecks);
-  document.body.classList.toggle('in-binders-section', inBinders);
   // My Vault + Loose Cards hide the card filters (they list owned cards, not browse)
   document.body.classList.toggle('in-vault-tab', view === 'vault' || view === 'all');
-  // Trades & Wants sub-toggle
+  // Trades / Wants contextual hint
   const twToggle = document.getElementById('tw-subtoggle');
   if (twToggle) {
     const showTW = (view === 'trade' || view === 'want');
@@ -2450,7 +2436,7 @@ function setView(view) {
   // The My Vault / Loose Cards tabs hide the filters, so make sure none silently apply there.
   if ((view === 'vault' || view === 'all') && anyCardFilterActive()) clearCardFilters();
   renderSectionStats(view);
-  renderBinders();        // binders show on the Binders tab AND the My Vault overview
+  renderBinders();        // each section (Vault / Trades / Wants) shows its own binders
   renderLoosePrompt();    // loose-card nudge on My Vault + Loose Cards
   // Value-over-time lives on the My Vault overview (it covers the whole collection).
   const vhPanel = document.getElementById('value-history-panel');
@@ -2458,7 +2444,6 @@ function setView(view) {
     if (view === 'vault') { vhPanel.style.display = ''; if (vhState.open) vhRender(); }
     else vhPanel.style.display = 'none';
   }
-  if (inBinders) return; // binders tab: no card grid to populate
   filterCards();
 }
 
