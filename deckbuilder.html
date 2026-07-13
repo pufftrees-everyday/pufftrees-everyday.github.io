@@ -103,17 +103,83 @@
     user-select: none;
   }
   .divider:hover, .divider.dragging { background: var(--rune); }
+  /* Grip lines above and below the handle, so the whole bar still reads as draggable */
   .divider::after {
     content: '';
     position: absolute;
     top: 50%; left: 50%;
     transform: translate(-50%, -50%);
-    width: 2px; height: 36px;
-    background: var(--mist);
+    width: 2px; height: 120px;
+    background: linear-gradient(180deg, transparent, var(--mist) 18%, var(--mist) 82%, transparent);
     border-radius: 2px;
-    opacity: 0.6;
+    opacity: 0.55;
   }
-  .divider:hover::after, .divider.dragging::after { background: var(--shimmer); opacity: 1; }
+  .divider:hover::after, .divider.dragging::after { background: linear-gradient(180deg, transparent, var(--shimmer) 18%, var(--shimmer) 82%, transparent); opacity: 1; }
+
+  /* Always-visible grab handle: ‹ › arrows tell users the panes resize.
+     It's only 18px wide and sits over the seam, so it barely touches the cards. */
+  .divider-handle {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 6;
+    width: 18px; height: 58px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+    background: var(--twilight);
+    border: 1px solid var(--border-strong);
+    border-radius: 9px;
+    color: var(--arcane);
+    font-family: 'Cinzel', serif; font-size: 0.72rem; line-height: 1;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.55);
+    cursor: col-resize;
+    opacity: 0.8;
+    transition: opacity 0.15s, background 0.15s, border-color 0.15s, color 0.15s, box-shadow 0.15s;
+  }
+  .divider:hover .divider-handle, .divider.dragging .divider-handle {
+    opacity: 1;
+    background: var(--rune);
+    border-color: var(--arcane);
+    color: #fff;
+    box-shadow: 0 2px 14px rgba(155,135,212,0.5);
+  }
+  .divider-handle .dh-arrows { display: block; letter-spacing: -1px; white-space: nowrap; }
+
+  /* First-visit hint bubble — points at the handle, fades itself out */
+  .divider-hint {
+    position: absolute;
+    top: 50%; left: 24px;
+    transform: translateY(-50%);
+    z-index: 7;
+    display: none;
+    white-space: nowrap;
+    background: var(--dusk);
+    border: 1px solid var(--gold);
+    border-radius: 8px;
+    padding: 7px 12px;
+    font-family: 'Cinzel', serif; font-size: 0.68rem; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--gold);
+    box-shadow: 0 6px 22px rgba(0,0,0,0.6);
+    pointer-events: none;
+    animation: hint-float 1.6s ease-in-out infinite;
+  }
+  .divider-hint.show { display: block; }
+  .divider-hint.fade { opacity: 0; transition: opacity 0.5s; }
+  .divider-hint::before {
+    content: ''; position: absolute; left: -5px; top: 50%;
+    width: 8px; height: 8px; transform: translateY(-50%) rotate(45deg);
+    background: var(--dusk); border-left: 1px solid var(--gold); border-bottom: 1px solid var(--gold);
+  }
+  @keyframes hint-float { 0%, 100% { left: 24px; } 50% { left: 30px; } }
+  /* While the hint is up, pulse the handle so the eye lands on it */
+  .divider-handle.pulse { animation: handle-pulse 1.6s ease-in-out infinite; }
+  @keyframes handle-pulse {
+    0%, 100% { box-shadow: 0 2px 10px rgba(0,0,0,0.55), 0 0 0 0 rgba(200,169,110,0.5); border-color: var(--border-strong); }
+    50% { box-shadow: 0 2px 10px rgba(0,0,0,0.55), 0 0 0 7px rgba(200,169,110,0); border-color: var(--gold); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .divider-hint, .divider-handle.pulse { animation: none; }
+  }
 
   /* LEFT — CARD EXPLORER */
   .explorer {
@@ -1256,7 +1322,10 @@
   </div>
 
   <!-- DRAGGABLE DIVIDER -->
-  <div class="divider" id="divider" title="Drag to resize"></div>
+  <div class="divider" id="divider" title="Drag to resize · double-click to reset">
+    <div class="divider-handle" id="divider-handle" aria-hidden="true"><span class="dh-arrows">‹ ›</span></div>
+    <div class="divider-hint" id="divider-hint">↔ Drag to resize</div>
+  </div>
 
   <!-- RIGHT: DECK PANEL -->
   <div class="deck-panel">
@@ -3996,6 +4065,27 @@ function setupDivider() {
 
   let dragging = false;
 
+  // First-visit nudge: most people never notice the panes are resizable, so pulse the
+  // handle and float a hint next to it until they drag (or ~9s pass).
+  const hint = document.getElementById('divider-hint');
+  const handle = document.getElementById('divider-handle');
+  let hintTimer = null;
+  function dismissDividerHint(remember) {
+    if (hintTimer) { clearTimeout(hintTimer); hintTimer = null; }
+    if (handle) handle.classList.remove('pulse');
+    if (hint && hint.classList.contains('show')) {
+      hint.classList.add('fade');
+      setTimeout(() => hint.classList.remove('show', 'fade'), 500);
+    }
+    if (remember) localStorage.setItem('grimoire_divider_hint_seen', '1');
+  }
+  if (hint && handle && !localStorage.getItem('grimoire_divider_hint_seen')
+      && getComputedStyle(divider).display !== 'none') {
+    hint.classList.add('show');
+    handle.classList.add('pulse');
+    hintTimer = setTimeout(() => dismissDividerHint(false), 9000);
+  }
+
   function onMove(clientX) {
     const rect = app.getBoundingClientRect();
     let px = clientX - rect.left;
@@ -4012,6 +4102,7 @@ function setupDivider() {
     dragging = true;
     divider.classList.add('dragging');
     document.body.style.cursor = 'col-resize';
+    dismissDividerHint(true);
     e.preventDefault();
   });
   window.addEventListener('mousemove', (e) => { if (dragging) onMove(e.clientX); });
@@ -4029,6 +4120,7 @@ function setupDivider() {
   divider.addEventListener('touchstart', (e) => {
     if (getComputedStyle(divider).display === 'none') return;
     dragging = true; divider.classList.add('dragging');
+    dismissDividerHint(true);
   }, { passive: true });
   window.addEventListener('touchmove', (e) => {
     if (dragging && e.touches[0]) onMove(e.touches[0].clientX);
