@@ -411,6 +411,25 @@
   .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(8px); background: var(--dusk); border: 1px solid var(--border-strong); color: var(--shimmer); font-size: 0.9rem; padding: 11px 20px; border-radius: 6px; z-index: 1200; opacity: 0; transition: opacity 0.2s, transform 0.2s; pointer-events: none; }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
+  /* ── MOBILE: Deck Menu + per-section view toggles ──
+     Desktop keeps the hero strip and the single toolbar "Change View"; on phones the
+     counts/actions/element-balance move into a collapsed "Deck Menu" and each deck
+     section carries its own view toggle. */
+  #section-Deck-Menu { display: none; }
+  .section-viewmode { display: none; margin-left: auto; }
+
+  @media (max-width: 720px) {
+    #section-Deck-Menu { display: block; }
+    .section-viewmode { display: flex; }
+    #viewmode-control { display: none; }
+    #deck-menu-body .deck-counts { margin: 2px 0 14px; }
+    #deck-menu-body .el-section { margin-bottom: 4px; }
+    .deck-section-head { gap: 6px 8px; }
+    .deck-section-title { font-size: 0.92rem; }
+    .deck-section-count { font-size: 0.82rem; }
+    .section-viewmode .viewmode-btn { padding: 5px 10px; font-size: 0.95rem; }
+  }
+
   @media (max-width: 720px) {
     .deck-hero { grid-template-columns: 130px 1fr; gap: 16px; }
     .deck-hero-name { font-size: 1.5rem; }
@@ -476,7 +495,7 @@
     <!-- TOOLBAR -->
     <div class="deck-toolbar">
       <div class="toolbar-left">
-        <div class="viewmode-wrap">
+        <div class="viewmode-wrap" id="viewmode-control">
           <span class="viewmode-label">Change View</span>
           <div class="viewmode-toggle">
             <button class="viewmode-btn" id="vm-list" onclick="setDeckView('list')" title="Text view">☰</button>
@@ -508,6 +527,14 @@
         </div>
       </div>
       <button class="btn btn-ghost" onclick="downloadDeckText()">⬇ Download .txt</button>
+    </div>
+
+    <!-- DECK MENU (mobile only — counts, actions and element balance live here) -->
+    <div class="deck-section collapsed" id="section-Deck-Menu">
+      <div class="deck-section-head" onclick="toggleSection('Deck Menu')" title="Show or hide the deck menu">
+        <span class="deck-section-title"><span class="deck-section-caret" aria-hidden="true">▾</span>Deck Menu</span>
+      </div>
+      <div class="deck-section-body" id="deck-menu-body"></div>
     </div>
 
     <!-- DECK STATS -->
@@ -580,6 +607,20 @@
   let deckView = localStorage.getItem('grimoire_deckview_mode') || 'grid';
   let spellTypeGroup = localStorage.getItem('grimoire_spell_typegroup') === '1';
   let deckSortMode = localStorage.getItem('grimoire_deck_sort') || 'cost'; // 'az' | 'cost' (shared with deckbuilder)
+
+  // Each deck section can be viewed independently (used by the per-section toggles on
+  // mobile). Desktop's single "Change View" control sets all three at once.
+  const MOBILE_Q = '(max-width: 720px)';
+  const VIEW_SECTIONS = ['Atlas', 'Spellbook', 'Collection'];
+  const sectionViewKey = t => 'grimoire_deckview_mode_' + t.toLowerCase();
+  const sectionViews = {};
+  VIEW_SECTIONS.forEach(t => { sectionViews[t] = localStorage.getItem(sectionViewKey(t)) || deckView; });
+  function viewFor(title) { return sectionViews[title] || deckView; }
+  function setSectionView(title, mode) {
+    sectionViews[title] = mode;
+    localStorage.setItem(sectionViewKey(title), mode);
+    renderSections();
+  }
 
   // ── Load card data ──
   let prices = {};        // card name → { market } (standard, from prices.json)
@@ -662,6 +703,7 @@
   function setDeckView(mode) {
     deckView = mode;
     localStorage.setItem('grimoire_deckview_mode', mode);
+    VIEW_SECTIONS.forEach(t => { sectionViews[t] = mode; localStorage.setItem(sectionViewKey(t), mode); });
     ['list','details','grid','large'].forEach(m => {
       const btn = document.getElementById('vm-' + m);
       if (btn) btn.classList.toggle('active', mode === m);
@@ -722,7 +764,19 @@
       applyScrollLayout();
     }
   }
-  window.addEventListener('resize', () => { if (currentDeck) applyScrollLayout(); });
+  // On mobile the counts, action buttons and element balance live inside the collapsible
+  // "Deck Menu" instead of the hero; move the nodes back to the hero on desktop.
+  function applyMobileLayout() {
+    const body = document.getElementById('deck-menu-body');
+    const info = document.querySelector('.deck-hero-info');
+    if (!body || !info) return;
+    const dest = window.matchMedia(MOBILE_Q).matches ? body : info;
+    ['hero-counts', 'hero-actions', 'hero-elements'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el && el.parentElement !== dest) dest.appendChild(el);
+    });
+  }
+  window.addEventListener('resize', () => { if (currentDeck) { applyScrollLayout(); applyMobileLayout(); } });
 
   let showThresholds = localStorage.getItem('grimoire_deckview_thresholds') === '1';
   function toggleThresholds() {
@@ -875,20 +929,31 @@
     </div>`;
   }
 
-  const collapsedSections = {};  // title → true when collapsed
+  const collapsedSections = { 'Deck Menu': true };  // title → true when collapsed
   function toggleSection(title) {
     collapsedSections[title] = !collapsedSections[title];
     const el = document.getElementById('section-' + title.replace(/\s+/g,'-'));
     if (el) el.classList.toggle('collapsed', collapsedSections[title]);
   }
 
-  // Render a flat list of entries in the active view mode (list / details / grid).
-  function renderEntriesInner(entries) {
+  // Render a flat list of entries in the given view mode (list / details / grid / large).
+  function renderEntriesInner(entries, view) {
+    const v = view || deckView;
     const sorted = sortEntries(entries);
-    if (deckView === 'list') return `<div class="deck-list">${sorted.map(renderEntryRow).join('')}</div>`;
-    if (deckView === 'details') return `<div class="deck-details">${sorted.map(renderEntryDetail).join('')}</div>`;
-    const gridClass = deckView === 'large' ? 'deck-grid large' : 'deck-grid';
+    if (v === 'list') return `<div class="deck-list">${sorted.map(renderEntryRow).join('')}</div>`;
+    if (v === 'details') return `<div class="deck-details">${sorted.map(renderEntryDetail).join('')}</div>`;
+    const gridClass = v === 'large' ? 'deck-grid large' : 'deck-grid';
     return `<div class="${gridClass}">${sorted.map(renderEntryCell).join('')}</div>`;
+  }
+  // Per-section "Change View" toggle (visible on mobile; desktop uses the toolbar one)
+  const VIEW_MODES = [['list','☰','Text view'],['details','▤','Details view'],['grid','⊞','Card view'],['large','⊡','Large view']];
+  function sectionViewToggleHtml(title) {
+    if (!VIEW_SECTIONS.includes(title)) return '';
+    const cur = viewFor(title);
+    const btns = VIEW_MODES.map(([m, icon, label]) =>
+      `<button class="viewmode-btn${cur===m?' active':''}" onclick="event.stopPropagation();setSectionView('${title}','${m}')" title="${label}">${icon}</button>`
+    ).join('');
+    return `<div class="viewmode-toggle section-viewmode" onclick="event.stopPropagation()" title="Change view">${btns}</div>`;
   }
   // Type grouping for the spellbook (Minions / Magics / Artifacts / Auras …)
   const SPELL_TYPE_ORDER = ['Minion','Magic','Artifact','Aura','Avatar','Site','Other'];
@@ -916,6 +981,7 @@
       if (!opts.showEmpty) return '';
     }
     const count = entries.reduce((s,[,q])=>s+(q||0),0);
+    const view = viewFor(title);
     let inner = '';
     if (opts.typeToggle && spellTypeGroup && entries.length) {
       inner = groupEntriesByType(entries).map(g => {
@@ -925,11 +991,11 @@
           <div class="type-group-head" onclick="toggleTypeGroup('${key}')" title="Show or hide this type">
             <span class="tg-caret" aria-hidden="true">▾</span>${g.label} <span class="tg-count">${g.count}</span>
           </div>
-          <div class="type-group-body">${renderEntriesInner(g.entries)}</div>
+          <div class="type-group-body">${renderEntriesInner(g.entries, view)}</div>
         </div>`;
       }).join('');
     } else {
-      inner = renderEntriesInner(entries);
+      inner = renderEntriesInner(entries, view);
     }
     const sid = 'section-' + title.replace(/\s+/g,'-');
     const collapsed = collapsedSections[title] ? ' collapsed' : '';
@@ -960,6 +1026,7 @@
         <span class="deck-section-title"><span class="deck-section-caret" aria-hidden="true">▾</span>${title}</span>
         <span class="deck-section-count">${count} card${count===1?'':'s'}${suffix}</span>
         ${typeBtn}
+        ${sectionViewToggleHtml(title)}
       </div>
       <div class="deck-section-body">
         ${entries.length ? inner : '<div style="color:var(--rune);font-style:italic;padding:8px 0;">None</div>'}
@@ -1733,9 +1800,14 @@
   (async function init() {
     renderAuthBar();
     if (showThresholds) document.body.classList.add('show-thresholds');
+    // Mobile opens compact: every section starts collapsed.
+    if (window.matchMedia(MOBILE_Q).matches) {
+      ['Deck Menu','Deck Stats','Atlas','Spellbook','Collection'].forEach(t => collapsedSections[t] = true);
+    }
     await Promise.all([loadCards(), refreshUser()]);
     renderAuthBar();
     await loadDeck();
+    applyMobileLayout();
     enablePriceUI();
     if (supa) supa.auth.onAuthStateChange((ev) => { if (ev==='SIGNED_IN'||ev==='SIGNED_OUT') refreshUser().then(()=>{renderAuthBar(); if(currentDeck){ renderHero(); renderComments(); }}); });
   })();
