@@ -5,12 +5,13 @@
 //
 //   <script>window.CRNav = { active: 'vault' };</script>
 //   <div id="cr-nav-mount"></div>
-//   <script src="site-nav.js?v=1"></script>
+//   <script src="site-nav.js?v=2"></script>
 //
 // Config (window.CRNav):
 //   active : which item is the current page — one of
 //            vault | workshop | archive | newdeck | videos | artists | tokens |
-//            tracker | rulebook | eventguide | about   (omit / 'home' = none)
+//            tracker | rulebook | cardfaq | eventguide | about
+//            (omit / 'home' = none)
 //   guard  : true on the deckbuilder — the "My Workshop" / "New Deck" buttons
 //            call navGuard(url) (unsaved-changes prompt) instead of navigating
 //            directly.
@@ -42,6 +43,7 @@
     { key: 'tokens',     label: 'Tokens',          href: 'tokens.html' },
     { key: 'tracker',    label: 'Life Tracker',    href: 'tracker.html' },
     { key: 'rulebook',   label: 'Rulebook',        href: 'rulebook.html' },
+    { key: 'cardfaq',    label: 'Card FAQ',        href: 'card-faq.html' },
     { key: 'eventguide', label: 'Event Guide',     href: 'event-guide.html' },
     { key: 'about',      label: 'About',           href: 'about.html' },
     { key: 'play',       label: 'Play Network',    href: 'https://play.sorcerytcg.com/', ext: true },

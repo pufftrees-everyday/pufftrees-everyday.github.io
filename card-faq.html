@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-70B9BVL5LC"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-70B9BVL5LC');
+</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Card FAQ — Cursed Realm</title>
+<meta name="description" content="Every official Sorcery: Contested Realm card ruling in one searchable page — search by card name or by any word in a question or answer.">
+
+<!-- Open Graph -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://cursedrealm.org/card-faq.html">
+<meta property="og:title" content="Card FAQ — Cursed Realm">
+<meta property="og:description" content="Every official card ruling for Sorcery: Contested Realm, searchable in one page.">
+<meta property="og:image" content="https://cursedrealm.org/social-banner.png?v=2">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:site_name" content="Cursed Realm">
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Card FAQ — Cursed Realm">
+<meta name="twitter:description" content="Every official card ruling for Sorcery: Contested Realm, searchable in one page.">
+<meta name="twitter:image" content="https://cursedrealm.org/social-banner.png?v=2">
+
+<meta name="theme-color" content="#0b0a0f">
+<link rel="icon" type="image/png" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cinzel+Decorative:wght@700;900&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="site-base.css?v=1">
+<style>
+  a { color: var(--arcane); text-decoration: none; }
+  a:hover { color: var(--shimmer); }
+  :focus-visible { outline: 2px solid var(--arcane); outline-offset: 3px; border-radius: 4px; }
+
+  .shell { width: min(860px, 92vw); margin: 0 auto; }
+
+  .hero { text-align: center; padding: 56px 0 28px; }
+  .eyebrow { font-family: 'Cinzel', serif; letter-spacing: 0.32em; text-transform: uppercase; font-size: 0.72rem; color: var(--rune); margin-bottom: 14px; }
+  .hero h1 { font-family: 'Cinzel Decorative', serif; font-weight: 700; font-size: clamp(2.1rem, 5.5vw, 3rem); line-height: 1.08; color: var(--parchment); margin-bottom: 16px; }
+  .hero-sub { max-width: 56ch; margin: 0 auto; font-size: 1.08rem; line-height: 1.55; color: var(--shimmer); text-wrap: pretty; }
+
+  /* ===== Search ===== */
+  .search-wrap { position: sticky; top: 0; z-index: 20; padding: 14px 0 12px; background: linear-gradient(var(--void) 72%, transparent); }
+  .search-box { position: relative; }
+  .search-box input {
+    width: 100%; box-sizing: border-box; padding: 14px 42px 14px 16px;
+    background: var(--dusk); border: 1px solid var(--border-strong); border-radius: 10px;
+    color: var(--parchment); font-family: 'Crimson Pro', serif; font-size: 1.05rem;
+  }
+  .search-box input::placeholder { color: var(--mist); }
+  .search-box input:focus { outline: none; border-color: var(--arcane); box-shadow: var(--glow); }
+  .search-clear {
+    position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+    background: none; border: none; color: var(--mist); font-size: 1.1rem; cursor: pointer;
+    padding: 6px 8px; line-height: 1; display: none;
+  }
+  .search-clear:hover { color: var(--parchment); }
+  .search-box.has-value .search-clear { display: block; }
+  .result-count { font-family: 'Cinzel', serif; font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--rune); margin-top: 10px; min-height: 1em; }
+
+  /* ===== Focused single card (arrived via ?card=) ===== */
+  .focus-chip { display: none; align-items: center; gap: 10px; margin-top: 10px; font-size: 0.95rem; color: var(--shimmer); }
+  .focus-chip.on { display: flex; }
+  .focus-chip b { color: var(--gold); font-family: 'Cinzel', serif; font-weight: 600; }
+
+  /* ===== FAQ list ===== */
+  main { padding-bottom: 60px; }
+  .card-faq { padding: 26px 0; border-top: 1px solid var(--border); scroll-margin-top: 92px; }
+  .card-faq h2 {
+    font-family: 'Cinzel', serif; font-weight: 600; letter-spacing: 0.03em;
+    font-size: 1.3rem; color: var(--gold); margin-bottom: 4px;
+  }
+  .card-faq .count { font-family: 'Cinzel', serif; font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--rune); margin-bottom: 16px; }
+  .qa { border-left: 2px solid var(--mist); padding: 2px 0 2px 16px; margin-bottom: 20px; }
+  .qa:last-child { margin-bottom: 0; }
+  .qa .q { color: var(--parchment); font-weight: 600; font-size: 1.05rem; line-height: 1.5; margin-bottom: 8px; }
+  .qa .q p { margin: 0 0 4px; }
+  .qa .a { color: var(--shimmer); line-height: 1.65; }
+  .qa .a p { margin: 0 0 8px; }
+  .qa .a p:last-child { margin-bottom: 0; }
+  .qa .a ul { margin: 6px 0 8px; padding-left: 20px; }
+  .qa .a li { margin-bottom: 5px; }
+  .qa .a ul ul { margin: 5px 0 0; }
+  .qa .a strong { color: var(--parchment); font-weight: 600; }
+
+  /* Card cross-references inside an answer ([[Card Name]] in the source data). */
+  .fq-ref { color: var(--gold); font-weight: 600; }
+  a.fq-ref:hover { color: var(--parchment); text-decoration: underline; }
+
+  /* The couple of answers that ship a little board diagram. */
+  .fq-grid { border-collapse: collapse; margin: 10px 0; }
+  .fq-grid td {
+    border: 1px solid var(--border-strong); width: 38px; height: 38px; text-align: center;
+    font-family: 'Cinzel', serif; font-weight: 600; color: var(--parchment); background: var(--dusk);
+  }
+
+  .status { padding: 40px 0; text-align: center; color: var(--rune); font-style: italic; }
+  .source-note { margin-top: 30px; padding-top: 18px; border-top: 1px solid var(--border); font-size: 0.85rem; color: var(--rune); line-height: 1.6; }
+  .source-note b { color: var(--gold); font-weight: 600; }
+
+  footer { border-top: 1px solid var(--border); margin-top: 24px; padding: 30px 0 60px; text-align: center; }
+  footer .footmoon { width: 26px; height: 26px; opacity: 0.7; margin-bottom: 10px; }
+  footer p { font-family: 'Cinzel', serif; font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--mist); margin: 4px 0; }
+
+  @media (max-width: 640px) {
+    .hero { padding: 40px 0 20px; }
+    .card-faq { padding: 22px 0; }
+    .card-faq h2 { font-size: 1.15rem; }
+    .qa .q { font-size: 1rem; }
+  }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="cr-auth.js?v=14"></script>
+</head>
+<body>
+
+<script>window.CRNav={active:'cardfaq'};</script>
+<div id="cr-nav-mount"></div>
+<script src="site-nav.js?v=2"></script>
+
+<div class="shell">
+  <section class="hero">
+    <p class="eyebrow">Rulings &amp; answers</p>
+    <h1>Card FAQ</h1>
+    <p class="hero-sub">Every official card ruling, in one place. Search by card name, or by any word in a question or answer.</p>
+  </section>
+
+  <div class="search-wrap">
+    <div class="search-box" id="search-box">
+      <input type="search" id="search" placeholder="Search cards, questions, answers…" autocomplete="off" aria-label="Search the card FAQ">
+      <button class="search-clear" id="search-clear" onclick="clearSearch()" aria-label="Clear search">✕</button>
+    </div>
+    <div class="focus-chip" id="focus-chip">
+      Showing rulings for <b id="focus-name"></b>
+      <a href="#" onclick="clearFocus(event)">Show all cards</a>
+    </div>
+    <div class="result-count" id="result-count"></div>
+  </div>
+
+  <main>
+    <div id="faq-list"><div class="status">Loading the FAQ…</div></div>
+    <p class="source-note" id="source-note"></p>
+  </main>
+
+  <footer>
+    <img class="footmoon" src="moon-glow.png" alt="">
+    <p>Cursed Realm</p>
+    <p>Unofficial fan site</p>
+  </footer>
+</div>
+
+<script>
+let FAQ = null;          // { updated, source, entries, cards: { "Card Name": [{q,a}] } }
+let CARD_NAMES = [];     // alphabetical
+let HAYSTACK = {};       // card name → lowercased searchable text (name + all q/a)
+let focusCard = null;    // set when arriving via ?card=Name
+
+function escHtml(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+}
+// The q/a are pre-rendered HTML; strip the tags to get plain text to search over.
+function stripTags(html) { return String(html || '').replace(/<[^>]*>/g, ' ').replace(/&[a-z#0-9]+;/gi, ' '); }
+
+async function init() {
+  try {
+    const res = await fetch('faqs.json?v=1');
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    FAQ = await res.json();
+  } catch (e) {
+    document.getElementById('faq-list').innerHTML = '<div class="status">Could not load the FAQ. Please try again later.</div>';
+    return;
+  }
+
+  CARD_NAMES = Object.keys(FAQ.cards).sort((a, b) => a.localeCompare(b));
+  for (const name of CARD_NAMES) {
+    const text = FAQ.cards[name].map(e => stripTags(e.q) + ' ' + stripTags(e.a)).join(' ');
+    HAYSTACK[name] = (name + ' ' + text).toLowerCase();
+  }
+
+  const when = FAQ.updated ? new Date(FAQ.updated).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) : '';
+  document.getElementById('source-note').innerHTML =
+    FAQ.entries + ' rulings across ' + CARD_NAMES.length + ' cards. Source: <b>official Sorcery FAQs</b>, via ' +
+    '<a href="' + escHtml(FAQ.source) + '" target="_blank" rel="noopener">Curiosa</a>' +
+    (when ? ' · last updated ' + escHtml(when) : '') + '.';
+
+  // Deep link from a card popup: ?card=Apprentice%20Wizard
+  const param = new URLSearchParams(location.search).get('card');
+  if (param && FAQ.cards[param]) focusCard = param;
+
+  render();
+
+  const input = document.getElementById('search');
+  let t;
+  input.addEventListener('input', () => { clearTimeout(t); t = setTimeout(render, 120); });
+}
+
+function render() {
+  const input = document.getElementById('search');
+  const q = input.value.trim().toLowerCase();
+  document.getElementById('search-box').classList.toggle('has-value', !!input.value);
+
+  // A search always searches everything — typing drops you out of single-card focus.
+  if (q) focusCard = null;
+  const chip = document.getElementById('focus-chip');
+  chip.classList.toggle('on', !!focusCard);
+  if (focusCard) document.getElementById('focus-name').textContent = focusCard;
+
+  let names;
+  if (focusCard) names = [focusCard];
+  else if (!q) names = CARD_NAMES;
+  else names = CARD_NAMES.filter(n => HAYSTACK[n].includes(q));
+
+  const count = document.getElementById('result-count');
+  if (focusCard) count.textContent = '';
+  else if (!q) count.textContent = CARD_NAMES.length + ' cards';
+  else count.textContent = names.length ? names.length + (names.length === 1 ? ' card' : ' cards') + ' matching “' + input.value.trim() + '”' : '';
+
+  const list = document.getElementById('faq-list');
+  if (!names.length) {
+    list.innerHTML = '<div class="status">No rulings match “' + escHtml(input.value.trim()) + '”.</div>';
+    return;
+  }
+
+  list.innerHTML = names.map(name => {
+    const entries = FAQ.cards[name];
+    const qas = entries.map(e => '<div class="qa"><div class="q">' + e.q + '</div><div class="a">' + e.a + '</div></div>').join('');
+    return '<section class="card-faq" id="card-' + encodeURIComponent(name) + '">' +
+             '<h2>' + escHtml(name) + '</h2>' +
+             '<div class="count">' + entries.length + (entries.length === 1 ? ' ruling' : ' rulings') + '</div>' +
+             qas +
+           '</section>';
+  }).join('');
+}
+
+function clearSearch() {
+  const input = document.getElementById('search');
+  input.value = '';
+  input.focus();
+  render();
+}
+
+function clearFocus(e) {
+  if (e) e.preventDefault();
+  focusCard = null;
+  history.replaceState(null, '', location.pathname);
+  render();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// A [[Card Name]] cross-reference inside an answer points at this same page —
+// focus that card in place instead of reloading.
+document.addEventListener('click', e => {
+  const ref = e.target.closest('a.fq-ref');
+  if (!ref || !FAQ) return;
+  const name = new URLSearchParams(ref.search).get('card');
+  if (!name || !FAQ.cards[name]) return;
+  e.preventDefault();
+  document.getElementById('search').value = '';
+  focusCard = name;
+  history.replaceState(null, '', location.pathname + '?card=' + encodeURIComponent(name));
+  render();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+
+init();
+
+// Auth bar (same pattern as the rest of the site)
+(async function initAuth() {
+  if (!window.CR) return;
+  CR.onAuthChange = () => { CR.renderAuthBar('auth-bar'); };
+  await CR.refreshUser();
+  CR.renderAuthBar('auth-bar');
+  if (CR.supa) {
+    CR.supa.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') CR.refreshUser().then(() => { CR.renderAuthBar('auth-bar'); });
+    });
+  }
+})();
+</script>
+</body>
+</html>

@@ -164,12 +164,14 @@
       <div class="cm-text" id="cm-text"></div>
       <div class="cm-stats" id="cm-stats"></div>
       <div class="cm-artist" id="cm-artist" style="display:none;"></div>
+      <div class="cm-faq" id="cm-faq" style="display:none;"></div>
       <div class="cm-pricechart" id="cm-pricechart" style="display:none;"></div>
     </div>
   </div>
 </div>
 
 <script src="price-chart.js?v=3"></script>
+<script src="card-faq.js?v=1"></script>
 <script>
   const IMAGE_BASE = 'https://pub-5999238092ad418ca60e7a9ad641cf57.r2.dev/';
   function escHtml(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
@@ -308,6 +310,7 @@
     } else { cmArtist.style.display = 'none'; }
     document.getElementById('cm-overlay').classList.add('open');
     document.body.style.overflow = 'hidden';
+    CRCardFAQ.mount(card.name, 'cm-faq');
     CRPriceChart.load(card.name, 'cm-pricechart');
   }
 

@@ -124,6 +124,7 @@
 </div>
 
 <script src="price-chart.js?v=3"></script>
+<script src="card-faq.js?v=1"></script>
 <script>
   const IMAGE_BASE = 'https://pub-5999238092ad418ca60e7a9ad641cf57.r2.dev/';
   const ELEMENT_COLORS = { air:'#8cb4d2', earth:'#a08246', fire:'#c4614a', water:'#5a96b0' };
@@ -222,6 +223,7 @@
           ${setNames.length ? `<div class="printings">Printed in: <b>${setNames.map(escHtml).join('</b>, <b>')}</b></div>` : ''}
           ${artists.length ? `<div class="artist-line">Illustrated by ${artists.map(a => `<a href="artist.html?a=${encodeURIComponent(a)}">${escHtml(a)}</a>`).join(', ')}</div>` : ''}
 
+          <div class="card-faq-block" id="cardfaq"></div>
           <div class="price-chart-block" id="pricechart"></div>
         </div>
       </div>
@@ -231,6 +233,7 @@
     `;
     statusEl.style.display = 'none';
     document.getElementById('content').style.display = '';
+    CRCardFAQ.mount(card.name, 'cardfaq');
     CRPriceChart.load(card.name, 'pricechart');
   }
 

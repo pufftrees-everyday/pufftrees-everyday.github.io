@@ -741,13 +741,14 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="cr-auth.js?v=14"></script>
 <script src="price-chart.js?v=3"></script>
+<script src="card-faq.js?v=1"></script>
 <script src="invoke.js?v=1"></script>
 </head>
 <body>
 
 <script>window.CRNav={active:'home'};</script>
 <div id="cr-nav-mount"></div>
-<script src="site-nav.js?v=1"></script>
+<script src="site-nav.js?v=2"></script>
 
 <div class="page">
 
@@ -1006,6 +1007,7 @@
       <div class="modal-stats" id="modal-stats"></div>
       <div class="modal-artist" id="modal-artist" style="display:none;"></div>
       <div class="modal-printings" id="modal-printings" style="display:none;"></div>
+      <div class="modal-faq" id="modal-faq" style="display:none;"></div>
       <div class="modal-pricechart" id="modal-pricechart" style="display:none;"></div>
       <button class="modal-add" id="modal-add-btn">+ Add to Deck</button>
     </div>
@@ -1898,6 +1900,7 @@ function openModal(id) {
   setPrinting(_pIdx < 0 ? 0 : _pIdx);
   document.getElementById('modal-add-btn').style.display = 'none';
   document.getElementById('modal-overlay').classList.add('open');
+  CRCardFAQ.mount(card.name, 'modal-faq');
   CRPriceChart.load(card.name, 'modal-pricechart');
   if (typeof hpHide === 'function') hpHide();
 }

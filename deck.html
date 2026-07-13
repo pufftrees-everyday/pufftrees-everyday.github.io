@@ -538,6 +538,7 @@
       <div class="card-modal-type" id="card-modal-type"></div>
       <div class="card-modal-stats" id="card-modal-stats"></div>
       <div class="card-modal-text" id="card-modal-text"></div>
+      <div class="card-modal-faq" id="card-modal-faq" style="display:none;"></div>
     </div>
     <button class="card-modal-close" onclick="closeCardModal()">✕</button>
   </div>
@@ -562,6 +563,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="cr-auth.js?v=14"></script>
+<script src="card-faq.js?v=1"></script>
 <script>
   // Shared Supabase client from cr-auth.js (window.CR.supa)
   const supa = (window.CR && window.CR.supa) || null;
@@ -1250,6 +1252,7 @@
       document.getElementById('card-modal-type').textContent = '';
       document.getElementById('card-modal-stats').innerHTML = '';
       document.getElementById('card-modal-text').textContent = '';
+      CRCardFAQ.mount(name, 'card-modal-faq');
       overlay.classList.add('open');
       return;
     }
@@ -1271,6 +1274,7 @@
     let statHtml = stats.map(([l,v]) => `<div class="card-modal-stat"><b>${l}</b>${v}</div>`).join('');
     if (thSyms) statHtml += `<div class="card-modal-stat"><b>Threshold</b>${thSyms}</div>`;
     document.getElementById('card-modal-stats').innerHTML = statHtml;
+    CRCardFAQ.mount(c.name, 'card-modal-faq');
     overlay.classList.add('open');
   }
   function closeCardModal() { document.getElementById('card-modal-overlay').classList.remove('open'); }
