@@ -1825,6 +1825,15 @@ const IMAGE_BASE = 'https://pub-5999238092ad418ca60e7a9ad641cf57.r2.dev/';
 
 // RARITY LIMITS
 const RARITY_LIMITS = { 'Ordinary': 4, 'Exceptional': 3, 'Elite': 2, 'Unique': 1 };
+// A few cards override the normal copy limit with their own text ("your spellbook may
+// contain any number of ...") — those may be included in unlimited quantities.
+const UNLIMITED_CARDS = new Set(['relentless crowd', 'grey wolves']);
+// The per-card copy limit: Infinity for the unlimited cards, otherwise by rarity.
+function copyLimit(card) {
+  if (card && UNLIMITED_CARDS.has(String(card.name || '').trim().toLowerCase())) return Infinity;
+  const rarity = (card && card.rarity) || 'Ordinary';
+  return RARITY_LIMITS[rarity] || 4;
+}
 
 // ── PRICES (for the read-only "View Deck" preview) ──
 let prices = {};          // card name -> { market } (standard, from prices.json)
@@ -2658,7 +2667,7 @@ function addCardToDeckInner(card, qty = 1) {
   const section = getDeckSection(card);
   const key = String(card.id);
   const rarity = card.rarity || 'Ordinary';
-  const limit = RARITY_LIMITS[rarity] || 4;
+  const limit = copyLimit(card);
 
   // Avatar: only 1 allowed, only 1 copy
   if (section === 'avatar') {
@@ -2699,7 +2708,7 @@ function addCardToDeckCollection(card, qty = 1) {
 function addCardToDeckCollectionInner(card, qty = 1) {
   const key = String(card.id);
   const rarity = card.rarity || 'Ordinary';
-  const limit = RARITY_LIMITS[rarity] || 4;
+  const limit = copyLimit(card);
 
   // Avatars cannot go in the Collection
   if (getDeckSection(card) === 'avatar') {
@@ -2733,7 +2742,7 @@ function changeQty(section, key, delta) {
   const before = serializeDeck();
   const card = deck[section][key].card;
   const rarity = card.rarity || 'Ordinary';
-  const limit = RARITY_LIMITS[rarity] || 4;
+  const limit = copyLimit(card);
   const newQty = deck[section][key].qty + delta;
   if (delta > 0 && getDeckCountForCard(card.id) >= limit) {
     toast(`Max ${limit} cop${limit===1?'y':'ies'} of ${card.name} (${rarity})`);
@@ -4168,7 +4177,7 @@ function runImport() {
     if (!card) { skipped++; console.warn('Not found:', name); continue; }
 
     const rarity = card.rarity || 'Ordinary';
-    const limit = RARITY_LIMITS[rarity] || 4;
+    const limit = copyLimit(card);
     const key = String(card.id);
 
     // Avatars never go to the collection; everything else can.
