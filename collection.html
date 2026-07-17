@@ -582,7 +582,11 @@
   .binder-sort-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 6px 0 2px; }
   .binder-sort-row .bt-label { font-family: 'Cinzel', serif; font-size: 0.58rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--rune); }
   .binder-cards { margin-top: 8px; display: flex; flex-direction: column; gap: 2px; }
-  .binder-card-row { display: grid; grid-template-columns: 1fr auto auto auto; align-items: center; gap: 10px; padding: 7px 8px; border-radius: 6px; }
+  /* Name is capped (not 1fr) so the Std/Foil steppers and value tuck right up against it
+     instead of being stranded at the far right with a big empty gap. Grid columns share
+     sizing across rows, so the steppers still line up in a tidy column. The value hugs the
+     controls (auto) with a small min-width for alignment; leftover space sits at the far right. */
+  .binder-card-row { display: grid; grid-template-columns: minmax(0, 340px) auto auto auto; justify-content: start; align-items: center; gap: 6px 20px; padding: 7px 10px; border-radius: 6px; }
   .binder-card-row:nth-child(odd) { background: rgba(155,135,212,0.05); }
   .bcr-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.95rem; }
   .bcr-name .bcr-rarity { color: var(--rune); font-size: 0.74rem; margin-left: 6px; }
@@ -592,13 +596,13 @@
   .bcr-step { width: 22px; height: 22px; border: 1px solid var(--border-strong); background: var(--dusk); color: var(--shimmer); border-radius: 5px; cursor: pointer; font-size: 0.9rem; line-height: 1; display: inline-flex; align-items: center; justify-content: center; }
   .bcr-step:hover { border-color: var(--arcane); color: var(--gold); }
   .bcr-num { min-width: 18px; text-align: center; font-variant-numeric: tabular-nums; }
-  .bcr-val { font-size: 0.85rem; color: var(--sage); text-align: right; white-space: nowrap; }
+  .bcr-val { font-size: 0.85rem; color: var(--sage); text-align: right; white-space: nowrap; min-width: 68px; display: inline-flex; align-items: center; justify-content: flex-end; gap: 4px; }
   .bcr-remove { background: none; border: none; color: var(--rune); cursor: pointer; font-size: 0.9rem; padding: 2px 6px; }
   .bcr-remove:hover { color: var(--ember); }
   .binder-empty { color: var(--rune); font-style: italic; font-size: 0.9rem; padding: 10px 4px; }
   @media (max-width: 560px) {
-    .binder-card-row { grid-template-columns: 1fr auto; gap: 6px; }
-    .bcr-val { grid-column: 1 / -1; text-align: left; }
+    .binder-card-row { grid-template-columns: 1fr auto; justify-content: stretch; gap: 6px; }
+    .bcr-val { grid-column: 1 / -1; text-align: left; justify-content: flex-start; min-width: 0; }
   }
 
   /* Owned-deck card meta (reuses .binder styles) */
