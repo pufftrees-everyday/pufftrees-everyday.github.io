@@ -21,7 +21,8 @@ const IMAGE_BASE = 'https://pub-5999238092ad418ca60e7a9ad641cf57.r2.dev/';
 const CARDS_FILE = path.join(__dirname, 'cards.json');
 const OUT_FILE = path.join(__dirname, 'missing-images.txt');
 const ALL = process.argv.includes('--all');
-const CONCURRENCY = 8;
+const CONCURRENCY = 6;
+const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 // Mirror the site's imgUrl(): prefer the Beta printing, then Alpha, then the
 // first set; within a set prefer the Standard Booster variant. Fall back to a
@@ -49,16 +50,22 @@ function allSlugs(c) {
   return [...out];
 }
 
-async function exists(slug) {
+// true = present, false = confirmed 404 (missing), null = couldn't determine.
+// Retries transient failures (network errors, 429 rate-limit, 5xx) so a busy
+// bucket never gets misreported as "missing".
+async function exists(slug, tries = 3) {
   const url = IMAGE_BASE + slug + '.png';
-  try {
-    let res = await fetch(url, { method: 'HEAD' });
-    // Some hosts don't allow HEAD — fall back to a tiny ranged GET.
-    if (res.status === 405) res = await fetch(url, { headers: { Range: 'bytes=0-0' } });
-    return res.status >= 200 && res.status < 400;
-  } catch (e) {
-    return null; // network error — unknown, report separately
+  for (let i = 1; i <= tries; i++) {
+    try {
+      let res = await fetch(url, { method: 'HEAD' });
+      if (res.status === 405) res = await fetch(url, { headers: { Range: 'bytes=0-0' } }); // host disallows HEAD
+      if (res.status >= 200 && res.status < 400) return true;
+      if (res.status === 404 || res.status === 403) return false;   // genuinely not there
+      // 429 / 5xx / anything else → transient, retry
+    } catch (e) { /* network blip → retry */ }
+    if (i < tries) await sleep(600 * i);
   }
+  return null;
 }
 
 async function main() {
@@ -90,7 +97,7 @@ async function main() {
   console.log(`\nMissing images: ${missing.length}`);
   const lines = missing.map(m => `${m.slug}.png   (${m.name})`);
   lines.forEach(l => console.log('  ' + l));
-  if (errored.length) console.log(`\n${errored.length} could not be checked (network errors).`);
+  if (errored.length) console.log(`\n${errored.length} could not be confirmed after retries (transient errors — re-run to check these).`);
 
   fs.writeFileSync(OUT_FILE, lines.join('\n') + (lines.length ? '\n' : ''));
   console.log(`\nWrote the list to ${OUT_FILE}. Grab these files from the Drive folder and upload them to the R2 bucket.`);
