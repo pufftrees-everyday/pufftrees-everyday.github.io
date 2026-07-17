@@ -577,15 +577,17 @@
   .pc-note { color: var(--rune); font-style: italic; }
   .pc-source { font-size: 0.72rem; font-style: italic; color: var(--rune); margin-top: 7px; line-height: 1.4; }
   .pc-source b { color: var(--gold); font-style: normal; font-weight: 600; }
+  /* Detailed row — columns: name · set · rarity · type · thresholds · mana (mana far right, just right of the thresholds) */
   .card-row {
-    display: grid; grid-template-columns: auto 1fr auto auto auto;
+    display: grid; grid-template-columns: 1fr auto auto auto auto auto;
     align-items: center; gap: 10px;
     background: var(--dusk); border: 1px solid var(--border);
     border-left: 3px solid var(--border-strong);
     padding: 6px 11px; border-radius: 3px; cursor: pointer;
-    transition: background 0.12s; min-width: 0;
+    transition: background 0.12s, border-color 0.12s; min-width: 0;
   }
-  .card-row:hover { background: #1a1728; }
+  .card-row:hover { background: #1a1728; border-left-color: var(--arcane); }
+  .cr-th { display: inline-flex; gap: 4px; align-items: center; flex-shrink: 0; }
   .cr-name { font-family: 'Crimson Pro', serif; font-size: 0.98rem; color: var(--parchment); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
   .cr-meta { font-size: 0.72rem; color:var(--rune); white-space: nowrap; }
   .cr-rarity { font-family: 'Cinzel', serif; font-size: 0.55rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 1px 6px; border-radius: 8px; white-space: nowrap; }
@@ -1284,9 +1286,9 @@ function thIcons(thresholds) {
 function renderCardTextRow(card) {
   const cost = (card.cost != null && card.cost !== '') ? card.cost : '';
   return `<div class="text-row" data-card-id="${escId(card.id)}" onclick="openModal('${escId(card.id)}')">
-      <span class="tr-cost${cost===''?' empty':''}">${cost}</span>
       <span class="tr-name">${card.name}</span>
       <span class="tr-th">${thIcons(card.thresholds)}</span>
+      <span class="tr-cost${cost===''?' empty':''}">${cost}</span>
     </div>`;
 }
 
@@ -1294,11 +1296,12 @@ function renderCardRow(card) {
   const rarity = card.rarity || '';
   const cost = (card.cost != null && card.cost !== '') ? card.cost : '';
   return `<div class="card-row" data-card-id="${escId(card.id)}" onclick="openModal('${escId(card.id)}')">
-      <span class="cr-mana${cost===''?' empty':''}">${cost}</span>
       <div class="cr-name">${card.name}</div>
       <span class="cr-meta cr-set">${setBadge(cardDisplaySet(card))}</span>
       <span class="cr-rarity ${rarity.toLowerCase()}">${rarityAbbr(rarity)}</span>
       <span class="cr-meta cr-type">${card.type || ''}</span>
+      <span class="cr-th">${thIcons(card.thresholds)}</span>
+      <span class="cr-mana${cost===''?' empty':''}">${cost}</span>
     </div>`;
 }
 
