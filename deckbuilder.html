@@ -1767,7 +1767,7 @@ let viewDeckAuthor = null;    // author name when viewing someone's deck
 // the read-only "Copy to My Workshop" view. Cleared once reconciled.
 let pendingOwnDeck = null;    // { code, ownerId, isPublic } | null
 let deckViewMode = 'list'; // Deck panel always opens in Text view (list | details | grid | large)
-let spellTypeGroup = localStorage.getItem('grimoire_spell_typegroup') === '1'; // group spellbook by card type
+let spellTypeGroup = (localStorage.getItem('grimoire_spell_typegroup') ?? '1') === '1'; // group spellbook by card type — TYPE on by default
 let deckSortMode = localStorage.getItem('grimoire_deck_sort') || 'cost'; // deck-side sort: 'az' | 'cost'
 
 const IMAGE_BASE = 'https://pub-5999238092ad418ca60e7a9ad641cf57.r2.dev/';

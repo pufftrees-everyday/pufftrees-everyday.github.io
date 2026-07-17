@@ -609,11 +609,11 @@
   let cardElementMap = {}; // lowercased name → [elements]
   let currentDeck = null;  // the loaded deck row
   let currentUser = null;
-  // The deck viewer always opens in Text view with TYPE grouping off, regardless of any
+  // The deck viewer always opens in Text view with TYPE grouping on, regardless of any
   // stored preference — a predictable default every time you open a deck. (Switching view
   // or toggling Type still works for the session; it just resets on the next visit.)
   let deckView = 'list';
-  let spellTypeGroup = false;
+  let spellTypeGroup = true;
   let deckSortMode = localStorage.getItem('grimoire_deck_sort') || 'cost'; // 'az' | 'cost' (shared with deckbuilder)
 
   // Each deck section can be viewed independently (used by the per-section toggles on
