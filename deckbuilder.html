@@ -211,6 +211,11 @@
     gap: 0;
   }
 
+  .explorer-title {
+    font-family: 'Cinzel', serif; font-size: 0.82rem; font-weight: 700;
+    letter-spacing: 0.09em; text-transform: uppercase; color: var(--gold);
+    display: flex; align-items: center; gap: 8px; padding-bottom: 9px;
+  }
   .explorer-search-top {
     display: flex; gap: 8px; align-items: center;
     padding-bottom: 10px;
@@ -558,6 +563,14 @@
   }
 
   .deck-name-row { display: flex; align-items: flex-end; gap: 12px; margin-bottom: 10px; flex-wrap: wrap; }
+  /* Avatar chip beside the deck name — replaces the old full-width Avatar section. */
+  .deck-avatar-chip { flex-shrink: 0; align-self: center; width: 48px; height: 48px; border-radius: 8px; display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; padding: 0; overflow: hidden; cursor: pointer; background: #0b0a0f; border: 1px solid var(--border-strong); transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s; }
+  .deck-avatar-chip:hover { border-color: var(--gold); transform: translateY(-1px); box-shadow: 0 3px 10px rgba(0,0,0,0.5); }
+  .deck-avatar-chip img { width: 100%; height: 100%; object-fit: cover; object-position: top center; display: block; }
+  .deck-avatar-chip.empty { border-style: dashed; background: none; color: var(--rune); }
+  .deck-avatar-chip.empty:hover { color: var(--gold); }
+  .deck-avatar-chip .dac-plus { font-size: 1.2rem; line-height: 1; }
+  .deck-avatar-chip .dac-label { font-family: 'Cinzel', serif; font-size: 0.46rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
   .deck-name-field { display: flex; flex-direction: column; gap: 3px; flex: 1 1 240px; min-width: 200px; }
   .deck-name-label { font-family: 'Cinzel', serif; font-size: 0.58rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--rune); }
 
@@ -1136,6 +1149,7 @@
   <!-- LEFT: CARD EXPLORER -->
   <div class="explorer">
     <div class="explorer-search">
+      <div class="explorer-title">＋ Add Cards to the Deck</div>
       <div class="explorer-search-top">
         <div class="search-input-wrap" style="flex:1">
           <svg viewBox="0 0 20 20"><path d="M12.9 14.32a8 8 0 111.41-1.41l4.42 4.41-1.41 1.42-4.42-4.42zM8 14A6 6 0 108 2a6 6 0 000 12z"/></svg>
@@ -1145,8 +1159,8 @@
           <span class="viewmode-label">Change View</span>
           <div class="viewmode-toggle">
             <button class="viewmode-btn" id="vm-list" onclick="setViewMode('list')" title="Text view" aria-label="Text view">☰</button>
-            <button class="viewmode-btn" id="vm-details" onclick="setViewMode('details')" title="Detailed view" aria-label="Detailed view">▤</button>
-            <button class="viewmode-btn active" id="vm-grid" onclick="setViewMode('grid')" title="Card view" aria-label="Card view">⊞</button>
+            <button class="viewmode-btn active" id="vm-details" onclick="setViewMode('details')" title="Detailed view" aria-label="Detailed view">▤</button>
+            <button class="viewmode-btn" id="vm-grid" onclick="setViewMode('grid')" title="Card view" aria-label="Card view">⊞</button>
             <button class="viewmode-btn" id="vm-large" onclick="setViewMode('large')" title="Large card view" aria-label="Large card view">⊡</button>
           </div>
         </div>
@@ -1378,6 +1392,9 @@
     <!-- Editable header (shown when building your own deck) -->
     <div class="deck-header" id="edit-header">
       <div class="deck-name-row">
+        <button type="button" class="deck-avatar-chip empty" id="deck-avatar-chip" onclick="openAvatarPicker(true)" title="Choose your Avatar" aria-label="Choose your Avatar">
+          <span class="dac-plus">＋</span><span class="dac-label">Avatar</span>
+        </button>
         <div class="deck-name-field">
           <label class="deck-name-label" for="deck-name-input">✎ Deck Name</label>
           <input type="text" id="deck-name-input" name="deckTitle" placeholder="Tap to name your deck…"
@@ -1588,7 +1605,7 @@ let allCards = [];
 let currentCards = [];
 let visibleCount = 200;
 const PAGE_SIZE = 200;
-let viewMode = localStorage.getItem('grimoire_view_mode') || 'grid'; // grid | list
+let viewMode = 'details'; // Explorer always opens in Card Details view (list | details | grid | large)
 
 // Auth + sharing state
 let currentUser = null;
@@ -1725,7 +1742,7 @@ let viewDeckAuthor = null;    // author name when viewing someone's deck
 // afterwards we can flip straight into edit mode instead of leaving them stuck on
 // the read-only "Copy to My Workshop" view. Cleared once reconciled.
 let pendingOwnDeck = null;    // { code, ownerId, isPublic } | null
-let deckViewMode = localStorage.getItem('grimoire_deck_view') || 'grid'; // grid | list (deck panel display)
+let deckViewMode = 'details'; // Deck panel always opens in Card Details view (list | details | grid | large)
 let spellTypeGroup = localStorage.getItem('grimoire_spell_typegroup') === '1'; // group spellbook by card type
 let deckSortMode = localStorage.getItem('grimoire_deck_sort') || 'cost'; // deck-side sort: 'az' | 'cost'
 
@@ -1822,8 +1839,8 @@ async function loadCards() {
     if (sharedCode) await loadSharedDeck(sharedCode, forceView);
     else if (deckId) loadDeck(deckId);
     else {
-      // Fresh New Deck → don't auto-open the avatar picker; the blank avatar
-      // section shows a "Choose your Avatar" link so people can open it when ready.
+      // Fresh New Deck → don't auto-open the avatar picker; the avatar chip beside
+      // the deck name shows a "＋ Avatar" prompt people can tap when ready.
       renderDeck();
     }
   } catch(e) {
@@ -2332,11 +2349,12 @@ function closeModal(e) {
 // ── AVATAR PICKER ──
 let avatarList = []; // cached list of avatar cards
 
-function openAvatarPicker() {
+function openAvatarPicker(force = false) {
   const picker = document.getElementById('avatar-picker');
   if (!picker) return;
-  // Don't prompt if the deck already has an avatar (e.g. user navigated back)
-  if (Object.keys(deck.avatar).length > 0) return;
+  // Auto-prompts skip if an avatar is already set; clicking the avatar chip (force)
+  // always opens so you can swap it.
+  if (!force && Object.keys(deck.avatar).length > 0) return;
 
   // Build the avatar list once
   if (!avatarList.length) {
@@ -2407,6 +2425,26 @@ function pickAvatar(id) {
   renderDeck();
   renderCardGrid();
   toast(`${card.name} set as your Avatar!`);
+}
+
+// The avatar shows as a small icon beside the deck name (edit mode). Empty → a
+// dashed "＋ Avatar" prompt; chosen → the avatar art, click to swap.
+function renderAvatarChip() {
+  const chip = document.getElementById('deck-avatar-chip');
+  if (!chip) return;
+  const entry = Object.values(deck.avatar)[0];
+  if (entry && entry.card) {
+    const card = entry.card;
+    chip.classList.remove('empty');
+    chip.title = `Avatar: ${card.name} — click to change`;
+    chip.setAttribute('aria-label', `Avatar: ${card.name} — click to change`);
+    chip.innerHTML = `<img src="${getImageUrl(card)}" alt="${card.name}" onerror="this.style.opacity='0.2'">`;
+  } else {
+    chip.classList.add('empty');
+    chip.title = 'Choose your Avatar';
+    chip.setAttribute('aria-label', 'Choose your Avatar');
+    chip.innerHTML = `<span class="dac-plus">＋</span><span class="dac-label">Avatar</span>`;
+  }
 }
 
 // ── AVATAR HOVER PREVIEW ──
@@ -2602,8 +2640,12 @@ function renderDeck() {
 
   body.innerHTML = '';
 
-  // Avatar section
-  body.innerHTML += renderSection('Avatar', 'avatar', avatarEntries, avatarOk ? '' : 'Need exactly 1 Avatar', avatarOk, '1');
+  // Avatar lives as a chip beside the deck name while editing (saves the space the
+  // old full-width Avatar section used). In read-only preview we still show it inline.
+  renderAvatarChip();
+  if (readOnly) {
+    body.innerHTML += renderSection('Avatar', 'avatar', avatarEntries, avatarOk ? '' : 'Need exactly 1 Avatar', avatarOk, '1');
+  }
 
   // Atlas section — all Atlas cards are Sites, so no sub-grouping needed
   body.innerHTML += renderSection('Atlas', 'atlas', atlasEntries, atlasOk ? '' : `${atlasCount}/30 Sites (need ${Math.max(0,30-atlasCount)} more)`, atlasOk, '30+');
