@@ -68,7 +68,7 @@
   /* MAIN LAYOUT */
   .app {
     display: grid;
-    grid-template-columns: var(--explorer-width, 33%) 6px 1fr;
+    grid-template-columns: var(--explorer-width, calc(50% - 3px)) 6px 1fr;
     height: calc(100vh - 54px);
     overflow: hidden;
   }
@@ -174,8 +174,8 @@
   /* While the hint is up, pulse the handle so the eye lands on it */
   .divider-handle.pulse { animation: handle-pulse 1.6s ease-in-out infinite; }
   @keyframes handle-pulse {
-    0%, 100% { box-shadow: 0 2px 10px rgba(0,0,0,0.55), 0 0 0 0 rgba(200,169,110,0.5); border-color: var(--border-strong); }
-    50% { box-shadow: 0 2px 10px rgba(0,0,0,0.55), 0 0 0 7px rgba(200,169,110,0); border-color: var(--gold); }
+    0%, 100% { box-shadow: 0 2px 10px rgba(0,0,0,0.55), 0 0 0 0 rgba(200,169,110,0.75); border-color: var(--border-strong); }
+    50% { box-shadow: 0 2px 10px rgba(0,0,0,0.55), 0 0 0 11px rgba(200,169,110,0); border-color: var(--gold); }
   }
   @media (prefers-reduced-motion: reduce) {
     .divider-hint, .divider-handle.pulse { animation: none; }
@@ -4186,7 +4186,7 @@ function setupDivider() {
 
   // Double-click the divider to reset to default
   divider.addEventListener('dblclick', () => {
-    app.style.setProperty('--explorer-width', '33%');
+    app.style.setProperty('--explorer-width', 'calc(50% - 3px)');
     localStorage.removeItem('grimoire_explorer_width');
   });
 }
