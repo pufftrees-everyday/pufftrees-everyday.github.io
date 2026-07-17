@@ -416,24 +416,43 @@
   .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(8px); background: var(--dusk); border: 1px solid var(--border-strong); color: var(--shimmer); font-size: 0.9rem; padding: 11px 20px; border-radius: 6px; z-index: 1200; opacity: 0; transition: opacity 0.2s, transform 0.2s; pointer-events: none; }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-  /* ── MOBILE: Deck Menu + per-section view toggles ──
-     Desktop keeps the hero strip and the single toolbar "Change View"; on phones the
-     counts/actions/element-balance move into a collapsed "Deck Menu" and each deck
-     section carries its own view toggle. */
-  #section-Deck-Menu { display: none; }
+  /* ── MOBILE: a clean, uncluttered top + per-section view toggles ──
+     Desktop keeps the hero strip and the single toolbar "Change View". On phones the top is
+     stripped down: the like/views/test-draw/copy-link controls tuck into a tidy 2×2 grid
+     beside the avatar (.hero-quick), only the primary action + back sit under the hero
+     (.hero-below), and the legality counts + element balance drop to the bottom beside Deck
+     Stats (.hero-extras). Each deck section also carries its own view toggle. */
+  .hero-quick, .hero-below, .hero-extras { display: none; }
   .section-viewmode { display: none; margin-left: auto; }
 
   @media (max-width: 720px) {
-    #section-Deck-Menu { display: block; }
     .section-viewmode { display: flex; }
     #viewmode-control { display: none; }
-    #deck-menu-body .deck-counts { margin: 2px 0 14px; }
-    #deck-menu-body .el-section { margin-bottom: 4px; }
     .deck-section-head { gap: 6px 8px; }
     .deck-section-title { font-size: 0.92rem; }
     .deck-section-count { font-size: 0.82rem; }
     .section-viewmode .viewmode-btn { padding: 5px 10px; font-size: 0.95rem; }
+
+    /* Quick actions beside the avatar: the two compact stat badges (like / views) pair on
+       the top row; Test Draw and Copy Link each span full width below, fully readable. */
+    .hero-quick { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 4px; }
+    .hero-quick .like-btn, .hero-quick .views-badge, .hero-quick .btn {
+      width: 100%; justify-content: center; gap: 6px; padding: 9px 8px;
+      font-size: 0.7rem; letter-spacing: 0.03em; white-space: nowrap;
+    }
+    .hero-quick .btn { grid-column: 1 / -1; }  /* Test Draw + Copy Link span the full row */
+
+    /* Under the hero: just the primary action + back, side by side and full width */
+    .hero-below { display: flex; gap: 10px; margin: 16px 0 4px; }
+    .hero-below .deck-hero-actions { margin: 0; display: contents; }
+    .hero-below .deck-hero-actions .btn { flex: 1; margin: 0; }
+
+    /* Bottom block: legality counts + element balance, tucked in above Deck Stats */
+    .hero-extras { display: block; margin: 26px 0 0; }
+    .hero-extras .deck-counts { margin: 0 0 18px; }
+    .hero-extras .el-section { margin: 0; max-width: none; }
   }
+
 
   @media (max-width: 720px) {
     .deck-hero { grid-template-columns: 130px 1fr; gap: 16px; }
@@ -487,6 +506,9 @@
         <div class="deck-hero-name" id="hero-name">—</div>
         <div class="deck-hero-meta" id="hero-author"></div>
         <div class="deck-hero-avatar-name" id="hero-avatar-name"></div>
+        <!-- MOBILE-ONLY: quick actions (like / views / test draw / copy link) fill the
+             open space beside the avatar. Empty & hidden on desktop. -->
+        <div class="hero-quick" id="hero-quick"></div>
         <div class="deck-counts" id="hero-counts"></div>
         <div class="deck-hero-actions" id="hero-actions"></div>
         <div class="el-section" id="hero-elements" style="display:none;">
@@ -496,6 +518,10 @@
         </div>
       </div>
     </div>
+
+    <!-- MOBILE-ONLY: on phones the counts, primary action and element balance move out of
+         the narrow hero column into this full-width block just below the hero. -->
+    <div class="hero-below" id="hero-below"></div>
 
     <!-- TOOLBAR -->
     <div class="deck-toolbar">
@@ -534,19 +560,15 @@
       <button class="btn btn-ghost" onclick="downloadDeckText()">⬇ Download .txt</button>
     </div>
 
-    <!-- DECK MENU (mobile only — counts, actions and element balance live here) -->
-    <div class="deck-section collapsed" id="section-Deck-Menu">
-      <div class="deck-section-head" onclick="toggleSection('Deck Menu')" title="Show or hide the deck menu">
-        <span class="deck-section-title"><span class="deck-section-caret" aria-hidden="true">▾</span>Deck Menu</span>
-      </div>
-      <div class="deck-section-body" id="deck-menu-body"></div>
-    </div>
-
-    <!-- DECK STATS -->
-    <div id="deck-stats-panel"></div>
-
     <!-- SECTIONS -->
     <div id="deck-sections"></div>
+
+    <!-- MOBILE-ONLY: the legality counts + element balance move down here (out of the busy
+         top) to sit with Deck Stats. Empty & hidden on desktop. -->
+    <div class="hero-extras" id="hero-extras"></div>
+
+    <!-- DECK STATS (sits at the bottom, under Collection, on every viewport) -->
+    <div id="deck-stats-panel"></div>
 
     <!-- SCROLL (deck description) -->
     <div id="deck-scroll-panel" style="display:none;"></div>
@@ -772,19 +794,64 @@
       applyScrollLayout();
     }
   }
-  // On mobile the counts, action buttons and element balance live inside the collapsible
-  // "Deck Menu" instead of the hero; move the nodes back to the hero on desktop.
-  function applyMobileLayout() {
-    const body = document.getElementById('deck-menu-body');
-    const info = document.querySelector('.deck-hero-info');
-    if (!body || !info) return;
-    const dest = window.matchMedia(MOBILE_Q).matches ? body : info;
-    ['hero-counts', 'hero-actions', 'hero-elements'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el && el.parentElement !== dest) dest.appendChild(el);
-    });
+  // Build the hero's action controls, split so mobile can place the quick four (like,
+  // views, test draw, copy link) beside the avatar while the primary + back sit below.
+  function heroActionParts() {
+    const isOwner = currentUser && currentDeck.owner_id === currentUser.id;
+    const primary = isOwner
+      ? `<button class="btn btn-primary" onclick="window.location.href='deckbuilder.html?d=${currentDeck.short_code}'">✎ Edit in Workshop</button>`
+      : `<button class="btn btn-primary" onclick="openCopyConfirm()">Bring to Workshop</button>`;
+    // Like button — shows the count for everyone; togglable when logged in & not your own deck
+    const like = `<button class="like-btn" id="like-btn" onclick="toggleLike()"><span class="heart">♡</span> <span id="like-count" class="like-count-badge">0</span></button>`;
+    // Views counter — read-only, shown to everyone
+    const views = `<span class="views-badge" title="Deck views"><span class="views-eye">👁</span> <span id="view-count" class="views-count-badge">${currentDeck.views || 0}</span></span>`;
+    // Test Draw — a simple full-screen opening-hand / draw simulator (testdraw.html).
+    const testDraw = `<button class="btn btn-ghost" onclick="window.location.href='testdraw.html?d=${currentDeck.short_code}'" title="Shuffle this deck and draw a simulated opening hand">🃏 Test Draw</button>`;
+    const copyLink = `<button class="btn btn-ghost" onclick="copyDeckLink()">🔗 Copy Link</button>`;
+    const back = `<button class="btn btn-ghost" onclick="history.length>1?history.back():window.location.href='archive.html'">← Back</button>`;
+    return { primary, quick: [like, views, testDraw, copyLink], back };
   }
-  window.addEventListener('resize', () => { if (currentDeck) { applyScrollLayout(); applyMobileLayout(); } });
+
+  // Lay out the hero for the current viewport. On desktop everything (counts, actions,
+  // element balance) lives in the hero column and the actions render as one row. On mobile
+  // the quick four move up beside the avatar (#hero-quick) and the counts / primary action /
+  // element balance drop into the full-width #hero-below block under the hero.
+  function applyHeroLayout() {
+    if (!currentDeck) return;
+    const isMobile = window.matchMedia(MOBILE_Q).matches;
+    const p = heroActionParts();
+    const quickEl = document.getElementById('hero-quick');
+    const mainEl = document.getElementById('hero-actions');
+    if (isMobile) {
+      quickEl.innerHTML = p.quick.join('');
+      mainEl.innerHTML = [p.primary, p.back].join('');
+    } else {
+      quickEl.innerHTML = '';
+      mainEl.innerHTML = [p.primary, ...p.quick, p.back].join('');
+    }
+    const info = document.querySelector('.deck-hero-info');
+    const below = document.getElementById('hero-below');
+    const extras = document.getElementById('hero-extras');
+    // Desktop: everything lives in the hero column. Mobile: keep the top clean — only the
+    // primary action + back sit under the hero (#hero-below); the legality counts and
+    // element balance drop to the bottom beside Deck Stats (#hero-extras).
+    const place = (id, mobileDest) => {
+      const el = document.getElementById(id);
+      const dest = isMobile ? mobileDest : info;
+      if (el && el.parentElement !== dest) dest.appendChild(el);
+    };
+    // Call order is the desktop stacking order (counts, actions, elements) so that when we
+    // move back to the hero column on desktop the original layout is preserved.
+    place('hero-counts', extras);
+    place('hero-actions', below);
+    place('hero-elements', extras);
+    refreshLikes();
+  }
+  // Re-lay the hero only when we actually cross the mobile breakpoint (not on every resize).
+  const heroMQ = window.matchMedia(MOBILE_Q);
+  const onViewportChange = () => { if (currentDeck) { applyHeroLayout(); applyScrollLayout(); } };
+  if (heroMQ.addEventListener) heroMQ.addEventListener('change', onViewportChange);
+  else if (heroMQ.addListener) heroMQ.addListener(onViewportChange); // older Safari
 
   let showThresholds = localStorage.getItem('grimoire_deckview_thresholds') === '1';
   function toggleThresholds() {
@@ -937,8 +1004,8 @@
     </div>`;
   }
 
-  // Deck Menu (mobile) and Deck Stats start collapsed; Atlas / Spellbook / Collection start open.
-  const collapsedSections = { 'Deck Menu': true, 'Deck Stats': true };  // title → true when collapsed
+  // Deck Stats starts collapsed; Atlas / Spellbook / Collection start open.
+  const collapsedSections = { 'Deck Stats': true };  // title → true when collapsed
   function toggleSection(title) {
     collapsedSections[title] = !collapsedSections[title];
     const el = document.getElementById('section-' + title.replace(/\s+/g,'-'));
@@ -1278,26 +1345,10 @@
         `<span class="el-label"><span class="el-dot" style="background:${ELEMENT_COLORS[b.el]};"></span>${b.el.charAt(0).toUpperCase()+b.el.slice(1)} ${Math.round(b.pct)}%</span>`).join('');
     }
 
-    // actions
-    const isOwner = currentUser && currentDeck.owner_id === currentUser.id;
-    const acts = [];
-    if (isOwner) {
-      acts.push(`<button class="btn btn-primary" onclick="window.location.href='deckbuilder.html?d=${currentDeck.short_code}'">✎ Edit in Workshop</button>`);
-    } else {
-      acts.push(`<button class="btn btn-primary" onclick="openCopyConfirm()">Bring to Workshop</button>`);
-    }
-    // Like button — shows the count for everyone; togglable when logged in & not your own deck
-    acts.push(`<button class="like-btn" id="like-btn" onclick="toggleLike()"><span class="heart">♡</span> <span id="like-count" class="like-count-badge">0</span></button>`);
-    // Views counter — read-only, shown to everyone
-    acts.push(`<span class="views-badge" title="Deck views"><span class="views-eye">👁</span> <span id="view-count" class="views-count-badge">${currentDeck.views || 0}</span></span>`);
-    // Test Draw — a simple full-screen opening-hand / draw simulator (testdraw.html).
-    // The older unfinished play-area prototype is PARKED in testdeck.html (still
-    // works, just unlinked): to bring it back, point this button at testdeck.html.
-    acts.push(`<button class="btn btn-ghost" onclick="window.location.href='testdraw.html?d=${currentDeck.short_code}'" title="Shuffle this deck and draw a simulated opening hand">🃏 Test Draw</button>`);
-    acts.push(`<button class="btn btn-ghost" onclick="copyDeckLink()">🔗 Copy Link</button>`);
-    acts.push(`<button class="btn btn-ghost" onclick="history.length>1?history.back():window.location.href='archive.html'">← Back</button>`);
-    document.getElementById('hero-actions').innerHTML = acts.join('');
-    refreshLikes();
+    // actions — laid out per viewport (desktop: one row in the hero; mobile: quick four
+    // beside the avatar, primary + back in the below-hero block). The Test Draw button's
+    // older play-area prototype is PARKED in testdeck.html (still works, just unlinked).
+    applyHeroLayout();
     registerView();
 
     // view toggle initial state
@@ -1809,13 +1860,12 @@
   (async function init() {
     renderAuthBar();
     if (showThresholds) document.body.classList.add('show-thresholds');
-    // Deck Menu + Deck Stats open collapsed (both desktop and mobile); the Atlas,
-    // Spellbook and Collection stay open by default so the deck is visible immediately.
-    ['Deck Menu','Deck Stats'].forEach(t => collapsedSections[t] = true);
+    // Deck Stats opens collapsed (both desktop and mobile); the Atlas, Spellbook and
+    // Collection stay open by default so the deck is visible immediately.
+    collapsedSections['Deck Stats'] = true;
     await Promise.all([loadCards(), refreshUser()]);
     renderAuthBar();
     await loadDeck();
-    applyMobileLayout();
     enablePriceUI();
     if (supa) supa.auth.onAuthStateChange((ev) => { if (ev==='SIGNED_IN'||ev==='SIGNED_OUT') refreshUser().then(()=>{renderAuthBar(); if(currentDeck){ renderHero(); renderComments(); }}); });
   })();
