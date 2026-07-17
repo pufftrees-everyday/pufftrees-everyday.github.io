@@ -782,6 +782,37 @@
     .cm-img img { max-width: 168px; }
     .cm-flag { font-size: 0.68rem; padding: 9px 11px; }
   }
+
+  /* Brand-styled text prompt (replaces the native window.prompt for naming binders) */
+  .cr-prompt-overlay {
+    display: none; position: fixed; inset: 0; z-index: 1000;
+    align-items: center; justify-content: center; padding: 20px;
+    background: rgba(11,10,15,0.82); backdrop-filter: blur(4px);
+  }
+  .cr-prompt-overlay.open { display: flex; }
+  .cr-prompt-box {
+    width: 100%; max-width: 380px; background: var(--dusk);
+    border: 1px solid var(--border-strong); border-radius: 12px;
+    box-shadow: 0 18px 60px rgba(0,0,0,0.6), 0 0 30px rgba(155,135,212,0.14);
+    padding: 26px 26px 22px; text-align: center;
+  }
+  .cr-prompt-logo { width: 46px; height: 46px; display: block; margin: 0 auto 12px; filter: drop-shadow(0 0 16px rgba(155,135,212,0.5)); }
+  .cr-prompt-title { font-family: 'Cinzel Decorative', serif; font-size: 1.25rem; color: var(--gold); margin-bottom: 16px; }
+  .cr-prompt-input {
+    width: 100%; background: #0b0a0f; border: 1px solid var(--border-strong);
+    color: var(--parchment); font-family: 'Crimson Pro', serif; font-size: 1.05rem;
+    padding: 11px 13px; border-radius: 6px; outline: none; text-align: center;
+  }
+  .cr-prompt-input:focus { border-color: var(--arcane); }
+  .cr-prompt-actions { display: flex; gap: 10px; margin-top: 18px; }
+  .cr-prompt-btn {
+    flex: 1; padding: 11px; font-family: 'Cinzel', serif; font-size: 0.72rem; font-weight: 600;
+    letter-spacing: 0.1em; text-transform: uppercase; border-radius: 6px; cursor: pointer; transition: all 0.18s;
+  }
+  .cr-prompt-btn.primary { background: var(--rune); border: 1px solid var(--arcane); color: #fff; }
+  .cr-prompt-btn.primary:hover { background: var(--arcane); }
+  .cr-prompt-btn.ghost { background: transparent; border: 1px solid var(--border-strong); color: var(--shimmer); }
+  .cr-prompt-btn.ghost:hover { border-color: var(--arcane); color: #fff; }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="cr-auth.js?v=16"></script>
@@ -794,6 +825,19 @@
 <script>window.CRNav={active:'vault'};</script>
 <div id="cr-nav-mount"></div>
 <script src="site-nav.js?v=2"></script>
+
+<!-- Brand-styled prompt (binder naming) -->
+<div class="cr-prompt-overlay" id="cr-prompt-overlay">
+  <div class="cr-prompt-box">
+    <img class="cr-prompt-logo" src="moon-glow.png" alt="">
+    <div class="cr-prompt-title" id="cr-prompt-title">Name this binder</div>
+    <input type="text" class="cr-prompt-input" id="cr-prompt-input" maxlength="60" autocomplete="off" spellcheck="false">
+    <div class="cr-prompt-actions">
+      <button class="cr-prompt-btn ghost" id="cr-prompt-cancel">Cancel</button>
+      <button class="cr-prompt-btn primary" id="cr-prompt-ok">Save</button>
+    </div>
+  </div>
+</div>
 
 <div class="page">
 
@@ -1375,8 +1419,40 @@ function renderBinderCard(b) {
   </div>`;
 }
 
-function createBinder(parent) {
-  const name = (prompt('Name this binder:', parent === 'trade' ? 'New Trade Binder' : parent === 'want' ? 'New Want Binder' : 'New Binder') || '').trim();
+// Brand-styled replacement for window.prompt — a centered, on-brand modal.
+// Resolves to the trimmed text, or null if the user cancels / dismisses.
+function crPrompt(opts) {
+  opts = opts || {};
+  return new Promise(resolve => {
+    const ov = document.getElementById('cr-prompt-overlay');
+    const titleEl = document.getElementById('cr-prompt-title');
+    const input = document.getElementById('cr-prompt-input');
+    const okBtn = document.getElementById('cr-prompt-ok');
+    const cancelBtn = document.getElementById('cr-prompt-cancel');
+    if (!ov) { resolve(prompt(opts.title || 'Name', opts.value || '')); return; } // fallback
+    titleEl.textContent = opts.title || 'Name this binder';
+    input.value = opts.value || '';
+    input.placeholder = opts.placeholder || '';
+    okBtn.textContent = opts.okText || 'Save';
+    ov.classList.add('open');
+    setTimeout(() => { input.focus(); input.select(); }, 40);
+    function done(result) {
+      ov.classList.remove('open');
+      okBtn.onclick = cancelBtn.onclick = input.onkeydown = ov.onclick = null;
+      resolve(result);
+    }
+    okBtn.onclick = () => done(input.value.trim());
+    cancelBtn.onclick = () => done(null);
+    input.onkeydown = (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); done(input.value.trim()); }
+      else if (e.key === 'Escape') { e.preventDefault(); done(null); }
+    };
+    ov.onclick = (e) => { if (e.target === ov) done(null); };
+  });
+}
+
+async function createBinder(parent) {
+  const name = (await crPrompt({ title: 'Name this binder', value: parent === 'trade' ? 'New Trade Binder' : parent === 'want' ? 'New Want Binder' : 'New Binder', okText: 'Create' }) || '').trim();
   if (!name) return;
   const binders = getBinders();
   const newId = 'b' + Date.now().toString(36) + Math.floor(Math.random()*1e4).toString(36);
@@ -1463,8 +1539,8 @@ function moveLooseToBinder(binderId) {
   toast(`Moved ${moved} card${moved === 1 ? '' : 's'} into “${b.name}”`);
 }
 // No binders yet → make one, then move the loose cards into it.
-function createBinderForLoose() {
-  const name = (prompt('Name this binder:', 'My Cards') || '').trim();
+async function createBinderForLoose() {
+  const name = (await crPrompt({ title: 'Name this binder', value: 'My Cards', okText: 'Create' }) || '').trim();
   if (!name) return;
   const binders = getBinders();
   const newId = 'b' + Date.now().toString(36) + Math.floor(Math.random() * 1e4).toString(36);
@@ -1473,9 +1549,9 @@ function createBinderForLoose() {
   moveLooseToBinder(newId);
 }
 
-function renameBinder(id) {
+async function renameBinder(id) {
   const b = findBinder(id); if (!b) return;
-  const name = (prompt('Rename binder:', b.name) || '').trim();
+  const name = (await crPrompt({ title: 'Rename binder', value: b.name, okText: 'Rename' }) || '').trim();
   if (!name) return;
   b.name = name; saveBinders(); renderBinders();
 }
