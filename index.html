@@ -537,9 +537,12 @@
   .viewmode-btn.active { background: var(--rune); color: #fff; }
   .viewmode-btn:not(.active):hover { background: #1a1728; color: var(--arcane); }
 
-  /* LIST (TEXT) VIEW */
-  .card-grid.list-view { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 10px; }
-  .card-grid.list-view.sites-only { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  /* LIST (TEXT) VIEW.
+     The base grid here is what the DETAILED view uses (Text view overrides the columns
+     below via .text-view). Detailed rows pack as many columns as fit at ~400px each —
+     3 on a typical desktop, more on wide screens — instead of a fixed, sparse 2. */
+  .card-grid.list-view { display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 4px 10px; }
+  .card-grid.list-view.sites-only { grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); }
   /* Cap at 380px — the native width of low-res sets (Alpha/Beta/Promo/Dragonlord),
      so card art is never upscaled past its source resolution. */
   .card-grid.large-view { grid-template-columns: repeat(auto-fill, minmax(300px, 380px)); justify-content: center; }
