@@ -401,8 +401,10 @@
     gap: 4px 8px;
   }
   .card-list-grid.list-view.sites-only { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  /* Columns: name · set · rarity · type · thresholds · mana · in-deck · add
+     (mana sits just right of the thresholds, matching the /deck viewer) */
   .db-card-row {
-    display: grid; grid-template-columns: auto 1fr auto auto auto auto auto auto;
+    display: grid; grid-template-columns: 1fr auto auto auto auto auto auto auto;
     align-items: center; gap: 8px;
     background: #13111e; border: 1px solid var(--border);
     border-left: 3px solid var(--border-strong);
@@ -2153,7 +2155,6 @@ function renderDbCardTextRow(card) {
   const inDeck = getDeckCountForCard(card.id);
   const cost = (card.cost != null && card.cost !== '') ? card.cost : '';
   return `<div class="text-row${inDeck > 0 ? ' has-qty' : ''}" data-card-id="${escId(card.id)}" onclick="openModal('${escId(card.id)}')">
-    <span class="tr-cost${cost===''?' empty':''}">${cost}</span>
     <span class="tr-step">
       <button class="tr-stepbtn" onclick="event.stopPropagation();quickRemoveFromDeck('${escId(card.id)}')" aria-label="Remove one" title="Remove one from deck">−</button>
       <span class="tr-qtynum">${inDeck}</span>
@@ -2161,6 +2162,7 @@ function renderDbCardTextRow(card) {
     </span>
     <span class="tr-name">${card.name}</span>
     <span class="tr-th">${thIcons(card.thresholds)}</span>
+    <span class="tr-cost${cost===''?' empty':''}">${cost}</span>
   </div>`;
 }
 
@@ -2170,12 +2172,12 @@ function renderDbCardRow(card) {
   const rarityClass = rarity.toLowerCase();
   const cost = (card.cost != null && card.cost !== '') ? card.cost : '';
   return `<div class="db-card-row" data-card-id="${escId(card.id)}" onclick="openModal('${escId(card.id)}')">
-    <span class="cr-mana${cost===''?' empty':''}">${cost}</span>
     <div class="db-row-name">${card.name}</div>
     <span class="db-row-meta set db-set">${setBadge(card.set)}</span>
     <span class="db-row-rarity ${rarityClass}">${rarityAbbr(rarity)}</span>
     <span class="db-row-meta db-type">${card.type || ''}</span>
     <span class="db-row-th">${rowThIcons(card)}</span>
+    <span class="cr-mana${cost===''?' empty':''}">${cost}</span>
     <span class="db-row-indeck">${inDeck > 0 ? '×'+inDeck : ''}</span>
     <button class="db-row-add" onclick="event.stopPropagation();quickAddToDeck('${escId(card.id)}')">+ Add</button>
   </div>`;
