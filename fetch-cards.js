@@ -1,34 +1,35 @@
 /**
- * Cursed Realm — Card Data Fetcher
+ * Cursed Realm — New Card Fetcher (ADD-ONLY)
  *
- * Pulls the full card list from Sorcery's public API and writes cards.json,
- * which every page on the site reads for card names, types, thresholds, rules
- * text, sets, and printing slugs. cards.json used to be a hand-refreshed
- * snapshot, so new releases (e.g. Dust-store sites) never appeared until someone
- * rebuilt it. This keeps it current automatically.
+ * Pulls the card list from Sorcery's public API and APPENDS any cards whose
+ * names we don't already have to cards.json. It NEVER modifies or removes
+ * existing cards.
  *
- * Safety: refuses to overwrite cards.json if the API returns fewer cards than we
- * already have (guards against a broken/partial response blanking the site).
+ * Why add-only: Sorcery's API migrated its image-slug scheme (e.g. bet-… → 002-…,
+ * got-… → 006-…) for every card. cards.json's slugs are matched 1:1 to the card
+ * art in the R2 bucket, which still uses the old names — so a full re-sync would
+ * silently repoint every image to a filename that doesn't exist and break all
+ * card art on the site. Add-only sidesteps that entirely: existing cards (and
+ * their working image slugs) are left exactly as they are.
  *
- * Usage: node fetch-cards.js
+ * New cards come in with the API's current slug scheme, so after running this you
+ * still need to upload each new card's art to the R2 bucket under the slug shown
+ * in the "Added" list (see check-missing-images.js).
+ *
+ * Usage: node fetch-cards.js   (then review the Added list before committing)
  */
 
 const fs = require('fs');
 const path = require('path');
 
 const API_URL = 'https://api.sorcerytcg.com/api/cards';
-const OUTPUT_FILE = path.join(__dirname, 'cards.json');
+const CARDS_FILE = path.join(__dirname, 'cards.json');
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-// The site stores elements/subTypes as comma-joined strings; the API may hand
-// them back as arrays. Normalise so cards.json keeps one consistent shape.
 function toStr(v) {
   if (Array.isArray(v)) return v.filter(Boolean).join(', ');
   return v == null ? '' : String(v);
 }
-
-// Keep exactly the top-level shape the site expects (name, guardian, elements,
-// subTypes, sets) — nested guardian/sets/variants are preserved as-is.
 function normalize(c) {
   return {
     name: c.name,
@@ -37,6 +38,15 @@ function normalize(c) {
     subTypes: toStr(c.subTypes),
     sets: Array.isArray(c.sets) ? c.sets : [],
   };
+}
+function displaySlug(c) {
+  const sets = c.sets || [];
+  const chosen = sets.find(s => /beta/i.test(s.name || '')) || sets.find(s => /alpha/i.test(s.name || '')) || sets[0];
+  if (chosen && chosen.variants && chosen.variants.length) {
+    const v = chosen.variants.find(v => v.finish === 'Standard' && v.product === 'Booster') || chosen.variants[0];
+    if (v && v.slug) return v.slug;
+  }
+  return String(c.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
 }
 
 async function fetchJson(url, tries = 4) {
@@ -54,10 +64,8 @@ async function fetchJson(url, tries = 4) {
 }
 
 async function main() {
-  // Existing cards (for the safety floor + an added/removed summary).
-  let existing = [];
-  try { existing = JSON.parse(fs.readFileSync(OUTPUT_FILE, 'utf8')); } catch (e) { /* first run */ }
-  const existingNames = new Set(existing.map(c => c.name));
+  const existing = JSON.parse(fs.readFileSync(CARDS_FILE, 'utf8'));
+  const haveNames = new Set(existing.map(c => c.name));
 
   console.log(`Fetching ${API_URL} …`);
   const data = await fetchJson(API_URL);
@@ -66,28 +74,23 @@ async function main() {
     process.exit(1);
   }
 
-  const cards = data
-    .filter(c => c && c.name && c.guardian)
-    .map(normalize)
-    .sort((a, b) => a.name.localeCompare(b.name));
+  const additions = data
+    .filter(c => c && c.name && c.guardian && !haveNames.has(c.name))
+    .map(normalize);
 
-  // Safety floor: never clobber a healthy file with a short/broken response.
-  const floor = Math.max(1000, existing.length - 30);
-  if (cards.length < floor) {
-    console.error(`Only ${cards.length} cards returned (have ${existing.length}, floor ${floor}) — aborting.`);
-    process.exit(1);
+  if (!additions.length) {
+    console.log('No new cards — cards.json unchanged.');
+    return;
   }
 
-  const newNames = new Set(cards.map(c => c.name));
-  const added = cards.map(c => c.name).filter(n => !existingNames.has(n));
-  const removed = [...existingNames].filter(n => !newNames.has(n));
+  // Append only; every existing card (and its image slug) is left untouched.
+  const out = existing.concat(additions);
+  fs.writeFileSync(CARDS_FILE, JSON.stringify(out));
 
-  fs.writeFileSync(OUTPUT_FILE, JSON.stringify(cards));
-
-  console.log(`Wrote ${OUTPUT_FILE}: ${cards.length} cards (was ${existing.length}).`);
-  if (added.length)   console.log(`Added (${added.length}): ${added.join(', ')}`);
-  if (removed.length) console.log(`Removed (${removed.length}): ${removed.join(', ')}`);
-  if (!added.length && !removed.length) console.log('No card additions or removals.');
+  console.log(`Appended ${additions.length} new card(s) -> ${out.length} total.`);
+  console.log('Upload art for these to the R2 bucket under the slug shown:');
+  for (const c of additions) console.log(`  ${displaySlug(c)}.png   (${c.name})`);
+  console.log('\nReview the diff, then commit cards.json.');
 }
 
 main().catch(e => { console.error(e); process.exit(1); });
