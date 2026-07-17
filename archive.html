@@ -285,8 +285,8 @@
       <span class="viewmode-label">Change View</span>
       <div class="viewmode-toggle">
         <button class="viewmode-btn" data-view="text" onclick="setArchiveView('text')" title="Text view" aria-label="Text view">☰</button>
-        <button class="viewmode-btn" data-view="details" onclick="setArchiveView('details')" title="Detailed view" aria-label="Detailed view">▤</button>
-        <button class="viewmode-btn active" data-view="card" onclick="setArchiveView('card')" title="Card view" aria-label="Card view">⊞</button>
+        <button class="viewmode-btn active" data-view="details" onclick="setArchiveView('details')" title="Detailed view" aria-label="Detailed view">▤</button>
+        <button class="viewmode-btn" data-view="card" onclick="setArchiveView('card')" title="Card view" aria-label="Card view">⊞</button>
       </div>
     </div>
   </div>
@@ -512,7 +512,7 @@ let galleryAuthors = {}; // id → username
 let galleryAuthorAvatars = {}; // id → avatar url
 let galleryCommentCounts = {}; // deck_id → comment count
 let archiveSort = 'newest'; // random | newest | views | likes  (fresh load = newest)
-let archiveView = 'card';   // card | details | text
+let archiveView = 'details';   // card | details | text — default to the medium row view
 
 // Give each deck a stable random key so a shuffle survives filter keystrokes.
 function assignRandomOrder() { galleryDecks.forEach(d => { d._rand = Math.random(); }); }
