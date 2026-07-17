@@ -64,9 +64,12 @@
           <label style="display:block;font-family:'Cinzel',serif;font-size:0.62rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--rune,#6b5fa0);margin-bottom:6px;">Email</label>
           <input type="email" id="cr-auth-email" placeholder="you@example.com" style="width:100%;background:#0b0a0f;border:1px solid var(--border-strong,rgba(155,135,212,0.35));color:var(--parchment,#e8e0cc);font-family:'Crimson Pro',serif;font-size:1rem;padding:9px 12px;border-radius:4px;outline:none;">
         </div>
-        <div style="margin-bottom:16px;">
+        <div id="cr-auth-field-password" style="margin-bottom:16px;">
           <label style="display:block;font-family:'Cinzel',serif;font-size:0.62rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--rune,#6b5fa0);margin-bottom:6px;">Password</label>
           <input type="password" id="cr-auth-password" placeholder="••••••••" style="width:100%;background:#0b0a0f;border:1px solid var(--border-strong,rgba(155,135,212,0.35));color:var(--parchment,#e8e0cc);font-family:'Crimson Pro',serif;font-size:1rem;padding:9px 12px;border-radius:4px;outline:none;">
+        </div>
+        <div id="cr-auth-forgot" style="text-align:right;margin:-6px 0 16px;font-size:0.82rem;">
+          <a onclick="CR.setAuthMode('reset')" style="color:var(--mist,#3a3658);cursor:pointer;text-decoration:underline;">Forgot password?</a>
         </div>
         <button id="cr-auth-submit" onclick="CR.submitAuth()" style="width:100%;padding:11px;font-family:'Cinzel',serif;font-size:0.72rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;border-radius:4px;cursor:pointer;background:var(--rune,#6b5fa0);border:1px solid var(--arcane,#9b87d4);color:#fff;">Sign In</button>
         <div id="cr-auth-toggle" style="text-align:center;margin-top:14px;font-size:0.88rem;color:var(--mist,#3a3658);">
@@ -84,14 +87,20 @@
     injectAuthModal();
     CR.authMode = mode;
     const isSignup = mode === 'signup';
-    document.getElementById('cr-auth-title').textContent = isSignup ? 'Create Account' : 'Sign In';
-    document.getElementById('cr-auth-desc').textContent = isSignup
-      ? "Pick a display name — it shows on decks you publish."
-      : 'Log in to sync your decks and collection.';
+    const isReset = mode === 'reset';
+    const title = isSignup ? 'Create Account' : (isReset ? 'Reset Password' : 'Sign In');
+    const desc = isSignup ? "Pick a display name — it shows on decks you publish."
+      : (isReset ? "Enter your email and we'll send you a link to set a new password."
+      : 'Log in to sync your decks and collection.');
+    document.getElementById('cr-auth-title').textContent = title;
+    document.getElementById('cr-auth-desc').textContent = desc;
     document.getElementById('cr-auth-field-name').style.display = isSignup ? 'block' : 'none';
-    document.getElementById('cr-auth-submit').textContent = isSignup ? 'Create Account' : 'Sign In';
-    document.getElementById('cr-auth-toggle').innerHTML = isSignup
-      ? `Already have an account? <a onclick="CR.setAuthMode('login')" style="color:var(--arcane,#9b87d4);cursor:pointer;text-decoration:underline;">Sign in</a>`
+    // The password field and "forgot" link are hidden while requesting a reset link.
+    document.getElementById('cr-auth-field-password').style.display = isReset ? 'none' : 'block';
+    document.getElementById('cr-auth-forgot').style.display = (isSignup || isReset) ? 'none' : 'block';
+    document.getElementById('cr-auth-submit').textContent = isSignup ? 'Create Account' : (isReset ? 'Send Reset Link' : 'Sign In');
+    document.getElementById('cr-auth-toggle').innerHTML = (isSignup || isReset)
+      ? `${isReset ? 'Remembered it?' : 'Already have an account?'} <a onclick="CR.setAuthMode('login')" style="color:var(--arcane,#9b87d4);cursor:pointer;text-decoration:underline;">Sign in</a>`
       : `New here? <a onclick="CR.setAuthMode('signup')" style="color:var(--arcane,#9b87d4);cursor:pointer;text-decoration:underline;">Create an account</a>`;
     CR._hideMsg();
   };
@@ -109,8 +118,26 @@
     if (!supa) { CR._showMsg('Connection unavailable.', 'error'); return; }
     const email = document.getElementById('cr-auth-email').value.trim();
     const password = document.getElementById('cr-auth-password').value;
-    if (!email || !password) { CR._showMsg('Email and password are required.', 'error'); return; }
     const btn = document.getElementById('cr-auth-submit');
+    // Password reset request — only the email is needed.
+    if (CR.authMode === 'reset') {
+      if (!email) { CR._showMsg('Enter the email for your account.', 'error'); return; }
+      btn.disabled = true; btn.style.opacity = '0.6';
+      try {
+        const { error } = await supa.auth.resetPasswordForEmail(email, {
+          redirectTo: window.location.origin + '/reset-password.html'
+        });
+        if (error) throw error;
+        // Deliberately generic so we don't reveal which emails have accounts.
+        CR._showMsg("If an account exists for that email, a reset link is on its way. Check your inbox (and spam).", 'success');
+      } catch (e) {
+        CR._showMsg(e.message || 'Could not send the reset link.', 'error');
+      } finally {
+        btn.disabled = false; btn.style.opacity = '1';
+      }
+      return;
+    }
+    if (!email || !password) { CR._showMsg('Email and password are required.', 'error'); return; }
     btn.disabled = true; btn.style.opacity = '0.6';
     try {
       if (CR.authMode === 'signup') {
