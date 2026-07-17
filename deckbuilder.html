@@ -708,26 +708,40 @@
   .deck-card-grid-large { grid-template-columns: repeat(auto-fill, minmax(300px, 380px)); justify-content: center; gap: 14px; }
   .sub-section-cards.large-mode { grid-template-columns: repeat(auto-fill, minmax(300px, 380px)); justify-content: center; gap: 14px; }
 
-  /* DECK SIDE — LIST VIEW */
-  .deck-card-list { display: flex; flex-direction: column; gap: 3px; }
-  .sub-section-cards.list-mode { display: flex; flex-direction: column; gap: 3px; }
-  /* DECK SIDE — TEXT VIEW: flow rows into as many columns as fit so the whole
-     deck is visible at a glance. Scoped to compact-mode (Text only); Detailed
-     view (list-mode without compact-mode) stays a single column. */
+  /* DECK SIDE — DETAILED view: two columns, like the card explorer's detailed list */
+  .deck-card-list,
+  .sub-section-cards.list-mode {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 4px 8px;
+  }
+  /* DECK SIDE — TEXT view: flow rows into as many compact columns as fit so the
+     whole deck is visible at a glance (compact-mode = Text only). */
   .deck-card-list.compact-mode,
   .sub-section-cards.list-mode.compact-mode {
-    display: grid;
     grid-template-columns: repeat(auto-fill, minmax(195px, 1fr));
-    gap: 3px 8px;
+    gap: 2px 10px;
   }
+  @media (max-width: 560px) {
+    .deck-card-list, .sub-section-cards.list-mode { grid-template-columns: 1fr; }
+  }
+  /* DETAILED row — boxed, like the explorer. Columns: qty · name · thresholds · mana · rarity · controls */
   .deck-card-row {
-    display: grid; grid-template-columns: auto 1fr auto auto auto;
+    display: grid; grid-template-columns: auto 1fr auto auto auto auto;
     align-items: center; gap: 8px;
-    background: var(--dusk); border: 1px solid var(--border);
-    padding: 4px 9px; border-radius: 3px; cursor: pointer;
-    transition: background 0.12s; min-width: 0;
+    background: #13111e; border: 1px solid var(--border);
+    border-left: 3px solid var(--border-strong);
+    padding: 5px 9px; border-radius: 3px; cursor: pointer;
+    transition: background 0.12s, border-color 0.12s; min-width: 0;
   }
-  .deck-card-row:hover { background: #1a1728; }
+  .deck-card-row:hover { background: #1a1728; border-left-color: var(--arcane); }
+  /* TEXT row — boxless, clean, mimics the card explorer's Text view */
+  .compact-mode .deck-card-row {
+    display: flex; align-items: center; gap: 10px;
+    background: none; border: none; border-radius: 4px; padding: 3px 8px;
+  }
+  .compact-mode .deck-card-row:hover { background: rgba(155,135,212,0.08); }
+  .compact-mode .deck-card-row .dr-name { flex: 1; }
   .dr-qty { font-family: 'Cinzel', serif; font-size: 0.78rem; font-weight: 700; color: var(--gold); white-space: nowrap; }
   .dr-name { font-family: 'Crimson Pro', serif; font-size: 0.92rem; color: var(--parchment); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
   .dr-controls { display: flex; align-items: center; gap: 3px; }
@@ -739,11 +753,8 @@
   .dr-qty-btn:hover { background: var(--rune); color: #fff; }
   .dr-del-btn:hover { background: var(--ember); border-color: var(--ember); color: #fff; }
 
-  /* Threshold element symbols in deck text rows */
-  .dr-thresholds { display: inline-flex; gap: 6px; align-items: center; flex-shrink: 0; }
-  .thr-group { display: inline-flex; gap: 1px; align-items: center; }
-  .thr-icon { width: 17px; height: 17px; object-fit: contain; vertical-align: middle; display: inline-block; }
-  .dr-name-wrap { display: flex; flex-direction: column; min-width: 0; }
+  /* Threshold element symbols in deck rows (shared .th-group / .th-row-icon markup) */
+  .dr-th { display: inline-flex; gap: 4px; align-items: center; flex-shrink: 0; }
 
   /* Deck panel view toggle (grid/text) */
   .deck-viewmode { display: inline-flex; border: 2px solid #2a2640; border-radius: 4px; overflow: hidden; width: fit-content; }
@@ -3081,31 +3092,15 @@ function thresholdOverlay(card) {
   return groups.length ? `<div class="th-overlay-big">${groups.join('')}</div>` : '';
 }
 
-// Build threshold display using repeated element symbols (e.g. 🔥🔥 for 2 fire)
-function thresholdPills(card) {
-  if (!card.thresholds) return '';
-  // Map element name → image file (Air uses wind.png)
-  const imgMap = { air: 'wind.png', earth: 'earth.png', fire: 'fire.png', water: 'water.png' };
-  const groups = Object.entries(card.thresholds)
-    .filter(([, v]) => v > 0)
-    .map(([k, v]) => {
-      const file = imgMap[k.toLowerCase()];
-      if (!file) return '';
-      // Repeat the symbol once per threshold pip
-      const icons = Array.from({ length: v }, () =>
-        `<img src="${file}" alt="${k}" class="thr-icon">`).join('');
-      return `<span class="thr-group">${icons}</span>`;
-    })
-    .filter(Boolean);
-  return groups.length ? `<span class="dr-thresholds">${groups.join('')}</span>` : '';
-}
-
 function renderDeckCardRow(section, key, card, qty) {
   const rarity = card.rarity || '';
   const rarityClass = rarity.toLowerCase();
-  const thr = thresholdPills(card);
+  const cost = (card.cost != null && card.cost !== '') ? card.cost : '';
+  const th = rowThIcons(card);
   const k = escId(key);
-  const controls = readOnly ? '' : `<div class="dr-controls">
+  const priceHtml = (readOnly && cardPrice(card.name) > 0)
+    ? `<span class="card-price">$${(cardPrice(card.name)*qty).toFixed(2)}</span>` : '';
+  const controls = readOnly ? priceHtml : `<div class="dr-controls">
       ${section !== 'avatar' ? `<button class="dr-qty-btn" onclick="event.stopPropagation();changeQty('${section}','${k}',-1)">−</button>
       <button class="dr-qty-btn" onclick="event.stopPropagation();changeQty('${section}','${k}',1)">+</button>` : ''}
       <button class="dr-del-btn" onclick="event.stopPropagation();removeCard('${section}','${k}')">✕</button>
@@ -3113,9 +3108,9 @@ function renderDeckCardRow(section, key, card, qty) {
   return `<div class="deck-card-row" data-card-id="${escId(card.id)}" draggable="${readOnly ? 'false' : 'true'}" ondragstart="onDeckCardDragStart(event,'${section}','${escId(key)}')" ondragend="onCardDragEnd(event)" onclick="openModal('${escId(card.id)}')">
     <span class="dr-qty">${qty}×</span>
     <span class="dr-name">${card.name}</span>
-    ${thr}
-    <span class="db-row-rarity ${rarityClass}">${rarity}</span>
-    ${readOnly && cardPrice(card.name) > 0 ? `<span class="card-price">$${(cardPrice(card.name)*qty).toFixed(2)}</span>` : ''}
+    <span class="dr-th">${th}</span>
+    <span class="cr-mana${cost===''?' empty':''}">${cost}</span>
+    <span class="db-row-rarity ${rarityClass}">${rarityAbbr(rarity)}</span>
     ${controls}
   </div>`;
 }
