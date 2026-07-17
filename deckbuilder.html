@@ -761,6 +761,11 @@
   }
   .dr-qty-btn:hover { background: var(--rune); color: #fff; }
   .dr-del-btn:hover { background: var(--ember); border-color: var(--ember); color: #fff; }
+  /* Move arrows: ↓ sends a card to the Collection (gold), ↑ sends it back to the deck (arcane) */
+  .dr-move-btn.to-collection, .qty-btn.to-collection { color: var(--gold); }
+  .dr-move-btn.to-deck, .qty-btn.to-deck { color: var(--arcane); }
+  .dr-move-btn.to-collection:hover, .qty-btn.to-collection:hover { background: var(--gold); border-color: var(--gold); color: #1a1410; }
+  .dr-move-btn.to-deck:hover, .qty-btn.to-deck:hover { background: var(--arcane); border-color: var(--arcane); color: #fff; }
 
   /* Threshold element symbols in deck rows (shared .th-group / .th-row-icon markup) */
   .dr-th { display: inline-flex; gap: 4px; align-items: center; flex-shrink: 0; }
@@ -2626,6 +2631,46 @@ function removeCard(section, key) {
   renderCardGrid();
 }
 
+// Move one copy from the main deck (Atlas/Spellbook) into the 10-card Collection
+// (sideboard). It's a move within the deck, so the rarity total is unchanged — only
+// the Collection's 10-card cap can block it.
+function moveToDeckCollection(section, key) {
+  const entry = deck[section][key];
+  if (!entry || section === 'avatar' || section === 'collection') return;
+  const collectionTotal = Object.values(deck.collection).reduce((s, v) => s + v.qty, 0);
+  if (collectionTotal >= DECK_COLLECTION_LIMIT) {
+    toast(`Collection is full — max ${DECK_COLLECTION_LIMIT} cards.`);
+    return;
+  }
+  const before = serializeDeck();
+  const card = entry.card;
+  if (entry.qty <= 1) delete deck[section][key]; else entry.qty -= 1;
+  const ckey = String(card.id);
+  if (deck.collection[ckey]) deck.collection[ckey].qty += 1;
+  else deck.collection[ckey] = { card, qty: 1 };
+  commitUndo(before);
+  renderDeck();
+  renderCardGrid();
+  flashCollectionSection();
+}
+
+// Move one copy from the Collection back into the main deck (Atlas for Sites,
+// Spellbook otherwise). Also a move within the deck, so no rarity re-check needed.
+function moveFromCollectionToDeck(key) {
+  const entry = deck.collection[key];
+  if (!entry) return;
+  const before = serializeDeck();
+  const card = entry.card;
+  const section = getDeckSection(card); // 'atlas' | 'spellbook'
+  if (entry.qty <= 1) delete deck.collection[key]; else entry.qty -= 1;
+  const dkey = String(card.id);
+  if (deck[section][dkey]) deck[section][dkey].qty += 1;
+  else deck[section][dkey] = { card, qty: 1 };
+  commitUndo(before);
+  renderDeck();
+  renderCardGrid();
+}
+
 // ── DECK COUNTS ──
 function getDeckCounts() {
   const avatarCount = Object.values(deck.avatar).reduce((s,v)=>s+v.qty,0);
@@ -3070,11 +3115,22 @@ function renderSection(title, section, entries, reqMsg, isOk, req, groups) {
     </div>`;
 }
 
+// The move button that sits just left of the − : a ↓ on Atlas/Spellbook cards (send one
+// to the Collection sideboard) and a ↑ on Collection cards (send one back to the deck).
+function deckMoveBtn(section, k, cls) {
+  if (section === 'collection')
+    return `<button class="${cls} dr-move-btn to-deck" onclick="event.stopPropagation();moveFromCollectionToDeck('${k}')" title="Move one back into the deck" aria-label="Move one back into the deck">↑</button>`;
+  if (section === 'atlas' || section === 'spellbook')
+    return `<button class="${cls} dr-move-btn to-collection" onclick="event.stopPropagation();moveToDeckCollection('${section}','${k}')" title="Move one to the Collection (sideboard)" aria-label="Move one to the Collection">↓</button>`;
+  return '';
+}
+
 function renderDeckCard(section, key, card, qty) {
   if (deckViewMode === 'list' || deckViewMode === 'details') return renderDeckCardRow(section, key, card, qty);
   const isSite = card.type === 'Site';
   const k = escId(key);
   const controls = readOnly ? '' : `<div class="dvg-controls">
+      ${deckMoveBtn(section, k, 'qty-btn')}
       ${section !== 'avatar' ? `<button class="qty-btn" onclick="event.stopPropagation();changeQty('${section}','${k}',-1)">−</button>
       <button class="qty-btn" onclick="event.stopPropagation();changeQty('${section}','${k}',1)">+</button>` : ''}
       <button class="del-btn" onclick="event.stopPropagation();removeCard('${section}','${k}')">✕</button>
@@ -3114,6 +3170,7 @@ function renderDeckCardRow(section, key, card, qty) {
   const priceHtml = (readOnly && cardPrice(card.name) > 0)
     ? `<span class="card-price">$${(cardPrice(card.name)*qty).toFixed(2)}</span>` : '';
   const controls = readOnly ? priceHtml : `<div class="dr-controls">
+      ${deckMoveBtn(section, k, 'dr-qty-btn')}
       ${section !== 'avatar' ? `<button class="dr-qty-btn" onclick="event.stopPropagation();changeQty('${section}','${k}',-1)">−</button>
       <button class="dr-qty-btn" onclick="event.stopPropagation();changeQty('${section}','${k}',1)">+</button>` : ''}
       <button class="dr-del-btn" onclick="event.stopPropagation();removeCard('${section}','${k}')">✕</button>
