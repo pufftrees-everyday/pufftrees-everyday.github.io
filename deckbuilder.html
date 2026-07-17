@@ -1033,6 +1033,18 @@
   .add-feedback { font-size: 0.9rem; font-style: italic; }
   .add-feedback.ok { color: #7ab88a; }
   .add-feedback.warn { color: var(--ember); }
+
+  /* Move controls in the popup for cards already in the deck: ↓ to Collection, ↑ to deck */
+  .modal-move-controls { display: flex; gap: 10px; flex-wrap: wrap; }
+  .modal-move-btn {
+    padding: 9px 16px; font-family: 'Cinzel', serif; font-size: 0.72rem; font-weight: 600;
+    letter-spacing: 0.08em; text-transform: uppercase; border-radius: 3px; cursor: pointer;
+    background: transparent; transition: all 0.2s;
+  }
+  .modal-move-btn.to-collection { border: 1px solid var(--gold); color: var(--gold); }
+  .modal-move-btn.to-collection:hover { background: var(--gold); color: #1a1410; }
+  .modal-move-btn.to-deck { border: 1px solid var(--arcane); color: var(--arcane); }
+  .modal-move-btn.to-deck:hover { background: var(--arcane); color: #fff; }
   /* Make the Collection (sideboard) destination unmistakable */
   .add-collection-note { font-size: 0.78rem; color: var(--rune); font-style: italic; line-height: 1.5; }
   .add-collection-note b { color: var(--gold); font-style: normal; }
@@ -1519,7 +1531,7 @@
       <div class="modal-stats" id="modal-stats"></div>
       <div class="modal-faq" id="modal-faq" style="display:none;"></div>
       <div class="modal-add-section">
-        <div class="add-section-title">Add to Deck</div>
+        <div class="add-section-title" id="modal-add-title">Add to Deck</div>
         <div class="add-controls">
           <div class="qty-selector">
             <button onclick="changeAddQty(-1)">−</button>
@@ -1527,10 +1539,12 @@
             <button onclick="changeAddQty(1)">+</button>
           </div>
           <button class="add-to-deck-btn" onclick="addCurrentCard()" title="Add to your main deck (Atlas or Spellbook, by card type)">+ Add to Deck</button>
-          <button class="add-to-collection-btn" onclick="addCurrentCardToCollection()" title="Set aside as one of your 10 Collection (sideboard) cards">📦 + Collection</button>
+          <button class="add-to-collection-btn" id="modal-collection-btn" onclick="addCurrentCardToCollection()" title="Set aside as one of your 10 Collection (sideboard) cards">📦 + Collection</button>
           <div class="add-feedback" id="add-feedback"></div>
         </div>
-        <div class="add-collection-note"><b>📦 Collection</b> is your deck's separate 10-card sideboard — cards go here instead of your Atlas &amp; Spellbook.</div>
+        <!-- Move controls (shown when a card already in the deck is opened): ↓ to Collection, ↑ back to deck -->
+        <div class="modal-move-controls" id="modal-move-controls" style="display:none;"></div>
+        <div class="add-collection-note" id="modal-collection-note"><b>📦 Collection</b> is your deck's separate 10-card sideboard — cards go here instead of your Atlas &amp; Spellbook.</div>
       </div>
     </div>
     <button class="modal-close" onclick="closeModal()">✕</button>
@@ -1791,6 +1805,7 @@ function syncScrollEditor() {
   if (ta) ta.value = deckScroll || '';
 }
 let currentModalCard = null;
+let modalFromDeck = false; // true when the popup was opened from a deck-panel card
 let addQty = 1;
 let activeDeckId = null;
 let activeDeckCode = null; // short_code of the current deck if it's a cloud-saved deck
@@ -2310,6 +2325,7 @@ function openModal(id, src) {
   const card = allCards.find(c => c.id === id || c.name === id);
   if (!card) return;
   currentModalCard = card;
+  modalFromDeck = (src === 'deck');
   addQty = 1;
   document.getElementById('add-qty-display').textContent = 1;
 
@@ -2349,9 +2365,85 @@ function openModal(id, src) {
   document.getElementById('add-feedback').textContent = '';
   document.getElementById('add-feedback').className = 'add-feedback';
 
+  refreshModalDeckControls();
+
   CRCardFAQ.mount(card.name, 'modal-faq');
   document.getElementById('modal-overlay').classList.add('open');
   if (typeof hpHide === 'function') hpHide();
+}
+
+// For a card opened from the deck side, swap the confusing "+ Collection" add button
+// (which adds a duplicate) for ↓ Move to Collection / ↑ Move to Deck arrows that mirror
+// the row controls. Explorer-opened cards keep the normal "add" controls.
+function refreshModalDeckControls() {
+  const card = currentModalCard;
+  const moveWrap = document.getElementById('modal-move-controls');
+  const collBtn = document.getElementById('modal-collection-btn');
+  const collNote = document.getElementById('modal-collection-note');
+  const title = document.getElementById('modal-add-title');
+  if (!card || !moveWrap) return;
+
+  if (!modalFromDeck) {
+    moveWrap.style.display = 'none';
+    moveWrap.innerHTML = '';
+    if (collBtn) collBtn.style.display = '';
+    if (collNote) collNote.style.display = '';
+    if (title) title.textContent = 'Add to Deck';
+    return;
+  }
+
+  // Deck-side: hide the "+ Collection" add button + note, show the move arrows.
+  if (collBtn) collBtn.style.display = 'none';
+  if (collNote) collNote.style.display = 'none';
+  if (title) title.textContent = 'Add More or Move';
+
+  const id = String(card.id);
+  const mainSection = getDeckSection(card); // 'atlas' | 'spellbook' | 'avatar'
+  const canCollection = mainSection === 'atlas' || mainSection === 'spellbook';
+  const inMain = canCollection && !!(deck[mainSection][id] && deck[mainSection][id].qty > 0);
+  const inColl = !!(deck.collection[id] && deck.collection[id].qty > 0);
+
+  let html = '';
+  if (inMain) html += `<button class="modal-move-btn to-collection" onclick="moveModalToCollection()" title="Move one copy to your 10-card Collection (sideboard)">↓ Move to Collection</button>`;
+  if (inColl) html += `<button class="modal-move-btn to-deck" onclick="moveModalToDeck()" title="Move one copy back into your deck">↑ Move to Deck</button>`;
+  moveWrap.innerHTML = html;
+  moveWrap.style.display = html ? 'flex' : 'none';
+}
+
+function setModalFeedback(msg, kind) {
+  const fb = document.getElementById('add-feedback');
+  if (!fb) return;
+  fb.textContent = msg;
+  fb.className = 'add-feedback ' + (kind === 'warn' ? 'warn' : 'ok');
+}
+
+// Move one copy of the popup's card from the main deck into the Collection.
+function moveModalToCollection() {
+  if (!currentModalCard) return;
+  const card = currentModalCard;
+  const id = String(card.id);
+  const section = getDeckSection(card);
+  if (section === 'avatar') return;
+  if (!(deck[section][id] && deck[section][id].qty > 0)) { refreshModalDeckControls(); return; }
+  const collectionTotal = Object.values(deck.collection).reduce((s, v) => s + v.qty, 0);
+  if (collectionTotal >= DECK_COLLECTION_LIMIT) {
+    setModalFeedback(`Collection is full — max ${DECK_COLLECTION_LIMIT} cards.`, 'warn');
+    return;
+  }
+  moveToDeckCollection(section, id);
+  setModalFeedback(`Moved 1× ${card.name} to your Collection.`, 'ok');
+  refreshModalDeckControls();
+}
+
+// Move one copy of the popup's card from the Collection back into the deck.
+function moveModalToDeck() {
+  if (!currentModalCard) return;
+  const card = currentModalCard;
+  const id = String(card.id);
+  if (!(deck.collection[id] && deck.collection[id].qty > 0)) { refreshModalDeckControls(); return; }
+  moveFromCollectionToDeck(id);
+  setModalFeedback(`Moved 1× ${card.name} back to your deck.`, 'ok');
+  refreshModalDeckControls();
 }
 
 function changeAddQty(delta) {
@@ -2369,6 +2461,7 @@ function addCurrentCard() {
   if (result.ok) {
     renderDeck();
     renderCardGrid(); // refresh badges
+    if (modalFromDeck) refreshModalDeckControls(); // the card may now be movable
   }
 }
 
