@@ -295,6 +295,30 @@
   .element-lock-btn:hover { border-color: var(--arcane); color: var(--arcane); }
   .element-lock-btn.active { background: var(--gold); border-color: var(--gold); color: #1a1410; }
 
+  /* "Only in my binders" filter — toggle button + a checkbox list of the user's Vault binders */
+  .binder-filter-row { flex-direction: column; align-items: stretch; gap: 8px; }
+  .binder-only-btn { align-self: flex-start; }
+  .binder-dropdown {
+    border: 1px solid var(--border-strong); border-radius: 4px;
+    background: #0b0a0f; padding: 6px; max-height: 210px; overflow-y: auto;
+  }
+  .binder-dd-head { display: flex; gap: 12px; padding: 2px 4px 6px; border-bottom: 1px solid #2a2640; margin-bottom: 4px; }
+  .binder-dd-link {
+    background: none; border: none; cursor: pointer; padding: 0;
+    font-family: 'Cinzel', serif; font-size: 0.6rem; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase; color: var(--arcane);
+  }
+  .binder-dd-link:hover { color: var(--shimmer); text-decoration: underline; }
+  .binder-opt {
+    display: flex; align-items: center; gap: 9px; padding: 5px 6px; border-radius: 3px;
+    cursor: pointer; font-family: 'Crimson Pro', serif; font-size: 0.92rem; color: var(--parchment);
+  }
+  .binder-opt:hover { background: rgba(155,135,212,0.1); }
+  .binder-opt input { width: 15px; height: 15px; accent-color: var(--arcane); cursor: pointer; flex-shrink: 0; }
+  .binder-opt-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .binder-opt-count { color: var(--rune); font-size: 0.78rem; flex-shrink: 0; }
+  .binder-empty { color: var(--rune); font-style: italic; font-size: 0.84rem; padding: 6px; line-height: 1.45; }
+
   .result-count { font-size: 0.75rem; color:var(--rune); font-style: italic; padding: 2px 0; }
 
   /* ADVANCED TOGGLE */
@@ -1286,6 +1310,12 @@
         <button class="filter-chip" data-group="rarity" data-value="Elite" onclick="toggleChip(this)">Elite</button>
         <button class="filter-chip" data-group="rarity" data-value="Unique" onclick="toggleChip(this)">Unique</button>
       </div>
+      <div class="filter-row binder-filter-row">
+        <button class="element-lock-btn binder-only-btn" id="binder-only-btn" onclick="toggleBinderOnly()" title="Only show cards you have in the selected Vault binders">📁 Only in my binders</button>
+        <div class="binder-dropdown" id="binder-dropdown" style="display:none;">
+          <div class="binder-dropdown-list" id="binder-dropdown-list"></div>
+        </div>
+      </div>
       <div class="filter-panel-footer">
         <button class="clear-all-filters-btn" onclick="clearAllFilters()">✕ Clear All Filters</button>
       </div>
@@ -1975,6 +2005,7 @@ wireHoverOn('card-grid');   // left explorer — all views
 wireHoverOn('deck-body');   // right deck panel — all views
 
 function escId(id) { return String(id).replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
+function escHtml(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 
 // Map a set name to a compact lettered, color-coded badge
 function setBadge(setName) {
@@ -1995,6 +2026,12 @@ function setBadge(setName) {
 // ── FILTERS ──
 const activeFilters = { type: new Set(), set: new Set(), rarity: new Set(), element: new Set() };
 let elementLock = false; // when true, a card's elements must ALL be within the selected set
+
+// "Only in my binders" — restrict the explorer to cards in the user's chosen Vault binders.
+let binderOnly = false;                 // filter active?
+let vaultBinders = [];                  // [{ id, name, cards }] — the user's parent:'vault' binders
+const selectedBinderIds = new Set();    // which binders are ticked
+let binderCardNames = new Set();        // union of card names across the selected binders
 
 // Parse a card's elements into a lowercased array (e.g. "Fire, Water" → ['fire','water'])
 function cardElements(card) {
@@ -2023,6 +2060,15 @@ function clearAllFilters() {
   elementLock = false;
   const lockBtn = document.getElementById('element-lock-btn');
   if (lockBtn) lockBtn.classList.remove('active');
+  // Reset the "Only in my binders" filter too.
+  binderOnly = false;
+  selectedBinderIds.clear();
+  const binderBtn = document.getElementById('binder-only-btn');
+  if (binderBtn) binderBtn.classList.remove('active');
+  const binderDd = document.getElementById('binder-dropdown');
+  if (binderDd) binderDd.style.display = 'none';
+  recomputeBinderCardNames();
+  renderBinderDropdown();
   clearRanges();
   updateFilterDot();
   updateAdvDot();
@@ -2030,7 +2076,7 @@ function clearAllFilters() {
 }
 
 function updateFilterDot() {
-  const hasActive = Object.values(activeFilters).some(s => s.size > 0) || elementLock;
+  const hasActive = Object.values(activeFilters).some(s => s.size > 0) || elementLock || binderOnly;
   document.getElementById('filter-toggle-bar').classList.toggle('has-active', hasActive);
 }
 
@@ -2061,6 +2107,104 @@ function toggleElementLock() {
   const btn = document.getElementById('element-lock-btn');
   if (btn) btn.classList.toggle('active', elementLock);
   updateFilterDot();
+  filterCards();
+}
+
+// ── "ONLY IN MY BINDERS" FILTER ──
+// Load the user's Vault collection (cloud when signed in, else the local guest copy) and
+// keep just the parent:'vault' binders. Card names in a binder are the keys of binder.cards.
+async function fetchCollectionData() {
+  if (supa && currentUser) {
+    try {
+      const { data, error } = await supa.from('collections').select('data').eq('user_id', currentUser.id).single();
+      if (error && error.code !== 'PGRST116') throw error; // PGRST116 = no row yet
+      return (data && data.data) || {};
+    } catch (e) { console.warn('binder fetch failed', e); return null; }
+  }
+  try { return JSON.parse(localStorage.getItem('grimoire_collection') || '{}'); } catch (e) { return {}; }
+}
+
+async function loadVaultBinders() {
+  const col = await fetchCollectionData();
+  const all = (col && Array.isArray(col['__binders__'])) ? col['__binders__'] : [];
+  vaultBinders = all.filter(b => b && b.parent === 'vault');
+  // Drop any selections whose binder no longer exists.
+  const validIds = new Set(vaultBinders.map(b => b.id));
+  [...selectedBinderIds].forEach(id => { if (!validIds.has(id)) selectedBinderIds.delete(id); });
+  renderBinderDropdown();
+  recomputeBinderCardNames();
+}
+
+// A binder's members = card names with a nonzero std/foil count.
+function binderCardNamesOf(b) {
+  const cards = (b && b.cards) || {};
+  return Object.keys(cards).filter(n => { const e = cards[n] || {}; return (e.std || 0) + (e.foil || 0) > 0; });
+}
+function binderMemberCount(b) { return binderCardNamesOf(b).length; }
+
+function recomputeBinderCardNames() {
+  binderCardNames = new Set();
+  vaultBinders.forEach(b => {
+    if (!selectedBinderIds.has(b.id)) return;
+    binderCardNamesOf(b).forEach(n => binderCardNames.add(n));
+  });
+}
+
+function renderBinderDropdown() {
+  const list = document.getElementById('binder-dropdown-list');
+  if (!list) return;
+  if (!vaultBinders.length) {
+    list.innerHTML = `<div class="binder-empty">${(supa && currentUser)
+      ? 'No binders in your Vault yet — create one in My Vault, then add cards to it.'
+      : 'Sign in and organise cards into binders in My Vault to use this.'}</div>`;
+    return;
+  }
+  const head = `<div class="binder-dd-head">
+      <button type="button" class="binder-dd-link" onclick="selectAllBinders(true)">Select all</button>
+      <button type="button" class="binder-dd-link" onclick="selectAllBinders(false)">None</button>
+    </div>`;
+  const opts = vaultBinders.map(b => `<label class="binder-opt">
+      <input type="checkbox" ${selectedBinderIds.has(b.id) ? 'checked' : ''} onchange="toggleBinderSelection('${escId(b.id)}')">
+      <span class="binder-opt-name">${escHtml(b.name)}</span>
+      <span class="binder-opt-count">${binderMemberCount(b)}</span>
+    </label>`).join('');
+  list.innerHTML = head + opts;
+}
+
+function toggleBinderOnly() {
+  binderOnly = !binderOnly;
+  const btn = document.getElementById('binder-only-btn');
+  if (btn) btn.classList.toggle('active', binderOnly);
+  const dd = document.getElementById('binder-dropdown');
+  if (dd) dd.style.display = binderOnly ? 'block' : 'none';
+  if (binderOnly) {
+    // Refresh binders in case the Vault changed since load, then default to all selected.
+    loadVaultBinders().then(() => {
+      if (binderOnly && selectedBinderIds.size === 0 && vaultBinders.length) {
+        vaultBinders.forEach(b => selectedBinderIds.add(b.id));
+        renderBinderDropdown();
+        recomputeBinderCardNames();
+      }
+      updateFilterDot();
+      filterCards();
+    });
+  }
+  updateFilterDot();
+  filterCards();
+}
+
+function toggleBinderSelection(id) {
+  if (selectedBinderIds.has(id)) selectedBinderIds.delete(id);
+  else selectedBinderIds.add(id);
+  recomputeBinderCardNames();
+  filterCards();
+}
+
+function selectAllBinders(all) {
+  selectedBinderIds.clear();
+  if (all) vaultBinders.forEach(b => selectedBinderIds.add(b.id));
+  renderBinderDropdown();
+  recomputeBinderCardNames();
   filterCards();
 }
 
@@ -2117,6 +2261,7 @@ function filterCards() {
     if (activeFilters.type.size && !activeFilters.type.has(c.type)) return false;
     if (activeFilters.set.size && !activeFilters.set.has(c.set)) return false;
     if (activeFilters.rarity.size && !activeFilters.rarity.has(c.rarity)) return false;
+    if (binderOnly && !binderCardNames.has(c.name)) return false;
     // Element filter — two modes:
     //  • normal (OR): card has at least one selected element
     //  • locked (subset): card's elements are ALL within the selected set
@@ -4480,10 +4625,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   renderAuthBar();
   await refreshUser();
   renderVisibilityBar();
+  loadVaultBinders(); // populate the "Only in my binders" dropdown (fire-and-forget)
   if (supa) {
     supa.auth.onAuthStateChange((event) => {
       if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'INITIAL_SESSION' || event === 'TOKEN_REFRESHED') {
-        refreshUser().then(() => { renderVisibilityBar(); reconcileOwnedDeck(); });
+        refreshUser().then(() => { renderVisibilityBar(); reconcileOwnedDeck(); loadVaultBinders().then(() => { if (binderOnly) filterCards(); }); });
       }
     });
   }
