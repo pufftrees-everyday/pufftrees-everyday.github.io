@@ -388,8 +388,8 @@
   .text-row .tr-stepbtn:hover { border-color: var(--arcane); color: var(--gold); }
   .text-row .tr-qtynum { font-family: 'Cinzel', serif; font-weight: 700; color: var(--gold); min-width: 16px; text-align: center; font-size: 0.9rem; }
   .text-row:not(.has-qty) .tr-qtynum { color: var(--mist); }
-  /* Text view packs more columns (compact rows); the explorer pane is narrow so it adapts */
-  .card-list-grid.list-view.text-view { grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); }
+  /* Text view: wide columns so names stay readable (fewer, roomier columns) */
+  .card-list-grid.list-view.text-view { grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); }
 
   /* VIEW MODE TOGGLE */
   .viewmode-toggle { display: flex; border: 2px solid #2a2640; border-radius: 4px; overflow: hidden; flex-shrink: 0; }
@@ -715,12 +715,12 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 4px 8px;
   }
-  /* DECK SIDE — TEXT view: flow rows into as many compact columns as fit so the
-     whole deck is visible at a glance (compact-mode = Text only). */
+  /* DECK SIDE — TEXT view: fewer, wider columns so names stay readable
+     (compact-mode = Text only). */
   .deck-card-list.compact-mode,
   .sub-section-cards.list-mode.compact-mode {
-    grid-template-columns: repeat(auto-fill, minmax(195px, 1fr));
-    gap: 2px 10px;
+    grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+    gap: 2px 12px;
   }
   @media (max-width: 560px) {
     .deck-card-list, .sub-section-cards.list-mode { grid-template-columns: 1fr; }
