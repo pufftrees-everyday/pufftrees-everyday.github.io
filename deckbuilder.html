@@ -1037,8 +1037,33 @@
   .add-collection-note { font-size: 0.78rem; color: var(--rune); font-style: italic; line-height: 1.5; }
   .add-collection-note b { color: var(--gold); font-style: normal; }
 
-  .modal-close { position: absolute; top: 10px; right: 14px; background: none; border: none; color:var(--rune); font-size: 1.4rem; cursor: pointer; transition: color 0.15s; }
+  .modal-close { position: absolute; top: 10px; right: 14px; background: none; border: none; color:var(--rune); font-size: 1.4rem; cursor: pointer; transition: color 0.15s; z-index: 2; }
   .modal-close:hover { color: var(--parchment); }
+
+  /* ── MOBILE card popup ──
+     On phones the desktop two-column layout (a fixed ~460px image beside the body) is
+     wider than the screen, so the body got squeezed and text was cut off. Here the popup
+     stacks (image over info) and scrolls as one, so it always fits. In the Card/Large deck
+     views the image is hidden entirely by openModal() — the card is already shown large —
+     leaving just the info + controls. */
+  @media (max-width: 760px) {
+    .modal {
+      grid-template-columns: 1fr;
+      width: 94vw; max-width: 440px; max-height: 90vh;
+      overflow-x: hidden; overflow-y: auto;
+    }
+    .modal-img { width: 100%; min-height: 0; padding: 20px 18px 0; }
+    .modal-img img { width: auto; max-width: min(210px, 52vw); height: auto; max-height: 40vh; object-fit: contain; }
+    .modal-img.site-img { width: 100%; min-height: 0; height: 200px; padding: 6px 0 0; }
+    .modal-img.site-img img { width: 146px; height: 200px; max-height: none; transform: rotate(90deg); object-fit: cover; }
+    .modal-body { padding: 16px 18px 22px; overflow: visible; gap: 10px; }
+    .modal-name { font-size: 1.45rem; }
+    .modal-type { font-size: 1rem; }
+    .modal-text { font-size: 1.02rem; line-height: 1.55; }
+    .modal-stat { font-size: 0.9rem; }
+    .add-section-title { font-size: 0.68rem; }
+    .add-to-deck-btn, .add-to-collection-btn { padding: 9px 14px; }
+  }
 
   /* IMPORT MODAL */
   .import-modal { background: var(--dusk); border: 1px solid var(--border-strong); border-radius: 8px; max-width: 480px; width: 90vw; padding: 24px; position: relative; }
@@ -2166,7 +2191,7 @@ function renderDbCardItem(card) {
       <button class="qty-btn ci-add" onclick="event.stopPropagation();quickAddToDeck('${id}')" title="Add one to deck" aria-label="Add one to deck">+</button>
     </div>`;
   return `<div class="card-item" draggable="true" data-card-id="${id}"
-    onclick="openModal('${id}')"
+    onclick="openModal('${id}','explorer')"
     ondragstart="onCardDragStart(event,'${id}')"
     ondragend="onCardDragEnd(event)">
     <img src="${getImageUrl(card)}" alt="${card.name}" loading="lazy" onerror="this.style.opacity='0.2'" draggable="false">
@@ -2206,7 +2231,7 @@ function rowThIcons(card) {
 function renderDbCardTextRow(card) {
   const inDeck = getDeckCountForCard(card.id);
   const cost = (card.cost != null && card.cost !== '') ? card.cost : '';
-  return `<div class="text-row${inDeck > 0 ? ' has-qty' : ''}" data-card-id="${escId(card.id)}" onclick="openModal('${escId(card.id)}')">
+  return `<div class="text-row${inDeck > 0 ? ' has-qty' : ''}" data-card-id="${escId(card.id)}" onclick="openModal('${escId(card.id)}','explorer')">
     <span class="tr-step">
       <button class="tr-stepbtn" onclick="event.stopPropagation();quickRemoveFromDeck('${escId(card.id)}')" aria-label="Remove one" title="Remove one from deck">−</button>
       <span class="tr-qtynum">${inDeck}</span>
@@ -2223,7 +2248,7 @@ function renderDbCardRow(card) {
   const rarity = card.rarity || '';
   const rarityClass = rarity.toLowerCase();
   const cost = (card.cost != null && card.cost !== '') ? card.cost : '';
-  return `<div class="db-card-row" data-card-id="${escId(card.id)}" onclick="openModal('${escId(card.id)}')">
+  return `<div class="db-card-row" data-card-id="${escId(card.id)}" onclick="openModal('${escId(card.id)}','explorer')">
     <div class="db-row-name">${card.name}</div>
     <span class="db-row-meta set db-set">${setBadge(card.set)}</span>
     <span class="db-row-rarity ${rarityClass}">${rarityAbbr(rarity)}</span>
@@ -2278,7 +2303,10 @@ function getDeckCountForCard(id) {
 }
 
 // ── MODAL ──
-function openModal(id) {
+// src: 'deck' when opened from a deck-panel card, 'explorer' otherwise. On mobile the
+// popup image is shown for the Text/Detailed views but hidden for the Card/Large views
+// (the card art is already large there) — decided per the relevant view mode.
+function openModal(id, src) {
   const card = allCards.find(c => c.id === id || c.name === id);
   if (!card) return;
   currentModalCard = card;
@@ -2292,6 +2320,11 @@ function openModal(id) {
   imgEl.alt = card.name;
   if (card.type === 'Site') { container.className = 'modal-img site-img'; }
   else { container.className = 'modal-img'; }
+  // On phones, suppress the popup image in Card/Large views (art already shown big).
+  const srcMode = src === 'deck' ? deckViewMode : viewMode;
+  const onMobile = window.matchMedia('(max-width: 760px)').matches;
+  const hideImg = onMobile && (srcMode === 'grid' || srcMode === 'large');
+  container.style.display = hideImg ? 'none' : '';
 
   // Text
   document.getElementById('modal-name').textContent = card.name;
@@ -3141,7 +3174,7 @@ function renderDeckCard(section, key, card, qty) {
       <button class="qty-btn" onclick="event.stopPropagation();changeQty('${section}','${k}',1)">+</button>` : ''}
       <button class="del-btn" onclick="event.stopPropagation();removeCard('${section}','${k}')">✕</button>
     </div>`;
-  return `<div class="dvg-card${isSite ? ' is-site' : ''}" data-card-id="${escId(card.id)}" draggable="${readOnly ? 'false' : 'true'}" ondragstart="onDeckCardDragStart(event,'${section}','${escId(key)}')" ondragend="onCardDragEnd(event)" onclick="openModal('${escId(card.id)}')">
+  return `<div class="dvg-card${isSite ? ' is-site' : ''}" data-card-id="${escId(card.id)}" draggable="${readOnly ? 'false' : 'true'}" ondragstart="onDeckCardDragStart(event,'${section}','${escId(key)}')" ondragend="onCardDragEnd(event)" onclick="openModal('${escId(card.id)}','deck')">
     <img src="${getImageUrl(card)}" alt="${card.name}" loading="lazy" onerror="this.style.opacity='0.2'" draggable="false">
     ${qty > 1 ? `<div class="dvg-qty">×${qty}</div>` : ''}
     ${thresholdOverlay(card)}
@@ -3181,7 +3214,7 @@ function renderDeckCardRow(section, key, card, qty) {
       <button class="dr-qty-btn" onclick="event.stopPropagation();changeQty('${section}','${k}',1)">+</button>` : ''}
       <button class="dr-del-btn" onclick="event.stopPropagation();removeCard('${section}','${k}')">✕</button>
     </div>`;
-  return `<div class="deck-card-row" data-card-id="${escId(card.id)}" draggable="${readOnly ? 'false' : 'true'}" ondragstart="onDeckCardDragStart(event,'${section}','${escId(key)}')" ondragend="onCardDragEnd(event)" onclick="openModal('${escId(card.id)}')">
+  return `<div class="deck-card-row" data-card-id="${escId(card.id)}" draggable="${readOnly ? 'false' : 'true'}" ondragstart="onDeckCardDragStart(event,'${section}','${escId(key)}')" ondragend="onCardDragEnd(event)" onclick="openModal('${escId(card.id)}','deck')">
     <span class="dr-qty">${qty}×</span>
     <span class="dr-name">${card.name}</span>
     <span class="dr-th">${th}</span>
