@@ -83,6 +83,77 @@
   CR.openAuth = function (mode) { injectAuthModal(); CR.setAuthMode(mode || 'login'); document.getElementById('cr-auth-overlay').style.display = 'flex'; };
   CR.closeAuth = function () { const o = document.getElementById('cr-auth-overlay'); if (o) o.style.display = 'none'; CR._hideMsg(); };
 
+  // ── CHANGE PASSWORD (for signed-in users; reuses updateUser) ──
+  function injectChangePwModal() {
+    if (document.getElementById('cr-changepw-overlay')) return;
+    const inputStyle = "width:100%;background:#0b0a0f;border:1px solid var(--border-strong,rgba(155,135,212,0.35));color:var(--parchment,#e8e0cc);font-family:'Crimson Pro',serif;font-size:1rem;padding:9px 12px;border-radius:4px;outline:none;";
+    const labelStyle = "display:block;font-family:'Cinzel',serif;font-size:0.62rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--rune,#6b5fa0);margin-bottom:6px;";
+    const wrap = document.createElement('div');
+    wrap.innerHTML = `
+    <div class="modal-overlay" id="cr-changepw-overlay" style="display:none;position:fixed;inset:0;background:rgba(11,10,15,0.85);z-index:500;align-items:center;justify-content:center;backdrop-filter:blur(4px);padding:20px;">
+      <div style="background:var(--dusk,#1a1826);border:1px solid var(--border-strong,rgba(155,135,212,0.35));border-radius:10px;padding:28px;width:100%;max-width:380px;position:relative;">
+        <button onclick="CR.closeChangePassword()" style="position:absolute;top:14px;right:16px;background:none;border:none;color:var(--mist,#3a3658);font-size:1.3rem;cursor:pointer;">✕</button>
+        <h2 style="font-family:'Cinzel Decorative',serif;color:var(--gold,#c8a96e);font-size:1.4rem;margin-bottom:6px;">Change Password</h2>
+        <p style="color:var(--mist,#3a3658);font-size:0.9rem;margin-bottom:18px;">Pick a new password for your account.</p>
+        <div id="cr-cpw-msg" style="display:none;font-size:0.85rem;padding:10px;border-radius:4px;margin-bottom:14px;"></div>
+        <div style="margin-bottom:14px;">
+          <label style="${labelStyle}">New Password</label>
+          <input type="password" id="cr-cpw-new" placeholder="••••••••" autocomplete="new-password" style="${inputStyle}">
+        </div>
+        <div style="margin-bottom:8px;">
+          <label style="${labelStyle}">Confirm Password</label>
+          <input type="password" id="cr-cpw-confirm" placeholder="••••••••" autocomplete="new-password" style="${inputStyle}">
+        </div>
+        <p style="font-size:0.78rem;color:var(--mist,#3a3658);margin:0 0 16px;">At least 6 characters.</p>
+        <button id="cr-cpw-submit" onclick="CR.submitChangePassword()" style="width:100%;padding:11px;font-family:'Cinzel',serif;font-size:0.72rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;border-radius:4px;cursor:pointer;background:var(--rune,#6b5fa0);border:1px solid var(--arcane,#9b87d4);color:#fff;">Save New Password</button>
+      </div>
+    </div>`;
+    document.body.appendChild(wrap.firstElementChild);
+    // Enter submits from either field
+    ['cr-cpw-new', 'cr-cpw-confirm'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener('keydown', e => { if (e.key === 'Enter') CR.submitChangePassword(); });
+    });
+  }
+  CR._cpwMsg = function (text, type) {
+    const el = document.getElementById('cr-cpw-msg');
+    if (!el) return;
+    if (!text) { el.style.display = 'none'; return; }
+    el.textContent = text; el.style.display = 'block';
+    if (type === 'error') { el.style.background = 'rgba(196,97,74,0.12)'; el.style.border = '1px solid var(--ember,#c4614a)'; el.style.color = 'var(--ember,#c4614a)'; }
+    else { el.style.background = 'rgba(90,138,106,0.12)'; el.style.border = '1px solid var(--sage,#5a8a6a)'; el.style.color = 'var(--sage,#5a8a6a)'; }
+  };
+  CR.openChangePassword = function () {
+    // Not signed in (e.g. session expired) — send them to sign in first.
+    if (!CR.user) { CR.openAuth('login'); return; }
+    injectChangePwModal();
+    document.getElementById('cr-cpw-new').value = '';
+    document.getElementById('cr-cpw-confirm').value = '';
+    CR._cpwMsg('', '');
+    document.getElementById('cr-changepw-overlay').style.display = 'flex';
+    setTimeout(() => { const el = document.getElementById('cr-cpw-new'); if (el) el.focus(); }, 60);
+  };
+  CR.closeChangePassword = function () { const o = document.getElementById('cr-changepw-overlay'); if (o) o.style.display = 'none'; };
+  CR.submitChangePassword = async function () {
+    if (!supa) { CR._cpwMsg('Connection unavailable.', 'error'); return; }
+    const p1 = document.getElementById('cr-cpw-new').value;
+    const p2 = document.getElementById('cr-cpw-confirm').value;
+    if (p1.length < 6) { CR._cpwMsg('Password must be at least 6 characters.', 'error'); return; }
+    if (p1 !== p2) { CR._cpwMsg('Those passwords don’t match.', 'error'); return; }
+    const btn = document.getElementById('cr-cpw-submit');
+    btn.disabled = true; btn.style.opacity = '0.6';
+    try {
+      const { error } = await supa.auth.updateUser({ password: p1 });
+      if (error) throw error;
+      CR.closeChangePassword();
+      CR.toast('Password updated.');
+    } catch (e) {
+      CR._cpwMsg(e.message || 'Could not update your password.', 'error');
+    } finally {
+      btn.disabled = false; btn.style.opacity = '1';
+    }
+  };
+
   CR.setAuthMode = function (mode) {
     injectAuthModal();
     CR.authMode = mode;
@@ -198,6 +269,7 @@
           </div>
         </div>
         <a href="profile.html?u=${encodeURIComponent(CR.user.username)}" class="header-link mobile-auth-editprofile">Edit Profile</a>
+        <button class="header-link mobile-auth-changepw" onclick="CR.openChangePassword()">Change Password</button>
         <button class="header-link mobile-auth-signout" onclick="CR.logout()">Sign Out</button>`;
     } else {
       el.innerHTML = `<a class="header-link mobile-auth-signin" onclick="CR.openAuth('login')">Sign In / Create Account</a>`;
@@ -225,6 +297,7 @@
         <a href="profile.html?u=${encodeURIComponent(CR.user ? CR.user.username : '')}" class="cr-pm-item">Edit Profile</a>
         <a href="collection.html" class="cr-pm-item">My Vault</a>
         <a href="decks.html" class="cr-pm-item">My Workshop</a>
+        <button class="cr-pm-item" onclick="CR.closeProfileMenu();CR.openChangePassword()">Change Password</button>
         <div class="cr-pm-divider"></div>
         <button class="cr-pm-item cr-pm-signout" onclick="CR.logout()">Sign Out</button>`;
       document.body.appendChild(menu);
