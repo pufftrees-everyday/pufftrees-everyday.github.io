@@ -77,6 +77,7 @@
   .channel-layout { display: grid; grid-template-columns: minmax(0, 1.6fr) 1fr; gap: 20px; align-items: start; }
   .channel-player { background: var(--dusk); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
   .channel-browse { padding: 12px 16px; border-top: 1px solid var(--border); }
+  .video-caption { font-family: 'Crimson Pro', serif; font-size: 0.92rem; color: var(--shimmer); margin-bottom: 9px; line-height: 1.45; }
 
   .channel-about {
     background: var(--dusk);
@@ -178,15 +179,29 @@ const CHANNELS = [
 // and embed their latest videos using YouTube's playlist embed
 
 function embedUrl(id) { return 'https://www.youtube.com/embed/' + id + '?rel=0'; }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+// Newest upload per channel lives in videos.json, refreshed every few hours by
+// the "Update video feeds" GitHub Action (server-side YouTube RSS fetch — no
+// CORS proxy at runtime, which used to fail silently and freeze on a stale
+// video). Falls back to each channel's hardcoded `latest` id if the file is
+// missing or a channel isn't present yet.
+let videoData = {};
+async function loadVideoData() {
+  try {
+    const res = await fetch('videos.json', { cache: 'no-store' });
+    if (res.ok) { const data = await res.json(); videoData = data.channels || {}; }
+  } catch (e) { /* fall back to hardcoded latest ids */ }
+}
+function latestFor(ch) { const v = videoData[ch.channelId]; return (v && v.latest) || ch.latest; }
+function titleFor(ch)  { const v = videoData[ch.channelId]; return (v && v.title) || ''; }
 
 // ── CHANNEL FEEDS — embed each channel's latest video ──
-// Single-video embeds are reliable (uploads-playlist embeds are no longer
-// supported by YouTube). We render a known-good recent video immediately,
-// then try to upgrade to the actual newest video from the channel's RSS feed.
-async function renderChannels() {
+function renderChannels() {
   const container = document.getElementById('channels-container');
   container.innerHTML = CHANNELS.map(ch => {
     const tags = (ch.tags || []).map(t => `<span class="channel-tag">${t}</span>`).join('');
+    const title = titleFor(ch);
     return `
     <div class="channel-section">
       <div class="channel-header">
@@ -198,12 +213,13 @@ async function renderChannels() {
           <div class="video-embed">
             <iframe
               id="yt-${ch.channelId}"
-              src="${embedUrl(ch.latest)}"
+              src="${embedUrl(latestFor(ch))}"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowfullscreen loading="lazy" title="${ch.name} — latest video">
             </iframe>
           </div>
           <div class="channel-browse">
+            ${title ? `<div class="video-caption">▶ Latest: ${esc(title)}</div>` : ''}
             <a href="${ch.url}/videos" target="_blank" class="browse-link">Browse all videos from ${ch.name} ↗</a>
           </div>
         </div>
@@ -216,25 +232,6 @@ async function renderChannels() {
       </div>
     </div>`;
   }).join('');
-
-  // Best-effort: upgrade each embed to the channel's newest upload via RSS.
-  CHANNELS.forEach(upgradeLatest);
-}
-
-// Fetch the channel RSS (through a CORS proxy) and swap in the newest video id.
-// Fails silently — the hardcoded `latest` embed already works.
-async function upgradeLatest(ch) {
-  try {
-    const feed = 'https://www.youtube.com/feeds/videos.xml?channel_id=' + ch.channelId;
-    const res = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(feed), { cache: 'no-store' });
-    if (!res.ok) return;
-    const xml = await res.text();
-    const m = xml.match(/<yt:videoId>([\w-]{6,})<\/yt:videoId>/);
-    if (!m) return;
-    const id = m[1];
-    const frame = document.getElementById('yt-' + ch.channelId);
-    if (frame && id !== ch.latest) frame.src = embedUrl(id);
-  } catch (e) { /* keep the fallback embed */ }
 }
 
 // ── TOAST ──
@@ -249,7 +246,7 @@ function toggleMobileNav() {
 }
 
 // ── INIT ──
-renderChannels();
+(async function initVideos() { await loadVideoData(); renderChannels(); })();
 
 function toggleMoreMenu(e){
   if(e) e.stopPropagation();

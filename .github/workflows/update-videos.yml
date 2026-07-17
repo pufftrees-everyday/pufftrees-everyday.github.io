@@ -1,0 +1,55 @@
+name: Update video feeds
+
+# Refreshes the newest upload per community channel into videos.json.
+# Runs every 6 hours, and can be triggered manually from the Actions tab.
+on:
+  schedule:
+    # Every 6 hours (UTC) at :41 — offset from the price cron to avoid overlap.
+    - cron: '41 */6 * * *'
+  workflow_dispatch:   # run on-demand from the GitHub Actions tab
+
+permissions:
+  contents: write
+
+# Never let two video runs overlap (they'd race on the videos.json push).
+concurrency:
+  group: update-videos
+  cancel-in-progress: false
+
+jobs:
+  update-videos:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # full history so the rebase-before-push below works
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Fetch newest videos from YouTube RSS
+        run: node fetch-videos.js
+
+      - name: Commit and push updated videos.json
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          # Only commit if videos.json actually changed
+          if git diff --quiet -- videos.json; then
+            echo "No video changes — nothing to commit."
+          else
+            git add videos.json
+            git commit -m "Auto-update video feeds ($(date -u '+%Y-%m-%d %H:%M UTC'))"
+            # Resilient to concurrent pushes: rebase onto latest main and retry.
+            pushed=""
+            for i in 1 2 3 4 5; do
+              git fetch origin main || true
+              git rebase origin/main || { git rebase --abort || true; }
+              if git push origin HEAD:main; then pushed="yes"; break; fi
+              echo "push attempt $i failed; retrying in 5s…"; sleep 5
+            done
+            [ -n "$pushed" ] || echo "::warning::Could not push videos.json after retries."
+          fi
