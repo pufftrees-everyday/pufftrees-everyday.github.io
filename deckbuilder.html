@@ -635,6 +635,11 @@
   .stat-pill b { color: var(--arcane); }
   .stat-pill.warn { border-color: rgba(196,97,74,0.4); color: var(--ember); }
   .stat-pill.ok { border-color: rgba(90,138,106,0.4); color: #7ab88a; }
+  /* Duplicator avatar rule note (matching pairs of Uniques) */
+  .dup-note { flex: 1 1 100%; font-family: 'Crimson Pro', serif; font-size: 0.84rem; line-height: 1.4; padding: 7px 11px; border-radius: 6px; border: 1px solid; }
+  .dup-note b { color: var(--gold); }
+  .dup-note.ok { color: #7ab88a; border-color: rgba(90,138,106,0.45); background: rgba(90,138,106,0.08); }
+  .dup-note.warn { color: var(--ember); border-color: rgba(196,97,74,0.45); background: rgba(196,97,74,0.08); }
 
   /* Public/private visibility bar */
   .vis-bar { display: flex; align-items: center; gap: 10px; margin-top: 10px; padding: 8px 10px; background: rgba(155,135,212,0.05); border: 1px solid var(--border); border-radius: 5px; flex-wrap: wrap; }
@@ -1858,10 +1863,25 @@ const RARITY_LIMITS = { 'Ordinary': 4, 'Exceptional': 3, 'Elite': 2, 'Unique': 1
 // A few cards override the normal copy limit with their own text ("your spellbook may
 // contain any number of ...") — those may be included in unlimited quantities.
 const UNLIMITED_CARDS = new Set(['relentless crowd', 'grey wolves']);
-// The per-card copy limit: Infinity for the unlimited cards, otherwise by rarity.
+
+// The Duplicator avatar: "Your spellbook and atlas can only contain matching pairs of
+// Uniques." With it selected, only Uniques may be added (up to 2 each — a pair) and every
+// other rarity is disallowed.
+function hasDuplicatorAvatar() {
+  const av = Object.values(deck.avatar || {})[0];
+  return !!(av && av.card && av.card.name === 'Duplicator');
+}
+
+// The per-card copy limit: 0 or 2 under the Duplicator avatar; Infinity for the unlimited
+// cards; otherwise by rarity.
 function copyLimit(card) {
-  if (card && UNLIMITED_CARDS.has(String(card.name || '').trim().toLowerCase())) return Infinity;
-  const rarity = (card && card.rarity) || 'Ordinary';
+  if (!card) return 4;
+  // Duplicator constrains everything except the Avatar slot itself.
+  if (card.type !== 'Avatar' && hasDuplicatorAvatar()) {
+    return card.rarity === 'Unique' ? 2 : 0; // Uniques allowed as a pair; nothing else
+  }
+  if (UNLIMITED_CARDS.has(String(card.name || '').trim().toLowerCase())) return Infinity;
+  const rarity = card.rarity || 'Ordinary';
   return RARITY_LIMITS[rarity] || 4;
 }
 
@@ -2824,6 +2844,11 @@ function addCardToDeckInner(card, qty = 1) {
     return { ok: true, message: `${card.name} set as your Avatar!` };
   }
 
+  // The Duplicator avatar forbids everything but Uniques.
+  if (limit === 0 && hasDuplicatorAvatar()) {
+    return { ok: false, message: `The Duplicator avatar's deck can only contain Uniques (in matching pairs). ${card.name} is ${rarity}.` };
+  }
+
   // Check rarity limit across all sections
   const currentTotal = getDeckCountForCard(card.id);
   const allowed = Math.min(qty, limit - currentTotal);
@@ -2860,6 +2885,11 @@ function addCardToDeckCollectionInner(card, qty = 1) {
     return { ok: false, message: `Avatars can't be placed in the Collection.` };
   }
 
+  // The Duplicator avatar forbids everything but Uniques.
+  if (limit === 0 && hasDuplicatorAvatar()) {
+    return { ok: false, message: `The Duplicator avatar's deck can only contain Uniques. ${card.name} is ${rarity}.` };
+  }
+
   // Hard cap: total cards in collection may not exceed 10
   const collectionTotal = Object.values(deck.collection).reduce((s, v) => s + v.qty, 0);
   if (collectionTotal >= DECK_COLLECTION_LIMIT) {
@@ -2890,7 +2920,9 @@ function changeQty(section, key, delta) {
   const limit = copyLimit(card);
   const newQty = deck[section][key].qty + delta;
   if (delta > 0 && getDeckCountForCard(card.id) >= limit) {
-    toast(`Max ${limit} cop${limit===1?'y':'ies'} of ${card.name} (${rarity})`);
+    toast(limit === 0 && hasDuplicatorAvatar()
+      ? `The Duplicator avatar allows only Uniques — remove ${card.name} (${rarity}).`
+      : `Max ${limit} cop${limit===1?'y':'ies'} of ${card.name} (${rarity})`);
     return;
   }
   // Hard cap the Deck Collection at 10 cards
@@ -2966,6 +2998,20 @@ function getDeckCounts() {
   return { avatarCount, atlasCount, spellbookCount, collectionCount, total: avatarCount + atlasCount + spellbookCount + collectionCount };
 }
 
+// Duplicator legality: the spellbook & atlas must be Uniques only, each present as a
+// matching pair (exactly 2). Returns the offending card names so the deck view can flag them.
+function duplicatorIssues() {
+  const nonUniques = [], unpaired = [];
+  ['spellbook', 'atlas'].forEach(sec => {
+    Object.values(deck[sec] || {}).forEach(({ card, qty }) => {
+      if (!card) return;
+      if (card.rarity !== 'Unique') nonUniques.push(card.name);
+      else if (qty !== 2) unpaired.push(`${card.name} (${qty})`);
+    });
+  });
+  return { nonUniques, unpaired, clean: nonUniques.length === 0 && unpaired.length === 0 };
+}
+
 // ── RENDER DECK ──
 function renderDeck() {
   syncDeckSortButtons();
@@ -2977,12 +3023,26 @@ function renderDeck() {
   const avatarOk = avatarCount === 1;
   const collectionCount = Object.values(deck.collection).reduce((s,v)=>s+v.qty,0);
   const collectionOk = collectionCount <= DECK_COLLECTION_LIMIT; // 0–10 all legal
+  // Duplicator status note (only when that avatar is selected)
+  let dupNote = '';
+  if (hasDuplicatorAvatar()) {
+    const iss = duplicatorIssues();
+    const parts = [];
+    if (iss.nonUniques.length) parts.push(`${iss.nonUniques.length} non-Unique${iss.nonUniques.length>1?'s':''}`);
+    if (iss.unpaired.length) parts.push(`${iss.unpaired.length} unpaired Unique${iss.unpaired.length>1?'s':''}`);
+    const hasCards = (atlasCount + spellbookCount) > 0;
+    const detail = [...iss.nonUniques.map(n=>`${n} — not a Unique`), ...iss.unpaired.map(u=>`${u} — needs a pair`)].join(' · ');
+    const tail = !hasCards ? '' : (iss.clean ? ' All Uniques are paired ✓' : ' — ' + parts.join(', ') + '.');
+    dupNote = `<div class="dup-note ${iss.clean?'ok':'warn'}"${detail?` title="${detail.replace(/"/g,'&quot;')}"`:''}><b>Duplicator:</b> spellbook &amp; atlas may only hold matching pairs of Uniques (2 each).${tail}</div>`;
+  }
+
   document.getElementById('deck-stats').innerHTML = `
     <div class="stat-pill ${avatarOk?'ok':'warn'}"><b>${avatarCount}</b> Avatar ${avatarOk?'✓':'(need 1)'}</div>
     <div class="stat-pill ${atlasOk?'ok':'warn'}"><b>${atlasCount}</b>/30 Atlas ${atlasOk?'✓':''}</div>
     <div class="stat-pill ${spellbookOk?'ok':'warn'}"><b>${spellbookCount}</b>/60 Spellbook ${spellbookOk?'✓':''}</div>
     ${collectionCount > 0 ? `<div class="stat-pill ${collectionOk?'ok':'warn'}"><b>${collectionCount}</b>/10 Collection ${collectionOk?'✓':''}</div>` : ''}
     <div class="stat-pill"><b>${total}</b> total</div>
+    ${dupNote}
   `;
 
   const body = document.getElementById('deck-body');
