@@ -732,7 +732,13 @@
     gap: 2px 14px;
   }
   @media (max-width: 560px) {
-    .deck-card-list, .sub-section-cards.list-mode { grid-template-columns: 1fr; }
+    /* Full-width rows on phones. The compact-mode selectors are repeated here so they beat
+       the minmax(420px,…) rule above on specificity — otherwise rows overflow the viewport
+       and the +/✕ (and the ↓/↑ move arrow) get clipped off the right edge. */
+    .deck-card-list,
+    .sub-section-cards.list-mode,
+    .deck-card-list.compact-mode,
+    .sub-section-cards.list-mode.compact-mode { grid-template-columns: 1fr; }
   }
   /* DETAILED row — boxed, like the explorer. Columns: qty · name · thresholds · mana · rarity · controls */
   .deck-card-row {
@@ -753,7 +759,7 @@
   .compact-mode .deck-card-row .dr-name { flex: 1; }
   .dr-qty { font-family: 'Cinzel', serif; font-size: 0.78rem; font-weight: 700; color: var(--gold); white-space: nowrap; }
   .dr-name { font-family: 'Crimson Pro', serif; font-size: 0.92rem; color: var(--parchment); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
-  .dr-controls { display: flex; align-items: center; gap: 3px; }
+  .dr-controls { display: flex; align-items: center; gap: 3px; flex-shrink: 0; }
   .dr-qty-btn, .dr-del-btn {
     font-family: 'Cinzel', serif; font-size: 0.85rem; font-weight: 700; line-height: 1;
     background: #0b0a0f; border: 1px solid var(--border); color: var(--rune);
