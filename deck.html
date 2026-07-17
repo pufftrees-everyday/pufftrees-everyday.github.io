@@ -65,7 +65,7 @@
   .btn-ghost { background: transparent; border-color: var(--border-strong); color: var(--shimmer); }
   .btn-ghost:hover { border-color: var(--arcane); color: #fff; }
 
-  .page { max-width: 1100px; margin: 0 auto; padding: 28px 24px 80px; }
+  .page { max-width: 1320px; margin: 0 auto; padding: 28px 24px 80px; }
 
   /* ── DECK HERO ── */
   .deck-hero { display: grid; grid-template-columns: 220px 1fr; gap: 26px; margin-bottom: 30px; align-items: start; }
@@ -287,19 +287,24 @@
 
   /* TEXT view */
   .deck-list { columns: 2; column-gap: 28px; }
+  /* Desktop is wide enough for a third column — keeps decks from running so long. */
+  @media (min-width: 1000px) { .deck-list { columns: 3; } }
   @media (max-width: 680px) { .deck-list { columns: 1; } }
   .deck-list-row { display: flex; align-items: center; gap: 8px; padding: 2px 8px; border-radius: 3px; transition: background 0.12s; cursor: pointer; line-height: 1.3; break-inside: avoid; }
   .deck-list-row:hover { background: rgba(155,135,212,0.08); }
   .deck-list-qty { font-family: 'Cinzel', serif; font-weight: 700; color: var(--gold); min-width: 24px; font-size: 0.9rem; }
   .deck-list-name { flex: 1; color: var(--shimmer); font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .deck-list-cost { font-family: 'Cinzel', serif; font-size: 0.72rem; color: var(--rune); width: 21px; height: 21px; border:1px solid var(--border-strong); border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  /* Mana cost — white "coin" with a black number, matching the game. Sits at the far right of the row. */
+  .deck-list-cost { font-family: 'Cinzel', serif; font-size: 0.72rem; font-weight: 700; color: #171520; width: 21px; height: 21px; border:1px solid rgba(0,0,0,0.42); border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; background: radial-gradient(circle at 38% 30%, #fdfcf8, #d6d0bf); box-shadow: inset 0 1px 1px rgba(255,255,255,0.7), 0 1px 2px rgba(0,0,0,0.45); }
   .deck-list-cost.empty { opacity: 0; }
 
   /* DETAILS view — boxy rows like the explorer */
   .deck-details { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 6px; }
-  .deck-detail-row { display: grid; grid-template-columns: auto auto 1fr auto auto auto auto; align-items: center; gap: 8px; background: #13111e; border: 1px solid var(--border); border-left: 3px solid var(--border-strong); padding: 6px 10px; border-radius: 3px; cursor: pointer; transition: background 0.12s; min-width: 0; }
+  /* Columns: qty · name · set · rarity · type · thresholds · mana (mana sits far right, just right of the thresholds) */
+  .deck-detail-row { display: grid; grid-template-columns: auto 1fr auto auto auto auto auto; align-items: center; gap: 8px; background: #13111e; border: 1px solid var(--border); border-left: 3px solid var(--border-strong); padding: 6px 10px; border-radius: 3px; cursor: pointer; transition: background 0.12s; min-width: 0; }
   .deck-detail-row:hover { background: #1a1728; border-left-color: var(--arcane); }
-  .cr-mana { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; font-family: 'Cinzel', serif; font-size: 0.7rem; font-weight: 700; color: var(--gold); background: radial-gradient(circle at 38% 32%, #2a2536, #15121d); border: 1px solid var(--gold); flex-shrink: 0; line-height: 1; }
+  /* Mana cost — white "coin" with a black number, matching the game. */
+  .cr-mana { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; font-family: 'Cinzel', serif; font-size: 0.7rem; font-weight: 700; color: #171520; background: radial-gradient(circle at 38% 30%, #fdfcf8, #d6d0bf); border: 1px solid rgba(0,0,0,0.42); box-shadow: inset 0 1px 1px rgba(255,255,255,0.7), 0 1px 2px rgba(0,0,0,0.45); flex-shrink: 0; line-height: 1; }
   .cr-mana.empty { visibility: hidden; }
   .dd-qty { font-family: 'Cinzel', serif; font-weight: 700; font-size: 0.9rem; color: var(--gold); min-width: 22px; }
   .dd-name { font-family: 'Crimson Pro', serif; font-size: 0.95rem; color: var(--parchment); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
@@ -498,9 +503,9 @@
         <div class="viewmode-wrap" id="viewmode-control">
           <span class="viewmode-label">Change View</span>
           <div class="viewmode-toggle">
-            <button class="viewmode-btn" id="vm-list" onclick="setDeckView('list')" title="Text view">☰</button>
+            <button class="viewmode-btn active" id="vm-list" onclick="setDeckView('list')" title="Text view">☰</button>
             <button class="viewmode-btn" id="vm-details" onclick="setDeckView('details')" title="Details view">▤</button>
-            <button class="viewmode-btn active" id="vm-grid" onclick="setDeckView('grid')" title="Card view">⊞</button>
+            <button class="viewmode-btn" id="vm-grid" onclick="setDeckView('grid')" title="Card view">⊞</button>
             <button class="viewmode-btn" id="vm-large" onclick="setDeckView('large')" title="Large view">⊡</button>
           </div>
         </div>
@@ -604,8 +609,11 @@
   let cardElementMap = {}; // lowercased name → [elements]
   let currentDeck = null;  // the loaded deck row
   let currentUser = null;
-  let deckView = localStorage.getItem('grimoire_deckview_mode') || 'grid';
-  let spellTypeGroup = localStorage.getItem('grimoire_spell_typegroup') === '1';
+  // The deck viewer always opens in Text view with TYPE grouping off, regardless of any
+  // stored preference — a predictable default every time you open a deck. (Switching view
+  // or toggling Type still works for the session; it just resets on the next visit.)
+  let deckView = 'list';
+  let spellTypeGroup = false;
   let deckSortMode = localStorage.getItem('grimoire_deck_sort') || 'cost'; // 'az' | 'cost' (shared with deckbuilder)
 
   // Each deck section can be viewed independently (used by the per-section toggles on
@@ -614,7 +622,7 @@
   const VIEW_SECTIONS = ['Atlas', 'Spellbook', 'Collection'];
   const sectionViewKey = t => 'grimoire_deckview_mode_' + t.toLowerCase();
   const sectionViews = {};
-  VIEW_SECTIONS.forEach(t => { sectionViews[t] = localStorage.getItem(sectionViewKey(t)) || deckView; });
+  VIEW_SECTIONS.forEach(t => { sectionViews[t] = deckView; });  // always start in Text view
   function viewFor(title) { return sectionViews[title] || deckView; }
   function setSectionView(title, mode) {
     sectionViews[title] = mode;
@@ -890,10 +898,10 @@
     const cost = cardCost(name);
     const thStr = thresholdSymbols(name, 'th-row-icon').join('');
     return `<div class="deck-list-row" data-card="${escAttr(name)}" onclick="zoom('${escAttr(name)}')">
-      <span class="deck-list-cost${cost===''?' empty':''}">${cost}</span>
       <span class="deck-list-qty">${qty}×</span>
       <span class="deck-list-name">${escHtml(name)}</span>
       <span class="deck-list-th">${thStr}</span>
+      <span class="deck-list-cost${cost===''?' empty':''}">${cost}</span>
       ${priceSpan(name, qty)}
     </div>`;
   }
@@ -905,13 +913,13 @@
     const type = cardType(name);
     const thStr = thresholdSymbols(name, 'th-row-icon').join('');
     return `<div class="deck-detail-row" data-card="${escAttr(name)}" onclick="zoom('${escAttr(name)}')">
-      <span class="cr-mana${cost===''?' empty':''}">${cost}</span>
       <span class="dd-qty">${qty}×</span>
       <span class="dd-name">${escHtml(name)}</span>
-      <span class="dd-th">${thStr}</span>
       <span class="dd-set">${setBadge(cardSet(name))}</span>
       <span class="dd-rarity ${(rarity||'').toLowerCase()}">${rarityAbbr(rarity)}</span>
       <span class="dd-type">${escHtml(type)}</span>
+      <span class="dd-th">${thStr}</span>
+      <span class="cr-mana${cost===''?' empty':''}">${cost}</span>
       ${priceSpan(name, qty)}
     </div>`;
   }
@@ -929,7 +937,8 @@
     </div>`;
   }
 
-  const collapsedSections = { 'Deck Menu': true };  // title → true when collapsed
+  // Deck Menu (mobile) and Deck Stats start collapsed; Atlas / Spellbook / Collection start open.
+  const collapsedSections = { 'Deck Menu': true, 'Deck Stats': true };  // title → true when collapsed
   function toggleSection(title) {
     collapsedSections[title] = !collapsedSections[title];
     const el = document.getElementById('section-' + title.replace(/\s+/g,'-'));
@@ -1800,10 +1809,9 @@
   (async function init() {
     renderAuthBar();
     if (showThresholds) document.body.classList.add('show-thresholds');
-    // Mobile opens compact: every section starts collapsed.
-    if (window.matchMedia(MOBILE_Q).matches) {
-      ['Deck Menu','Deck Stats','Atlas','Spellbook','Collection'].forEach(t => collapsedSections[t] = true);
-    }
+    // Deck Menu + Deck Stats open collapsed (both desktop and mobile); the Atlas,
+    // Spellbook and Collection stay open by default so the deck is visible immediately.
+    ['Deck Menu','Deck Stats'].forEach(t => collapsedSections[t] = true);
     await Promise.all([loadCards(), refreshUser()]);
     renderAuthBar();
     await loadDeck();
