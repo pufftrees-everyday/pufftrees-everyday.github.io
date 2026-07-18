@@ -1460,6 +1460,9 @@
       </div>
       <div class="scroll-editor-hint">Write a description, strategy, mulligan guide, or play tips — with full formatting. Readers see this as the deck's “Scroll” on the deck page.</div>
       <div class="scroll-toolbar" id="scroll-toolbar">
+        <button type="button" class="st-btn" onmousedown="event.preventDefault()" onclick="scrollUndo()" title="Undo (Ctrl+Z)">↶</button>
+        <button type="button" class="st-btn" onmousedown="event.preventDefault()" onclick="scrollRedo()" title="Redo (Ctrl+Y)">↷</button>
+        <span class="st-sep"></span>
         <select class="st-select" title="Font" onchange="scrollFont(this.value); this.selectedIndex=0;">
           <option value="">Font ▾</option>
           <option value="'Crimson Pro', serif">Crimson (body)</option>
@@ -1898,6 +1901,8 @@ function scrollExec(cmd, val) {
   onScrollInput();
 }
 function scrollCmd(cmd, val) { scrollExec(cmd, val); }
+function scrollUndo() { const r = scrollRte(); if (!r) return; r.focus(); document.execCommand('undo'); onScrollInput(); }
+function scrollRedo() { const r = scrollRte(); if (!r) return; r.focus(); document.execCommand('redo'); onScrollInput(); }
 function scrollFont(f) { if (f) scrollExec('fontName', f); }
 function scrollColor(c) { scrollExec('foreColor', c); }
 function scrollBlock(tag) {
