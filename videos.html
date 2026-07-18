@@ -206,7 +206,7 @@ function renderChannels() {
     <div class="channel-section">
       <div class="channel-header">
         <div class="channel-name">${ch.name}</div>
-        <a href="${ch.url}" target="_blank" class="channel-link">↗ ${ch.handle}</a>
+        <a href="${ch.url}" target="_blank" rel="noopener noreferrer" class="channel-link">↗ ${ch.handle}</a>
       </div>
       <div class="channel-layout">
         <div class="channel-player">
@@ -220,14 +220,14 @@ function renderChannels() {
           </div>
           <div class="channel-browse">
             ${title ? `<div class="video-caption">▶ Latest: ${esc(title)}</div>` : ''}
-            <a href="${ch.url}/videos" target="_blank" class="browse-link">Browse all videos from ${ch.name} ↗</a>
+            <a href="${ch.url}/videos" target="_blank" rel="noopener noreferrer" class="browse-link">Browse all videos from ${ch.name} ↗</a>
           </div>
         </div>
         <div class="channel-about">
           <div class="channel-about-label">About the Channel</div>
           <p class="channel-about-desc">${ch.desc || ''}</p>
           ${tags ? `<div class="channel-tags">${tags}</div>` : ''}
-          <a href="${ch.url}?sub_confirmation=1" target="_blank" class="channel-sub-btn">Subscribe on YouTube</a>
+          <a href="${ch.url}?sub_confirmation=1" target="_blank" rel="noopener noreferrer" class="channel-sub-btn">Subscribe on YouTube</a>
         </div>
       </div>
     </div>`;
