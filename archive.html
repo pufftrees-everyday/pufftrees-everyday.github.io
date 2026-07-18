@@ -224,7 +224,7 @@
   .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="cr-auth.js?v=16"></script>
+<script src="cr-auth.js?v=17"></script>
 </head>
 <body>
 
@@ -396,6 +396,7 @@ async function submitAuth() {
   const email = document.getElementById('auth-email').value.trim();
   const password = document.getElementById('auth-password').value;
   if (!email || !password) { showAuthMsg('Email and password are required.', 'error'); return; }
+  if (authMode === 'signup' && password.length < 8) { showAuthMsg('Password must be at least 8 characters.', 'error'); return; }
 
   const btn = document.getElementById('auth-submit');
   btn.disabled = true; btn.style.opacity = '0.6';
@@ -456,7 +457,7 @@ function renderAuthBar() {
   const bar = document.getElementById('auth-bar');
   const mob = document.getElementById('mobile-auth');
   if (currentUser) {
-    bar.innerHTML = `<button class="profile-trigger header-link" onclick="toggleProfileMenu(event)" style="background:none;border:none;cursor:pointer;color:var(--gold);text-transform:none;letter-spacing:0.04em;font-family:inherit;font-size:inherit;display:inline-flex;align-items:center;gap:5px;">${currentUser.username} <span style="font-size:0.6rem;">▾</span></button>`;
+    bar.innerHTML = `<button class="profile-trigger header-link" onclick="toggleProfileMenu(event)" style="background:none;border:none;cursor:pointer;color:var(--gold);text-transform:none;letter-spacing:0.04em;font-family:inherit;font-size:inherit;display:inline-flex;align-items:center;gap:5px;">${escapeHtml(currentUser.username)} <span style="font-size:0.6rem;">▾</span></button>`;
     mob.innerHTML = `<a href="collection.html" class="header-link">My Vault</a>
       <a href="decks.html" class="header-link">My Workshop</a>
       <a class="header-link" onclick="logout()" style="color:var(--ember)">Sign Out</a>`;
@@ -478,8 +479,8 @@ function toggleProfileMenu(e) {
     menu.className = 'cr-profile-menu';
     menu.innerHTML = `
       <div class="cr-pm-header">
-        <div class="cr-pm-name">${currentUser ? currentUser.username : 'Account'}</div>
-        <div class="cr-pm-email">${currentUser ? (currentUser.email || '') : ''}</div>
+        <div class="cr-pm-name">${currentUser ? escapeHtml(currentUser.username) : 'Account'}</div>
+        <div class="cr-pm-email">${currentUser ? escapeHtml(currentUser.email || '') : ''}</div>
       </div>
       <a href="collection.html" class="cr-pm-item">My Vault</a>
       <a href="decks.html" class="cr-pm-item">My Workshop</a>

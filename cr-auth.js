@@ -18,11 +18,15 @@
     onAuthChange: null,   // page sets this callback; fires after login/logout/refresh
   };
 
+  // HTML-escape any user-controlled string before it goes into .innerHTML.
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, m => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
+  CR.escHtml = esc;
+
   // Build the <img> for a user avatar URL (or '' if none). Used in the auth bar/menus.
   CR.avatarImg = function (url, size) {
     size = size || 22;
     if (!url) return '';
-    return `<img src="${String(url).replace(/"/g, '&quot;')}" alt="" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;border:1px solid var(--border-strong,rgba(155,135,212,0.35));flex-shrink:0;" onerror="this.style.display='none'">`;
+    return `<img src="${esc(url)}" alt="" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;border:1px solid var(--border-strong,rgba(155,135,212,0.35));flex-shrink:0;" onerror="this.style.display='none'">`;
   };
 
   // ── SESSION ──
@@ -209,6 +213,11 @@
       return;
     }
     if (!email || !password) { CR._showMsg('Email and password are required.', 'error'); return; }
+    // Minimum password strength on sign-up (the authoritative check is Supabase's own
+    // password policy; this is a fast client-side gate for a better message).
+    if (CR.authMode === 'signup' && password.length < 8) {
+      CR._showMsg('Password must be at least 8 characters.', 'error'); return;
+    }
     btn.disabled = true; btn.style.opacity = '0.6';
     try {
       if (CR.authMode === 'signup') {
@@ -247,7 +256,7 @@
     const bar = document.getElementById(elId);
     if (!bar) return;
     if (CR.user) {
-      bar.innerHTML = `<button class="profile-trigger header-link" onclick="CR.toggleProfileMenu(event)" style="background:none;border:none;cursor:pointer;color:var(--gold);text-transform:none;letter-spacing:0.04em;font-family:inherit;font-size:inherit;display:inline-flex;align-items:center;gap:7px;">${CR.avatarImg(CR.user.avatar, 24)}${CR.user.username} <span style="font-size:0.6rem;">▾</span></button>`;
+      bar.innerHTML = `<button class="profile-trigger header-link" onclick="CR.toggleProfileMenu(event)" style="background:none;border:none;cursor:pointer;color:var(--gold);text-transform:none;letter-spacing:0.04em;font-family:inherit;font-size:inherit;display:inline-flex;align-items:center;gap:7px;">${CR.avatarImg(CR.user.avatar, 24)}${esc(CR.user.username)} <span style="font-size:0.6rem;">▾</span></button>`;
     } else {
       bar.innerHTML = `<a class="header-link" onclick="CR.openAuth('login')" style="cursor:pointer;">Sign In</a>`;
     }
@@ -264,8 +273,8 @@
         <div class="mobile-auth-header" style="display:flex;align-items:center;gap:10px;">
           ${CR.avatarImg(CR.user.avatar, 34)}
           <div>
-            <div class="mobile-auth-name">${CR.user.username}</div>
-            <div class="mobile-auth-email">${CR.user.email || ''}</div>
+            <div class="mobile-auth-name">${esc(CR.user.username)}</div>
+            <div class="mobile-auth-email">${esc(CR.user.email || '')}</div>
           </div>
         </div>
         <a href="profile.html?u=${encodeURIComponent(CR.user.username)}" class="header-link mobile-auth-editprofile">Edit Profile</a>
@@ -290,8 +299,8 @@
         <div class="cr-pm-header" style="display:flex;align-items:center;gap:10px;">
           ${pmAvatar}
           <div style="min-width:0;">
-            <div class="cr-pm-name">${CR.user ? CR.user.username : 'Account'}</div>
-            <div class="cr-pm-email">${CR.user ? (CR.user.email || '') : ''}</div>
+            <div class="cr-pm-name">${CR.user ? esc(CR.user.username) : 'Account'}</div>
+            <div class="cr-pm-email">${CR.user ? esc(CR.user.email || '') : ''}</div>
           </div>
         </div>
         <a href="profile.html?u=${encodeURIComponent(CR.user ? CR.user.username : '')}" class="cr-pm-item">Edit Profile</a>
