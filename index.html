@@ -833,7 +833,7 @@
               <button class="stone-option" data-group="element" data-value="Earth" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Earth</button>
               <button class="stone-option" data-group="element" data-value="Fire" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Fire</button>
               <button class="stone-option" data-group="element" data-value="Water" onclick="toggleChip(this)"><span class="rune-mark">✦</span>Water</button>
-              <button class="element-lock-btn" id="element-lock-btn" onclick="toggleElementLock()" title="Element Lock: only show cards whose elements are all within your selection">🔒 Element Lock</button>
+              <button class="element-lock-btn" id="element-lock-btn" onclick="toggleElementLock()" title="Element Lock: only show cards whose elements are all within your selection. With no element selected, shows only colorless cards (and Sites with no threshold).">🔒 Element Lock</button>
             </div>
           </div>
         </div>
@@ -1338,8 +1338,10 @@ function setViewMode(mode) {
 const activeFilters = { type: new Set(), set: new Set(), rarity: new Set(), element: new Set(), evil: false };
 let elementLock = false;
 function cardElements(card) {
+  // The card data uses the literal "None" for colorless cards (artifacts, colorless
+  // minions, and Sites that provide no threshold), so treat it as having no element.
   if (!card.element) return [];
-  return card.element.split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+  return card.element.split(',').map(s => s.trim().toLowerCase()).filter(s => s && s !== 'none');
 }
 function toggleElementLock() {
   elementLock = !elementLock;

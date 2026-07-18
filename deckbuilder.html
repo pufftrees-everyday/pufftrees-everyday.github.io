@@ -1297,7 +1297,7 @@
         <button class="element-chip" data-group="element" data-value="Water" onclick="toggleChip(this)" title="Water">
           <img src="water.png" alt="Water"><span>Water</span>
         </button>
-        <button class="element-lock-btn" id="element-lock-btn" onclick="toggleElementLock()" title="Element Lock: only show cards whose elements are all within your selection">🔒 Element Lock</button>
+        <button class="element-lock-btn" id="element-lock-btn" onclick="toggleElementLock()" title="Element Lock: only show cards whose elements are all within your selection. With no element selected, shows only colorless cards (and Sites with no threshold).">🔒 Element Lock</button>
       </div>
       <div class="filter-row">
         <button class="filter-chip" data-group="type" data-value="Avatar" onclick="toggleChip(this)">Avatar</button>
@@ -2061,8 +2061,10 @@ let binderCardNames = new Set();        // union of card names across the select
 
 // Parse a card's elements into a lowercased array (e.g. "Fire, Water" → ['fire','water'])
 function cardElements(card) {
+  // The card data uses the literal "None" for colorless cards (artifacts, colorless
+  // minions, and Sites that provide no threshold), so treat it as having no element.
   if (!card.element) return [];
-  return card.element.split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+  return card.element.split(',').map(s => s.trim().toLowerCase()).filter(s => s && s !== 'none');
 }
 const advFilters = { minionSubtype: new Set(), artifactSubtype: new Set(), siteSubtype: new Set(), keyword: new Set() };
 
