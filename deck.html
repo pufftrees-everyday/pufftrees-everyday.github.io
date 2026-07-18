@@ -616,7 +616,7 @@
 <div class="toast" id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="cr-auth.js?v=19"></script>
+<script src="cr-auth.js?v=20"></script>
 <script src="card-faq.js?v=1"></script>
 <script>
   // Shared Supabase client from cr-auth.js (window.CR.supa)
@@ -1542,7 +1542,9 @@
     if (!code) { statusEl.innerHTML = 'No deck specified.'; return; }
     if (!supa) { statusEl.innerHTML = 'Could not connect.'; return; }
     try {
-      const { data: deckRow, error } = await supa.from('decks').select('*').eq('short_code', code).single();
+      // Read via get_deck_by_code() so a private deck stays viewable by its exact link,
+      // while the table's RLS blocks bulk enumeration of private decks.
+      const { data: deckRow, error } = await CR.getDeckByCode(code);
       if (error || !deckRow) { statusEl.innerHTML = 'Deck not found.'; return; }
       currentDeck = deckRow;
       // resolve author

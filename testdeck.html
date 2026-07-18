@@ -172,7 +172,7 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="cr-auth.js?v=19"></script>
+<script src="cr-auth.js?v=20"></script>
 <script>
   const IMAGE_BASE = 'https://pub-5999238092ad418ca60e7a9ad641cf57.r2.dev/';
   // Shared Supabase client from cr-auth.js (window.CR.supa)
@@ -421,7 +421,7 @@
     if (!supa) { statusEl.textContent = 'Could not connect.'; return; }
     await loadCards();
     try {
-      const { data, error } = await supa.from('decks').select('short_code, name, deck_data').eq('short_code', code).single();
+      const { data, error } = await CR.getDeckByCode(code);
       if (error || !data) { statusEl.textContent = 'Deck not found.'; return; }
       deck = data;
       const dd = deck.deck_data || {};

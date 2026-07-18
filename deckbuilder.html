@@ -1211,7 +1211,7 @@
   }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="cr-auth.js?v=19"></script>
+<script src="cr-auth.js?v=20"></script>
 <script src="card-faq.js?v=1"></script>
 <script src="invoke.js?v=1"></script>
 </head>
@@ -3858,9 +3858,9 @@ async function publishCurrentDeck() {
   const btn = document.getElementById('publish-btn');
   if (btn) { btn.disabled = true; btn.style.opacity = '0.6'; btn.textContent = 'Publishing…'; }
   try {
-    // Check current ownership of this deck
-    const { data: existing } = await supa.from('decks')
-      .select('owner_id').eq('short_code', lastSharedCode).single();
+    // Check current ownership of this deck (via the function so it resolves even for a
+    // private deck; RLS on the table still governs the update/insert below).
+    const { data: existing } = await CR.getDeckByCode(lastSharedCode);
 
     if (existing && existing.owner_id && existing.owner_id !== currentUser.id) {
       // Someone else owns it — make a fresh owned copy instead of hijacking theirs
@@ -4133,11 +4133,9 @@ async function loadSharedDeck(code, forceView) {
 
   if (isShortCode && supa) {
     try {
-      const { data, error } = await supa
-        .from('decks')
-        .select('deck_data, name, owner_id, is_public')
-        .eq('short_code', code)
-        .single();
+      // Via get_deck_by_code() so a private deck opened by its exact link still loads;
+      // the table RLS blocks bulk reads of others' private decks.
+      const { data, error } = await CR.getDeckByCode(code);
       if (error) throw error;
       if (data && data.deck_data) {
         const payload = data.deck_data;

@@ -224,7 +224,7 @@
   .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="cr-auth.js?v=19"></script>
+<script src="cr-auth.js?v=20"></script>
 </head>
 <body>
 
@@ -932,7 +932,7 @@ async function confirmBring() {
   const btn = document.getElementById('bring-confirm-btn');
   btn.disabled = true; btn.style.opacity = '0.6';
   try {
-    const { data: src, error: e1 } = await supa.from('decks').select('name, deck_data').eq('short_code', pendingCopyCode).single();
+    const { data: src, error: e1 } = await CR.getDeckByCode(pendingCopyCode);
     if (e1 || !src) throw (e1 || new Error('not found'));
     const newData = JSON.parse(JSON.stringify(src.deck_data || {}));
     const newName = (src.name || 'Deck') + ' (copy)';

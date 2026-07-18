@@ -469,6 +469,26 @@
     throw lastErr || new Error('Could not generate a unique deck code');
   };
 
+  // Fetch a single deck by its share code. Prefers the get_deck_by_code() DB function,
+  // which keeps private/"unlisted" decks viewable by their exact link while the table's
+  // RLS blocks bulk enumeration of private decks. Falls back to a direct read only when
+  // that function isn't deployed yet (pre-migration), so this is safe to ship in any order.
+  // Returns the usual { data, error } shape (data = the full deck row, or null).
+  CR.getDeckByCode = async function (code) {
+    if (!supa) return { data: null, error: new Error('No Supabase connection') };
+    const res = await supa.rpc('get_deck_by_code', { deck_code: code }).single();
+    if (res.error) {
+      const m = ((res.error.message || '') + ' ' + (res.error.code || '')).toLowerCase();
+      // Function missing (migration not applied yet) → fall back to a direct read.
+      // (A genuine "no rows" is left as-is so callers still see "deck not found".)
+      if (m.includes('could not find the function') || m.includes('pgrst202') ||
+          m.includes('does not exist') || m.includes('schema cache')) {
+        return await supa.from('decks').select('*').eq('short_code', code).single();
+      }
+    }
+    return res;
+  };
+
   // ── TOAST (self-contained, fixed-position, brand-styled) ──
   CR.toast = function (text, opts) {
     opts = opts || {};
