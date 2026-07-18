@@ -197,9 +197,26 @@
   .scroll-editor-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
   .scroll-editor-title { font-family: 'Cinzel', serif; font-size: 0.92rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold); }
   .scroll-editor-hint { font-size: 0.86rem; color: var(--rune); font-style: italic; line-height: 1.45; }
-  .scroll-textarea { flex: 1; min-height: 300px; width: 100%; resize: none; background: #0b0a0f; border: 2px solid #2a2640; border-radius: 6px; color: var(--parchment); font-family: 'Crimson Pro', serif; font-size: 1.02rem; line-height: 1.6; padding: 12px 14px; outline: none; box-shadow: inset 2px 2px 6px rgba(0,0,0,0.5); }
-  .scroll-textarea:focus { border-color: var(--rune); }
-  .scroll-textarea::placeholder { color: #3a3658; font-style: italic; }
+  /* Rich-text Scroll editor: toolbar + contenteditable */
+  .scroll-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; padding: 6px 7px; background: #0d0b14; border: 1px solid var(--border-strong); border-bottom: none; border-radius: 6px 6px 0 0; }
+  .st-btn { min-width: 28px; height: 28px; padding: 0 7px; background: #13111e; border: 1px solid var(--border); border-radius: 4px; color: var(--shimmer); font-family: 'Crimson Pro', serif; font-size: 0.98rem; line-height: 1; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: border-color 0.12s, color 0.12s, background 0.12s; }
+  .st-btn:hover { border-color: var(--arcane); color: var(--gold); background: #1a1728; }
+  .st-btn.st-sub { font-size: 0.72rem; align-items: flex-end; padding-bottom: 4px; }
+  .st-select { height: 28px; background: #13111e; border: 1px solid var(--border); border-radius: 4px; color: var(--shimmer); font-family: 'Cinzel', serif; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; padding: 0 4px; cursor: pointer; outline: none; }
+  .st-select:hover { border-color: var(--arcane); }
+  .st-sep { width: 1px; height: 20px; background: var(--border); margin: 0 3px; flex-shrink: 0; }
+  .st-swatches { display: inline-flex; gap: 3px; }
+  .st-swatch { width: 20px; height: 20px; border-radius: 4px; border: 1px solid rgba(0,0,0,0.45); cursor: pointer; padding: 0; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.18); transition: transform 0.1s; }
+  .st-swatch:hover { transform: scale(1.15); }
+  .scroll-rte { flex: 1; min-height: 240px; overflow-y: auto; background: #0b0a0f; border: 2px solid #2a2640; border-radius: 0 0 6px 6px; color: var(--parchment); font-family: 'Crimson Pro', serif; font-size: 1.02rem; line-height: 1.7; padding: 14px 16px; outline: none; box-shadow: inset 2px 2px 6px rgba(0,0,0,0.5); word-wrap: break-word; }
+  .scroll-rte:focus { border-color: var(--rune); }
+  .scroll-rte.empty:before { content: attr(data-ph); color: #3a3658; font-style: italic; pointer-events: none; }
+  .scroll-rte h1, .scroll-rte h2 { font-family: 'Cinzel', serif; color: var(--gold); font-size: 1.42rem; line-height: 1.25; margin: 8px 0 4px; }
+  .scroll-rte h3 { font-family: 'Cinzel', serif; color: var(--arcane); font-size: 1.14rem; margin: 7px 0 3px; }
+  .scroll-rte blockquote { border-left: 3px solid var(--gold); margin: 8px 0; padding: 3px 0 3px 14px; color: var(--shimmer); font-style: italic; }
+  .scroll-rte ul, .scroll-rte ol { padding-left: 26px; margin: 6px 0; }
+  .scroll-rte li { margin: 2px 0; }
+  .scroll-rte a { color: var(--arcane); text-decoration: underline; }
   #scroll-btn.active { background: var(--gold); border-color: var(--gold); color: #1a1410; }
 
   .explorer-search {
@@ -1211,7 +1228,7 @@
   }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="cr-auth.js?v=20"></script>
+<script src="cr-auth.js?v=21"></script>
 <script src="card-faq.js?v=1"></script>
 <script src="invoke.js?v=1"></script>
 </head>
@@ -1441,8 +1458,44 @@
         <span class="scroll-editor-title">📜 Deck Scroll</span>
         <button class="btn btn-ghost" onclick="toggleScrollEditor()">Done</button>
       </div>
-      <div class="scroll-editor-hint">Write a description, strategy notes, mulligan guide, or play tips. Readers see this as the deck's “Scroll” on the deck page.</div>
-      <textarea id="scroll-textarea" class="scroll-textarea" maxlength="6000" placeholder="Describe your deck's game plan…" oninput="deckScroll = this.value; markDirty();"></textarea>
+      <div class="scroll-editor-hint">Write a description, strategy, mulligan guide, or play tips — with full formatting. Readers see this as the deck's “Scroll” on the deck page.</div>
+      <div class="scroll-toolbar" id="scroll-toolbar">
+        <select class="st-select" title="Font" onchange="scrollFont(this.value); this.selectedIndex=0;">
+          <option value="">Font ▾</option>
+          <option value="'Crimson Pro', serif">Crimson (body)</option>
+          <option value="'Cinzel', serif">Cinzel</option>
+          <option value="'Cinzel Decorative', serif">Cinzel Decorative</option>
+          <option value="Georgia, 'Times New Roman', serif">Georgia</option>
+          <option value="'Trebuchet MS', system-ui, sans-serif">Sans-serif</option>
+          <option value="'Courier New', monospace">Monospace</option>
+        </select>
+        <select class="st-select" title="Text size" onchange="scrollCmd('fontSize', this.value); this.selectedIndex=0;">
+          <option value="">Size ▾</option>
+          <option value="1">XS</option><option value="2">Small</option><option value="3">Normal</option>
+          <option value="4">Medium</option><option value="5">Large</option><option value="6">Huge</option><option value="7">Giant</option>
+        </select>
+        <span class="st-sep"></span>
+        <button type="button" class="st-btn" onmousedown="event.preventDefault()" onclick="scrollCmd('bold')" title="Bold (Ctrl+B)"><b>B</b></button>
+        <button type="button" class="st-btn" onmousedown="event.preventDefault()" onclick="scrollCmd('italic')" title="Italic (Ctrl+I)"><i>I</i></button>
+        <button type="button" class="st-btn" onmousedown="event.preventDefault()" onclick="scrollCmd('underline')" title="Underline (Ctrl+U)"><u>U</u></button>
+        <button type="button" class="st-btn" onmousedown="event.preventDefault()" onclick="scrollCmd('strikeThrough')" title="Strikethrough"><s>S</s></button>
+        <span class="st-sep"></span>
+        <button type="button" class="st-btn" onmousedown="event.preventDefault()" onclick="scrollBlock('h2')" title="Heading">H</button>
+        <button type="button" class="st-btn st-sub" onmousedown="event.preventDefault()" onclick="scrollBlock('h3')" title="Subheading">H</button>
+        <button type="button" class="st-btn" onmousedown="event.preventDefault()" onclick="scrollBlock('blockquote')" title="Quote">❝</button>
+        <button type="button" class="st-btn" onmousedown="event.preventDefault()" onclick="scrollCmd('insertUnorderedList')" title="Bulleted list">•</button>
+        <button type="button" class="st-btn" onmousedown="event.preventDefault()" onclick="scrollCmd('insertOrderedList')" title="Numbered list">1.</button>
+        <span class="st-sep"></span>
+        <button type="button" class="st-btn" onmousedown="event.preventDefault()" onclick="scrollCmd('justifyLeft')" title="Align left">⇤</button>
+        <button type="button" class="st-btn" onmousedown="event.preventDefault()" onclick="scrollCmd('justifyCenter')" title="Align center">↔</button>
+        <button type="button" class="st-btn" onmousedown="event.preventDefault()" onclick="scrollCmd('justifyRight')" title="Align right">⇥</button>
+        <span class="st-sep"></span>
+        <div class="st-swatches" id="st-swatches"></div>
+        <span class="st-sep"></span>
+        <button type="button" class="st-btn" onmousedown="event.preventDefault()" onclick="scrollLink()" title="Add link">🔗</button>
+        <button type="button" class="st-btn" onmousedown="event.preventDefault()" onclick="scrollCmd('removeFormat')" title="Clear formatting">⌫</button>
+      </div>
+      <div id="scroll-rte" class="scroll-rte" contenteditable="true" spellcheck="true" data-ph="Describe your deck's game plan — strategy, key combos, mulligan tips, matchups…" oninput="onScrollInput()"></div>
     </div>
   </div>
 
@@ -1827,7 +1880,67 @@ function refreshDeckNameState() {
   if (el) el.classList.toggle('is-empty', el.value.trim() === '');
 }
 
-// Toggle the Scroll editor — converts the left explorer panel into a text editor
+// ── SCROLL RICH-TEXT EDITOR ──
+function scrollRte() { return document.getElementById('scroll-rte'); }
+function refreshScrollEmpty() { const r = scrollRte(); if (r) r.classList.toggle('empty', !r.textContent.trim()); }
+// Recompute the stored (sanitized) scroll from the editor, mark the deck dirty.
+function onScrollInput() {
+  const r = scrollRte(); if (!r) return;
+  refreshScrollEmpty();
+  deckScroll = CR.sanitizeScroll(r.innerHTML);
+  markDirty();
+}
+function scrollExec(cmd, val) {
+  const r = scrollRte(); if (!r) return;
+  r.focus();
+  try { document.execCommand('styleWithCSS', false, true); } catch (e) {}
+  document.execCommand(cmd, false, val == null ? null : val);
+  onScrollInput();
+}
+function scrollCmd(cmd, val) { scrollExec(cmd, val); }
+function scrollFont(f) { if (f) scrollExec('fontName', f); }
+function scrollColor(c) { scrollExec('foreColor', c); }
+function scrollBlock(tag) {
+  const r = scrollRte(); if (!r) return;
+  r.focus();
+  try { document.execCommand('styleWithCSS', false, true); } catch (e) {}
+  const cur = (document.queryCommandValue('formatBlock') || '').toLowerCase().replace(/[<>]/g, '');
+  document.execCommand('formatBlock', false, cur === tag ? 'p' : tag); // toggle off if already applied
+  onScrollInput();
+}
+function scrollLink() {
+  const r = scrollRte(); if (!r) return; r.focus();
+  const url = (prompt('Link URL:', 'https://') || '').trim();
+  if (!url) return;
+  if (!/^https?:\/\//i.test(url)) { toast('Links must start with http:// or https://'); return; }
+  scrollExec('createLink', url);
+}
+let _scrollInited = false;
+function initScrollEditor() {
+  const r = scrollRte(); if (!r || _scrollInited) return; _scrollInited = true;
+  // Sanitize anything pasted in before it can reach the editable area.
+  r.addEventListener('paste', function (e) {
+    e.preventDefault();
+    const cd = e.clipboardData || window.clipboardData;
+    let html = (cd && cd.getData) ? cd.getData('text/html') : '';
+    if (html) html = CR.sanitizeScroll(html);
+    else html = CR.escHtml((cd && cd.getData ? cd.getData('text/plain') : '')).replace(/\n/g, '<br>');
+    document.execCommand('insertHTML', false, html);
+    onScrollInput();
+  });
+  // Text-colour swatches
+  const sw = document.getElementById('st-swatches');
+  if (sw && !sw.children.length) {
+    ['#e8e0cc', '#c8a96e', '#9b87d4', '#c4614a', '#5a8a6a', '#7ab8d4', '#d4b24a', '#ffffff'].forEach(function (col) {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'st-swatch'; b.style.background = col; b.title = 'Text colour';
+      b.addEventListener('mousedown', function (e) { e.preventDefault(); });
+      b.addEventListener('click', function () { scrollColor(col); });
+      sw.appendChild(b);
+    });
+  }
+}
+// Toggle the Scroll editor — converts the left explorer panel into a rich-text editor
 function toggleScrollEditor() {
   const exp = document.querySelector('.explorer');
   const btn = document.getElementById('scroll-btn');
@@ -1835,15 +1948,17 @@ function toggleScrollEditor() {
   exp.classList.toggle('scroll-mode', on);
   if (btn) btn.classList.toggle('active', on);
   if (on) {
-    const ta = document.getElementById('scroll-textarea');
-    ta.value = deckScroll || '';
+    initScrollEditor();
+    const r = scrollRte();
+    r.innerHTML = CR.renderScroll(deckScroll || '');
+    refreshScrollEmpty();
     if (window.matchMedia('(max-width: 760px)').matches) exp.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    ta.focus();
+    r.focus();
   }
 }
 function syncScrollEditor() {
-  const ta = document.getElementById('scroll-textarea');
-  if (ta) ta.value = deckScroll || '';
+  const r = scrollRte();
+  if (r) { r.innerHTML = CR.renderScroll(deckScroll || ''); refreshScrollEmpty(); }
 }
 let currentModalCard = null;
 let modalFromDeck = false; // true when the popup was opened from a deck-panel card

@@ -524,6 +524,67 @@
     if (t) t.classList.remove('show');
   };
 
+  // ── DECK SCROLL RICH-TEXT SANITIZER ──
+  // The deck "Scroll" is authored as rich HTML and shown to OTHER users, so it must be
+  // sanitized to a safe allowlist — both when saved and when displayed. One source of truth.
+  const SCROLL_TAGS = { p:1,br:1,div:1,span:1,b:1,strong:1,i:1,em:1,u:1,s:1,strike:1,h1:1,h2:1,h3:1,ul:1,ol:1,li:1,blockquote:1,a:1,hr:1 };
+  const SCROLL_DANGER = { script:1,style:1,iframe:1,object:1,embed:1,link:1,meta:1,svg:1,math:1,form:1,input:1,button:1,textarea:1,noscript:1,base:1,head:1,title:1,img:1,video:1,audio:1,source:1 };
+  const SCROLL_STYLEPROPS = { 'color':1,'background-color':1,'font-size':1,'font-family':1,'font-weight':1,'font-style':1,'text-decoration':1,'text-decoration-line':1,'text-align':1,'line-height':1 };
+  function scrubStyle(style) {
+    if (!style) return '';
+    const out = [];
+    String(style).split(';').forEach(decl => {
+      const i = decl.indexOf(':'); if (i < 0) return;
+      const prop = decl.slice(0, i).trim().toLowerCase();
+      let val = decl.slice(i + 1).trim();
+      if (!SCROLL_STYLEPROPS[prop]) return;
+      if (/url\(|expression|javascript:|<|>|\/\*|@import/i.test(val)) return;
+      if (prop === 'font-size') {
+        const m = val.match(/^([\d.]+)(px|pt|em|rem|%)$/i);
+        if (m) { const n = parseFloat(m[1]), u = m[2].toLowerCase(); const cap = u === 'px' ? 54 : u === 'pt' ? 40 : u === '%' ? 320 : 3.4; if (n > cap) val = cap + u; }
+        else if (!/^(xx-small|x-small|small|medium|large|x-large|xx-large|smaller|larger)$/i.test(val)) return;
+      }
+      out.push(prop + ': ' + val);
+    });
+    return out.join('; ');
+  }
+  CR.sanitizeScroll = function (html) {
+    if (!html) return '';
+    let doc;
+    try { doc = new DOMParser().parseFromString('<body><div id="__scr">' + html + '</div></body>', 'text/html'); }
+    catch (e) { return ''; }
+    const root = doc.getElementById('__scr');
+    if (!root) return '';
+    (function walk(node) {
+      const kids = Array.prototype.slice.call(node.childNodes);
+      for (let i = 0; i < kids.length; i++) {
+        const c = kids[i];
+        if (c.nodeType === 3) continue;                     // text node — keep
+        if (c.nodeType !== 1) { if (c.parentNode) c.parentNode.removeChild(c); continue; } // comments etc
+        const tag = c.tagName.toLowerCase();
+        if (SCROLL_DANGER[tag]) { c.parentNode.removeChild(c); continue; }   // drop node + contents
+        if (!SCROLL_TAGS[tag]) { walk(c); while (c.firstChild) node.insertBefore(c.firstChild, c); c.parentNode.removeChild(c); continue; } // unwrap
+        const attrs = Array.prototype.slice.call(c.attributes);
+        for (let j = 0; j < attrs.length; j++) {
+          const an = attrs[j].name.toLowerCase();
+          if (an === 'style') { const cs = scrubStyle(attrs[j].value); if (cs) c.setAttribute('style', cs); else c.removeAttribute('style'); }
+          else if (tag === 'a' && an === 'href') { const hf = attrs[j].value.trim(); if (/^(https?:|mailto:)/i.test(hf)) c.setAttribute('href', hf); else c.removeAttribute('href'); }
+          else c.removeAttribute(attrs[j].name);
+        }
+        if (tag === 'a') { c.setAttribute('target', '_blank'); c.setAttribute('rel', 'noopener noreferrer'); }
+        walk(c);
+      }
+    })(root);
+    const outHtml = root.innerHTML;
+    return outHtml.length > 24000 ? outHtml.slice(0, 24000) : outHtml;
+  };
+  // Render a stored scroll for display: sanitize if HTML, else escape plain text + <br>.
+  CR.renderScroll = function (raw) {
+    if (!raw) return '';
+    if (/<\/?(p|div|span|b|strong|i|em|u|s|strike|h[1-3]|ul|ol|li|blockquote|a|br|hr|font)\b/i.test(raw)) return CR.sanitizeScroll(raw);
+    return CR.escHtml(raw).replace(/\n/g, '<br>');
+  };
+
   window.CR = CR;
 
   // Confirmation toast after a successful account deletion (redirected here ?account_deleted=1).

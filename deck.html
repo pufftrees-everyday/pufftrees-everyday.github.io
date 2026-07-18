@@ -160,18 +160,34 @@
   .viewmode-btn.sort-btn { font-family: 'Cinzel', serif; font-size: 0.62rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
 
   /* ── SCROLL (deck description) ── */
+  /* The Scroll button only appears when a deck HAS a scroll, so make it eye-catching
+     (gold, with a gentle pulse) to invite readers to open it. */
   .scroll-tab-btn {
-    display: inline-flex; align-items: center; gap: 6px;
-    font-family: 'Cinzel', serif; font-size: 0.7rem; font-weight: 700;
-    letter-spacing: 0.08em; text-transform: uppercase; color: var(--rune);
-    background: transparent; border: 1px solid var(--border-strong); border-radius: 4px;
-    padding: 6px 13px; cursor: pointer; transition: all 0.15s;
+    display: inline-flex; align-items: center; gap: 7px;
+    font-family: 'Cinzel', serif; font-size: 0.74rem; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold);
+    background: rgba(200,169,110,0.12); border: 1px solid var(--gold); border-radius: 5px;
+    padding: 7px 15px; cursor: pointer; transition: background 0.15s, color 0.15s, box-shadow 0.15s;
+    animation: scrollPulse 2.6s ease-in-out infinite;
   }
-  .scroll-tab-btn:hover { color: var(--arcane); border-color: var(--arcane); }
-  .scroll-tab-btn.active { background: var(--gold); border-color: var(--gold); color: #1a1410; }
+  .scroll-tab-btn:hover { background: rgba(200,169,110,0.26); color: #e6c88a; animation: none; box-shadow: 0 0 14px rgba(200,169,110,0.5); }
+  .scroll-tab-btn.active { background: var(--gold); border-color: var(--gold); color: #1a1410; animation: none; box-shadow: 0 0 16px rgba(200,169,110,0.5); }
+  @keyframes scrollPulse {
+    0%, 100% { box-shadow: 0 0 0 rgba(200,169,110,0); border-color: var(--gold); }
+    50% { box-shadow: 0 0 13px rgba(200,169,110,0.55); border-color: #e6c88a; }
+  }
+  @media (prefers-reduced-motion: reduce) { .scroll-tab-btn { animation: none; } }
   .deck-scroll-box { background: var(--abyss); border: 1px solid var(--border); border-left: 3px solid var(--gold); border-radius: 10px; padding: 20px 24px; }
   .deck-scroll-title { font-family: 'Cinzel', serif; font-size: 0.95rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold); margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
-  .deck-scroll-text { font-family: 'Crimson Pro', serif; font-size: 1.06rem; line-height: 1.75; color: var(--parchment); white-space: pre-wrap; word-wrap: break-word; }
+  .deck-scroll-text { font-family: 'Crimson Pro', serif; font-size: 1.06rem; line-height: 1.75; color: var(--parchment); word-wrap: break-word; overflow-wrap: anywhere; }
+  .deck-scroll-text h1, .deck-scroll-text h2 { font-family: 'Cinzel', serif; color: var(--gold); font-size: 1.5rem; line-height: 1.25; margin: 14px 0 8px; }
+  .deck-scroll-text h3 { font-family: 'Cinzel', serif; color: var(--arcane); font-size: 1.2rem; margin: 12px 0 6px; }
+  .deck-scroll-text p { margin: 8px 0; }
+  .deck-scroll-text ul, .deck-scroll-text ol { padding-left: 26px; margin: 8px 0; }
+  .deck-scroll-text li { margin: 3px 0; }
+  .deck-scroll-text blockquote { border-left: 3px solid var(--gold); margin: 12px 0; padding: 4px 0 4px 16px; color: var(--shimmer); font-style: italic; }
+  .deck-scroll-text a { color: var(--arcane); text-decoration: underline; }
+  .deck-scroll-text a:hover { color: var(--shimmer); }
   #deck-scroll-panel { margin-top: 8px; }
 
   /* ── COMMENTS ── */
@@ -616,7 +632,7 @@
 <div class="toast" id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="cr-auth.js?v=20"></script>
+<script src="cr-auth.js?v=21"></script>
 <script src="card-faq.js?v=1"></script>
 <script>
   // Shared Supabase client from cr-auth.js (window.CR.supa)
@@ -755,7 +771,9 @@
     const txt = deckScrollText();
     if (!txt) { panel.innerHTML = ''; return; }
     panel.innerHTML = '<div class="deck-scroll-box"><div class="deck-scroll-title">📜 Scroll</div><div class="deck-scroll-text"></div></div>';
-    panel.querySelector('.deck-scroll-text').textContent = txt;
+    // Scrolls are authored as rich HTML; CR.renderScroll sanitizes to a safe allowlist
+    // (older plain-text scrolls are escaped + line-broken). Always sanitize on display.
+    panel.querySelector('.deck-scroll-text').innerHTML = (window.CR && CR.renderScroll) ? CR.renderScroll(txt) : escHtml(txt).replace(/\n/g, '<br>');
   }
   function applyScrollLayout() {
     const panel = document.getElementById('deck-scroll-panel');
