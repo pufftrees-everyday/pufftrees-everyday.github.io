@@ -108,7 +108,7 @@
           <label style="${labelStyle}">Confirm Password</label>
           <input type="password" id="cr-cpw-confirm" placeholder="••••••••" autocomplete="new-password" style="${inputStyle}">
         </div>
-        <p style="font-size:0.78rem;color:var(--mist,#3a3658);margin:0 0 16px;">At least 6 characters.</p>
+        <p style="font-size:0.78rem;color:var(--mist,#3a3658);margin:0 0 16px;">At least 8 characters.</p>
         <button id="cr-cpw-submit" onclick="CR.submitChangePassword()" style="width:100%;padding:11px;font-family:'Cinzel',serif;font-size:0.72rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;border-radius:4px;cursor:pointer;background:var(--rune,#6b5fa0);border:1px solid var(--arcane,#9b87d4);color:#fff;">Save New Password</button>
       </div>
     </div>`;
@@ -142,7 +142,7 @@
     if (!supa) { CR._cpwMsg('Connection unavailable.', 'error'); return; }
     const p1 = document.getElementById('cr-cpw-new').value;
     const p2 = document.getElementById('cr-cpw-confirm').value;
-    if (p1.length < 6) { CR._cpwMsg('Password must be at least 6 characters.', 'error'); return; }
+    if (p1.length < 8) { CR._cpwMsg('Password must be at least 8 characters.', 'error'); return; }
     if (p1 !== p2) { CR._cpwMsg('Those passwords don’t match.', 'error'); return; }
     const btn = document.getElementById('cr-cpw-submit');
     btn.disabled = true; btn.style.opacity = '0.6';
