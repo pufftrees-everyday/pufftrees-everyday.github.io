@@ -158,6 +158,82 @@
     }
   };
 
+  // ── DELETE ACCOUNT (GDPR right-to-erasure; calls the delete-account Edge Function) ──
+  function injectDeleteModal() {
+    if (document.getElementById('cr-delete-overlay')) return;
+    const labelStyle = "display:block;font-family:'Cinzel',serif;font-size:0.62rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--rune,#6b5fa0);margin-bottom:6px;";
+    const inputStyle = "width:100%;background:#0b0a0f;border:1px solid var(--border-strong,rgba(155,135,212,0.35));color:var(--parchment,#e8e0cc);font-family:'Crimson Pro',serif;font-size:1rem;padding:9px 12px;border-radius:4px;outline:none;";
+    const wrap = document.createElement('div');
+    wrap.innerHTML = `
+    <div class="modal-overlay" id="cr-delete-overlay" style="display:none;position:fixed;inset:0;background:rgba(11,10,15,0.85);z-index:500;align-items:center;justify-content:center;backdrop-filter:blur(4px);padding:20px;">
+      <div style="background:var(--dusk,#1a1826);border:1px solid var(--ember,#c4614a);border-radius:10px;padding:28px;width:100%;max-width:400px;position:relative;">
+        <button onclick="CR.closeDeleteAccount()" style="position:absolute;top:14px;right:16px;background:none;border:none;color:var(--mist,#3a3658);font-size:1.3rem;cursor:pointer;">✕</button>
+        <h2 style="font-family:'Cinzel Decorative',serif;color:var(--ember,#c4614a);font-size:1.4rem;margin-bottom:8px;">Delete Account</h2>
+        <p style="color:var(--parchment,#e8e0cc);font-size:0.92rem;line-height:1.55;margin-bottom:8px;">This permanently deletes your account and <b>everything tied to it</b> — your decks, collection, likes, comments, and profile.</p>
+        <p style="color:var(--ember,#c4614a);font-size:0.86rem;line-height:1.5;margin-bottom:16px;">This cannot be undone.</p>
+        <div id="cr-del-msg" style="display:none;font-size:0.85rem;padding:10px;border-radius:4px;margin-bottom:14px;"></div>
+        <label style="${labelStyle}">Type <b style="color:var(--parchment,#e8e0cc);">DELETE</b> to confirm</label>
+        <input type="text" id="cr-del-input" autocomplete="off" spellcheck="false" placeholder="DELETE" style="${inputStyle}margin-bottom:18px;">
+        <div style="display:flex;gap:10px;">
+          <button class="cr-del-cancel" onclick="CR.closeDeleteAccount()" style="flex:1;padding:11px;font-family:'Cinzel',serif;font-size:0.72rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;border-radius:6px;cursor:pointer;background:transparent;border:1px solid var(--border-strong,rgba(155,135,212,0.35));color:var(--shimmer,#c9bfee);">Cancel</button>
+          <button id="cr-del-confirm" onclick="CR.confirmDeleteAccount()" disabled style="flex:1;padding:11px;font-family:'Cinzel',serif;font-size:0.72rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;border-radius:6px;cursor:pointer;background:var(--ember,#c4614a);border:1px solid var(--ember,#c4614a);color:#fff;opacity:0.5;">Delete my account</button>
+        </div>
+      </div>
+    </div>`;
+    document.body.appendChild(wrap.firstElementChild);
+    const input = document.getElementById('cr-del-input');
+    const btn = document.getElementById('cr-del-confirm');
+    const sync = () => { const ok = input.value.trim() === 'DELETE'; btn.disabled = !ok; btn.style.opacity = ok ? '1' : '0.5'; };
+    input.addEventListener('input', sync);
+    input.addEventListener('keydown', e => { if (e.key === 'Enter' && input.value.trim() === 'DELETE') CR.confirmDeleteAccount(); });
+  }
+  CR._delMsg = function (text, type) {
+    const el = document.getElementById('cr-del-msg');
+    if (!el) return;
+    if (!text) { el.style.display = 'none'; return; }
+    el.textContent = text; el.style.display = 'block';
+    el.style.background = 'rgba(196,97,74,0.12)'; el.style.border = '1px solid var(--ember,#c4614a)'; el.style.color = 'var(--ember,#c4614a)';
+  };
+  CR.openDeleteAccount = async function () {
+    // Works on every page, including those that use their own auth: Supabase clients share
+    // the persisted session, so check the live session rather than CR.user.
+    let signedIn = !!CR.user;
+    if (!signedIn && supa) { try { const { data } = await supa.auth.getSession(); signedIn = !!(data && data.session); } catch (e) {} }
+    if (!signedIn) { CR.openAuth('login'); return; }
+    injectDeleteModal();
+    document.getElementById('cr-del-input').value = '';
+    const btn = document.getElementById('cr-del-confirm');
+    btn.disabled = true; btn.style.opacity = '0.5'; btn.textContent = 'Delete my account';
+    CR._delMsg('', '');
+    document.getElementById('cr-delete-overlay').style.display = 'flex';
+    setTimeout(() => { const el = document.getElementById('cr-del-input'); if (el) el.focus(); }, 60);
+  };
+  CR.closeDeleteAccount = function () { const o = document.getElementById('cr-delete-overlay'); if (o) o.style.display = 'none'; };
+  CR.confirmDeleteAccount = async function () {
+    if (!supa) { CR._delMsg('Connection unavailable.', 'error'); return; }
+    if (document.getElementById('cr-del-input').value.trim() !== 'DELETE') { CR._delMsg('Type DELETE to confirm.', 'error'); return; }
+    const btn = document.getElementById('cr-del-confirm');
+    btn.disabled = true; btn.style.opacity = '0.6'; btn.textContent = 'Deleting…';
+    CR._delMsg('', '');
+    try {
+      const { data: sess } = await supa.auth.getSession();
+      const token = sess && sess.session && sess.session.access_token;
+      if (!token) throw new Error('Your session expired — please sign in again.');
+      const res = await fetch(SUPABASE_URL + '/functions/v1/delete-account', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + token, 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' }
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok || !body.ok) throw new Error(body.error || 'Deletion failed. Please try again or contact support.');
+      try { await supa.auth.signOut(); } catch (e) {}
+      CR.user = null;
+      window.location.href = 'index.html?account_deleted=1';
+    } catch (e) {
+      CR._delMsg(e.message || 'Something went wrong. Please try again.', 'error');
+      btn.disabled = false; btn.style.opacity = '1'; btn.textContent = 'Delete my account';
+    }
+  };
+
   CR.setAuthMode = function (mode) {
     injectAuthModal();
     CR.authMode = mode;
@@ -279,7 +355,8 @@
         </div>
         <a href="profile.html?u=${encodeURIComponent(CR.user.username)}" class="header-link mobile-auth-editprofile">Edit Profile</a>
         <button class="header-link mobile-auth-changepw" onclick="CR.openChangePassword()">Change Password</button>
-        <button class="header-link mobile-auth-signout" onclick="CR.logout()">Sign Out</button>`;
+        <button class="header-link mobile-auth-signout" onclick="CR.logout()">Sign Out</button>
+        <button class="header-link mobile-auth-delete" onclick="CR.openDeleteAccount()">Delete Account</button>`;
     } else {
       el.innerHTML = `<a class="header-link mobile-auth-signin" onclick="CR.openAuth('login')">Sign In / Create Account</a>`;
     }
@@ -308,7 +385,8 @@
         <a href="decks.html" class="cr-pm-item">My Workshop</a>
         <button class="cr-pm-item" onclick="CR.closeProfileMenu();CR.openChangePassword()">Change Password</button>
         <div class="cr-pm-divider"></div>
-        <button class="cr-pm-item cr-pm-signout" onclick="CR.logout()">Sign Out</button>`;
+        <button class="cr-pm-item cr-pm-signout" onclick="CR.logout()">Sign Out</button>
+        <button class="cr-pm-item cr-pm-delete" onclick="CR.closeProfileMenu();CR.openDeleteAccount()">Delete Account</button>`;
       document.body.appendChild(menu);
     }
     // Position under the trigger
@@ -428,6 +506,14 @@
 
   window.CR = CR;
 
+  // Confirmation toast after a successful account deletion (redirected here ?account_deleted=1).
+  try {
+    if (/[?&]account_deleted=1(&|$)/.test(location.search)) {
+      history.replaceState(null, '', location.pathname);
+      setTimeout(() => CR.toast('Your account and all its data have been permanently deleted.'), 400);
+    }
+  } catch (e) {}
+
   // Inject profile menu styles once
   if (!document.getElementById('cr-profile-menu-styles')) {
     const st = document.createElement('style');
@@ -443,6 +529,8 @@
       .cr-pm-divider { height: 1px; background: var(--border, rgba(155,135,212,0.18)); margin: 5px 8px; }
       .cr-pm-signout { color: var(--ember, #c4614a); }
       .cr-pm-signout:hover { background: rgba(196,97,74,0.12); color: var(--ember, #c4614a); }
+      .cr-pm-delete { color: var(--rune, #6b5fa0); font-size: 0.82rem; }
+      .cr-pm-delete:hover { background: rgba(196,97,74,0.12); color: var(--ember, #c4614a); }
     `;
     document.head.appendChild(st);
   }

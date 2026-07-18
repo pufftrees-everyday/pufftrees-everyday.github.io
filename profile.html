@@ -79,6 +79,13 @@
   .deck-card-meta { font-size: 0.82rem; color: var(--rune); display: flex; gap: 12px; }
   .deck-card-likes { color: var(--ember); }
   .empty-note { color: var(--rune); font-style: italic; padding: 16px 0; }
+  /* Account deletion (own profile only) */
+  .danger-zone { margin-top: 40px; border: 1px solid rgba(196,97,74,0.4); border-radius: 10px; padding: 18px 20px; background: rgba(196,97,74,0.05); }
+  .danger-zone-title { font-family: 'Cinzel', serif; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ember); margin-bottom: 10px; }
+  .danger-zone-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .danger-zone-text { color: var(--rune); font-size: 0.92rem; line-height: 1.5; flex: 1; min-width: 220px; }
+  .danger-zone-btn { flex-shrink: 0; font-family: 'Cinzel', serif; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; padding: 10px 18px; border-radius: 6px; cursor: pointer; background: transparent; border: 1px solid var(--ember); color: var(--ember); transition: all 0.18s; }
+  .danger-zone-btn:hover { background: var(--ember); color: #fff; }
   .toast { position: fixed; bottom: 24px; right: 24px; background: var(--dusk); border: 1px solid var(--border-strong); color: var(--shimmer); padding: 10px 18px; border-radius: 6px; z-index: 999; opacity: 0; transform: translateY(8px); transition: opacity 0.2s, transform 0.2s; pointer-events: none; font-style: italic; }
   .toast.show { opacity: 1; transform: translateY(0); }
 
@@ -151,7 +158,7 @@
 <div class="toast" id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="cr-auth.js?v=17"></script>
+<script src="cr-auth.js?v=18"></script>
 <script>
   const IMAGE_BASE = 'https://pub-5999238092ad418ca60e7a9ad641cf57.r2.dev/';
   // Shared Supabase client from cr-auth.js (window.CR.supa)
@@ -303,6 +310,16 @@
       </div>`;
     }).join('') : `<div class="empty-note">${isOwn ? "You haven't published any decks yet." : 'No public decks yet.'}</div>`;
 
+    // Own profile only: a clearly-marked account-deletion path (GDPR right-to-erasure).
+    const dangerZone = isOwn ? `
+      <div class="danger-zone">
+        <div class="danger-zone-title">Danger Zone</div>
+        <div class="danger-zone-row">
+          <div class="danger-zone-text">Permanently delete your account and everything tied to it — decks, collection, likes, and comments. This cannot be undone.</div>
+          <button class="danger-zone-btn" onclick="CR.openDeleteAccount()">Delete Account</button>
+        </div>
+      </div>` : '';
+
     document.getElementById('content').innerHTML = `
       <div class="profile-head">
         ${avatarHead}
@@ -319,6 +336,7 @@
       ${bioBlock}
       <div class="section-title">Public Decks</div>
       <div class="deck-grid">${deckCards}</div>
+      ${dangerZone}
     `;
   }
 
