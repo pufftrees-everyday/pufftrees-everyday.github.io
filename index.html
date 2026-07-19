@@ -1589,7 +1589,9 @@ function filterCards() {
       const els = cardElements(c);
       const sel = [...activeFilters.element].map(e => e.toLowerCase());
       if (sel.length === 0) { if (els.length > 0) return false; }
-      else if (!els.every(e => sel.includes(e))) return false;
+      // Element(s) selected → card must HAVE a threshold and all of it within the
+      // selection. Colorless / no-threshold cards belong to the "nothing selected" bucket.
+      else if (els.length === 0 || !els.every(e => sel.includes(e))) return false;
     } else if (activeFilters.element.size && ![...activeFilters.element].some(el => (c.element||'').includes(el))) return false;
 
     // Subtype filters — any selected subtype must appear in card's subTypes

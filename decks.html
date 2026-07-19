@@ -694,7 +694,7 @@ function applyArchiveFilters() {
     if (haveElementData && archiveElementLock) {
       const els = deckElements(d.deck_data || {});
       if (sel.length === 0) { if (els.length > 0) return false; }      // lock + none → colorless only
-      else if (!els.every(e => sel.includes(e))) return false;         // subset: every deck element within selection
+      else if (els.length === 0 || !els.every(e => sel.includes(e))) return false;  // element selected → deck must have a threshold, all within selection
     } else if (haveElementData && sel.length) {
       const els = deckElements(d.deck_data || {});
       if (!sel.some(e => els.includes(e))) return false;               // OR: deck uses at least one selected element

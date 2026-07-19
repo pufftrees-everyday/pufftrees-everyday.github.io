@@ -2420,8 +2420,9 @@ function filterCards() {
         // Lock on, nothing selected → only colorless / no-element cards
         if (els.length > 0) return false;
       } else {
-        // Every element on the card must be in the selected set
-        if (!els.every(e => sel.includes(e))) return false;
+        // Card must HAVE a threshold and every element must be in the selected set.
+        // Colorless / no-threshold cards belong to the "nothing selected" bucket.
+        if (els.length === 0 || !els.every(e => sel.includes(e))) return false;
       }
     } else if (activeFilters.element.size) {
       if (![...activeFilters.element].some(el => (c.element||'').toLowerCase().includes(el.toLowerCase()))) return false;
