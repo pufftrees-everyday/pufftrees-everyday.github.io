@@ -2137,8 +2137,8 @@ function hpMove(x, y) {
 }
 function hpHide() { if (_hpEl) _hpEl.classList.remove('show'); _hpVisible = false; }
 // Wire hover preview on a container. `gate` returns true when previews are
-// allowed. Enabled on every view (Text, Detailed, Card, Large) — any element
-// carrying a data-card-id shows its full art on hover.
+// allowed. Only the Text and Detailed views get the hover popup — never the
+// Card / Large card views — matching the explorer on index.html.
 function wireHoverOn(rootId, gate) {
   const root = document.getElementById(rootId);
   if (!root) return;
@@ -2147,8 +2147,8 @@ function wireHoverOn(rootId, gate) {
   root.addEventListener('mousemove', e => { if (!_hpVisible) return; const r = e.target.closest('[data-card-id]'); if (!r) { hpHide(); return; } hpMove(e.clientX, e.clientY); });
   root.addEventListener('mouseout', e => { const to = e.relatedTarget; if (!to || !to.closest || !to.closest('[data-card-id]')) hpHide(); });
 }
-wireHoverOn('card-grid');   // left explorer — all views
-wireHoverOn('deck-body');   // right deck panel — all views
+wireHoverOn('card-grid', () => viewMode === 'list' || viewMode === 'details');       // left explorer — Text/Detailed only
+wireHoverOn('deck-body', () => deckViewMode === 'list' || deckViewMode === 'details'); // right deck panel — Text/Detailed only
 
 function escId(id) { return String(id).replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
 function escHtml(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }

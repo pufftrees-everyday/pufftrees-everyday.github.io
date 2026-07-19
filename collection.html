@@ -2089,10 +2089,10 @@ function displaySet(card, foil) {
   return p ? p.set : card.set;
 }
 
-// ── HOVER PREVIEW (desktop, list view only) ──
+// ── HOVER PREVIEW (desktop; Text + Detailed views only) ──
 let _hpEl, _hpImg, _hpVisible = false;
 function hpShow(id, x, y) {
-  if (viewMode !== 'list') return;
+  if (viewMode !== 'list' && viewMode !== 'details') return; // never Card / Large views
   const card = allCards.find(c => c.id === id || c.name === id);
   if (!card) return;
   if (!_hpEl) { _hpEl = document.getElementById('hover-preview'); _hpImg = document.getElementById('hover-preview-img'); }

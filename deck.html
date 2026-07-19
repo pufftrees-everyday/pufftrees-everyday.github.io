@@ -1456,6 +1456,9 @@
     root.addEventListener('mouseover', e => {
       const cell = e.target.closest('[data-card]');
       if (!cell) return;
+      // Only text (list) and details rows get the hover popup — never the
+      // Card / Large card cells, matching the explorer on index.html.
+      if (!cell.classList.contains('deck-list-row') && !cell.classList.contains('deck-detail-row')) return;
       showPreview(cell.getAttribute('data-card'), e.clientX, e.clientY);
     });
     root.addEventListener('mousemove', e => {
