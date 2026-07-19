@@ -5,7 +5,7 @@
 //
 //   <script>window.CRNav = { active: 'vault' };</script>
 //   <div id="cr-nav-mount"></div>
-//   <script src="site-nav.js?v=2"></script>
+//   <script src="site-nav.js?v=3"></script>
 //
 // Config (window.CRNav):
 //   active : which item is the current page — one of
@@ -48,7 +48,7 @@
     { key: 'about',      label: 'About',           href: 'about.html' },
     { key: 'play',       label: 'Play Network',    href: 'https://play.sorcerytcg.com/', ext: true },
     { key: 'sorcery',    label: 'Sorcery TCG',     href: 'https://sorcerytcg.com/', ext: true },
-    { key: 'discord',    label: 'Join our Discord', href: 'https://discord.gg/Ry84Dnd8X', ext: true, discord: true },
+    { key: 'discord',    label: 'Join our Discord', href: 'https://discord.gg/6xjEQtsDu', ext: true, discord: true },
   ];
 
   // Active highlight, applied inline so it never depends on a page's CSS:
