@@ -1109,7 +1109,7 @@
   <div class="cimport-modal">
     <button class="cimport-close" onclick="closeCollectionImport()">✕</button>
     <h2>Import into a Binder</h2>
-    <p class="cimport-sub">Upload a file or paste a list. Your cards land in a <b>new binder</b> so nothing in your Vault is overwritten. Reads Cursed Realm exports (text / CSV / detailed), curiosa.io decklists, and most <code>2x Card Name</code> lists. Add <code>(Foil)</code> after a name for foils.</p>
+    <p class="cimport-sub">Upload a file or paste a list. Your cards land in a <b>new binder</b> so nothing in your Vault is overwritten. Reads <b>curiosa.io collection exports</b> (the <code>card name, set, finish, product, quantity, notes</code> CSV), Cursed Realm exports (text / CSV / detailed), curiosa.io decklists, and most <code>2x Card Name</code> lists. Add <code>(Foil)</code> after a name for foils.<br><span style="color:var(--rune);font-size:0.86em;">Copies of the same card from different sets are combined into one total — the Vault tracks standard/foil, not per-printing.</span></p>
 
     <label class="cimport-label">Choose a file</label>
     <input type="file" id="cimport-file" accept=".txt,.text,.csv,.json,.tsv" onchange="onImportFile(event)">
@@ -3486,7 +3486,10 @@ function parseCSV(text) {
     const foil = fi >= 0 ? /foil|yes|true/i.test(r[fi] || '') : false;
     out.push({ name, qty, foil });
   }
-  return out.length ? out : null;
+  // Header was a card CSV we recognize, so return even an empty result rather
+  // than null — falling through to the line parser would read the header and
+  // set/product columns as if they were card names.
+  return out;
 }
 function parseJSONList(text) {
   let data; try { data = JSON.parse(text); } catch { return null; }
@@ -3548,11 +3551,24 @@ function runCollectionImport() {
   binders.push({ id: newId, parent: target, name, cards });
   binderUI.collapsed[newId] = false;
   saveBinders(); updateStats();
+  const summary = `Imported ${matchedQty} cards (${matchedUnique} unique) into “${name}”.`;
+  // When every line matched, close and jump to the new binder as before. When
+  // some didn't, keep the modal open and NAME them — on a full collection
+  // import a bare count is useless, you can't tell which cards to fix by hand.
+  if (unmatched.length) {
+    showMsg(
+      `<span class="ok">${bEsc(summary)}</span><br>` +
+      `<span class="warn">${unmatched.length} not recognized — these were skipped:</span>` +
+      `<div style="margin-top:6px;max-height:150px;overflow-y:auto;font-family:'Courier New',monospace;font-size:0.82rem;color:var(--rune);">` +
+      unmatched.map(u => bEsc(u)).join('<br>') +
+      `</div>`
+    );
+    updateStats();
+    return;
+  }
   closeCollectionImport();
   setView(target === 'trade' ? 'trade' : 'all'); // jump to where the binder now lives
-  let t = `Imported ${matchedQty} cards (${matchedUnique} unique) into “${name}”.`;
-  if (unmatched.length) t += ` ${unmatched.length} not recognized.`;
-  toast(t);
+  toast(summary);
 }
 
 // ── TOAST ──
