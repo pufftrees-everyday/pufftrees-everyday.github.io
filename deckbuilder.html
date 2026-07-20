@@ -3191,12 +3191,12 @@ function renderDeck() {
     body.innerHTML += renderSection('Avatar', 'avatar', avatarEntries, avatarOk ? '' : 'Need exactly 1 Avatar', avatarOk, '1');
   }
 
-  // Atlas section — all Atlas cards are Sites, so no sub-grouping needed
-  body.innerHTML += renderSection('Atlas', 'atlas', atlasEntries, atlasOk ? '' : `${atlasCount}/30 Sites (need ${Math.max(0,30-atlasCount)} more)`, atlasOk, '30+');
-
   // Spellbook section — grouped by card type only when the TYPE toggle is on
   const spellbookByType = spellTypeGroup ? groupByType(spellbookEntries) : null;
   body.innerHTML += renderSection('Spellbook', 'spellbook', spellbookEntries, spellbookOk ? '' : `${spellbookCount}/60 Spells (need ${Math.max(0,60-spellbookCount)} more)`, spellbookOk, '60+', spellbookByType);
+
+  // Atlas section — all Atlas cards are Sites, so no sub-grouping needed
+  body.innerHTML += renderSection('Atlas', 'atlas', atlasEntries, atlasOk ? '' : `${atlasCount}/30 Sites (need ${Math.max(0,30-atlasCount)} more)`, atlasOk, '30+');
 
   // Deck Collection section (Sorcery's 10-card toolbox/sideboard) — always shown so it's discoverable
   const collectionByType = spellTypeGroup ? groupByType(collectionEntries) : null;

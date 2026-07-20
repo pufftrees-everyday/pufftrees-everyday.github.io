@@ -1313,11 +1313,11 @@
     let html = '';
     // Avatar is already shown as the hero image + name at the top, so we don't
     // repeat it as a section here. (The .txt export builds it separately from dd.a.)
+    // Spellbook — break down by type, e.g. "60 cards (38 minions, 18 magics, 4 artifacts)"
+    html += renderSectionBlock('Spellbook', dd.s || [], { breakdown: 'type', typeToggle: true });
     // Atlas — show site count, e.g. "30 cards (30 sites)"
     const atlasCount = (dd.t || []).reduce((s,[,q]) => s + (q||0), 0);
     html += renderSectionBlock('Atlas', dd.t || [], { paren: `${atlasCount} site${atlasCount===1?'':'s'}` });
-    // Spellbook — break down by type, e.g. "60 cards (38 minions, 18 magics, 4 artifacts)"
-    html += renderSectionBlock('Spellbook', dd.s || [], { breakdown: 'type', typeToggle: true });
     // Deck Collection (only if present)
     if ((dd.c || []).length) {
       html += renderSectionBlock('Collection', dd.c || [], { limit: 'sideboard, up to 10', typeToggle: true });
