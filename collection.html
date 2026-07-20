@@ -690,6 +690,55 @@
   .bexport-fmt.active { background: var(--rune); border-color: var(--rune); color: #fff; }
   .bexport-preview { min-height: 180px; font-family: 'Courier New', monospace; font-size: 0.82rem; white-space: pre; overflow-wrap: normal; overflow-x: auto; }
 
+  /* ── SORT LOOSE CARDS MODAL ──
+     Split individual copies of a loose card across several binders: pick a
+     destination binder, then step each card's counter up/down. Nothing is
+     written to the collection until "Move cards" is pressed. */
+  .lsort-modal { max-width: 760px; display: flex; flex-direction: column; max-height: calc(100vh - 80px); padding-bottom: 0; }
+  .lsort-dests { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 4px; }
+  .lsort-chip { display: inline-flex; align-items: center; gap: 7px; background: var(--abyss); border: 1px solid var(--border-strong); border-radius: 20px; color: var(--shimmer); font-family: 'Cinzel', serif; font-size: 0.68rem; letter-spacing: 0.04em; padding: 7px 13px; cursor: pointer; transition: border-color 0.15s, background 0.15s, color 0.15s; max-width: 100%; }
+  .lsort-chip:hover { border-color: var(--arcane); color: var(--gold); }
+  .lsort-chip.active { background: var(--rune); border-color: var(--arcane); color: #fff; box-shadow: 0 0 14px rgba(155,135,212,0.35); }
+  .lsort-chip .lsc-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .lsort-chip .lsc-kind { font-size: 0.82em; opacity: 0.6; }
+  .lsort-chip .lsc-badge { background: var(--gold); color: #1a1410; border-radius: 10px; font-size: 0.78em; font-weight: 700; padding: 1px 7px; }
+  .lsort-chip.new { border-style: dashed; color: var(--rune); }
+  .lsort-chip.new:hover { color: var(--gold); }
+  .lsort-tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 14px; }
+  .lsort-search { flex: 1 1 200px; min-width: 0; background: var(--abyss); border: 1px solid var(--border-strong); color: var(--parchment); font-family: 'Crimson Pro', serif; font-size: 0.95rem; padding: 8px 11px; border-radius: 6px; }
+  .lsort-search:focus { outline: none; border-color: var(--arcane); }
+  .lsort-list { flex: 1 1 auto; min-height: 120px; overflow-y: auto; overscroll-behavior: contain; margin-top: 10px; border: 1px solid var(--border); border-radius: 8px; background: rgba(11,10,15,0.35); padding: 4px; }
+  .lsort-row { display: grid; grid-template-columns: minmax(0,1fr) auto auto; align-items: center; gap: 6px 16px; padding: 7px 9px; border-radius: 6px; }
+  .lsort-row:nth-child(odd) { background: rgba(155,135,212,0.05); }
+  .lsort-row.done { opacity: 0.55; }
+  .lsr-name { font-family: 'Crimson Pro', serif; font-size: 0.96rem; color: var(--parchment); min-width: 0; }
+  .lsr-name .bcr-rarity { color: var(--rune); font-size: 0.74rem; margin-left: 6px; }
+  .lsr-left { display: block; font-size: 0.76rem; color: var(--rune); font-style: italic; }
+  .lsr-left b { color: var(--gold); font-style: normal; }
+  .lsr-elsewhere { display: block; font-size: 0.74rem; color: var(--rune); margin-top: 2px; }
+  .lsr-elsewhere span { color: var(--sage); }
+  .lsr-qty { display: flex; align-items: center; gap: 5px; }
+  .lsr-lbl { font-family: 'Cinzel', serif; font-size: 0.56rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--rune); width: 26px; }
+  .lsr-lbl.foil { color: var(--gold); }
+  .lsr-step { background: var(--abyss); border: 1px solid var(--border-strong); color: var(--shimmer); width: 24px; height: 24px; border-radius: 5px; cursor: pointer; line-height: 1; font-size: 0.9rem; }
+  .lsr-step:hover:not(:disabled) { border-color: var(--arcane); color: var(--gold); }
+  .lsr-step:disabled { opacity: 0.3; cursor: default; }
+  .lsr-num { min-width: 18px; text-align: center; font-family: 'Cinzel', serif; font-size: 0.88rem; color: var(--shimmer); }
+  .lsr-num.has { color: var(--gold); font-weight: 700; }
+  .lsr-all { background: none; border: 1px solid var(--border-strong); color: var(--rune); font-family: 'Cinzel', serif; font-size: 0.54rem; letter-spacing: 0.06em; text-transform: uppercase; padding: 4px 7px; border-radius: 5px; cursor: pointer; }
+  .lsr-all:hover:not(:disabled) { border-color: var(--arcane); color: var(--gold); }
+  .lsr-all:disabled { opacity: 0.25; cursor: default; }
+  .lsort-foot { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; padding: 14px 0 22px; border-top: 1px solid var(--border); margin-top: 14px; position: sticky; bottom: 0; background: var(--dusk); }
+  .lsort-summary { flex: 1 1 220px; font-family: 'Crimson Pro', serif; font-size: 0.9rem; color: var(--rune); line-height: 1.45; }
+  .lsort-summary b { color: var(--gold); }
+  .lsort-empty { color: var(--rune); font-style: italic; font-size: 0.9rem; padding: 14px 6px; text-align: center; }
+  .lsort-foot .btn:disabled, .lsort-tools .binder-btn:disabled { opacity: 0.4; cursor: default; }
+  .lsort-foot .btn:disabled:hover, .lsort-tools .binder-btn:disabled:hover { border-color: var(--border-strong); color: inherit; }
+  @media (max-width: 620px) {
+    .lsort-row { grid-template-columns: 1fr; gap: 6px; }
+    .lsr-qty { justify-content: flex-start; }
+  }
+
   /* ── CARD DETAIL MODAL ── */
   .cm-overlay { display: none; position: fixed; inset: 0; background: rgba(11,10,15,0.85); z-index: 1200; align-items: center; justify-content: center; backdrop-filter: blur(4px); padding: 20px; }
   .cm-overlay.open { display: flex; }
@@ -789,7 +838,8 @@
 
   /* Brand-styled text prompt (replaces the native window.prompt for naming binders) */
   .cr-prompt-overlay {
-    display: none; position: fixed; inset: 0; z-index: 1000;
+    /* Above the import / sort-loose modals (1300) — it can be opened from inside them. */
+    display: none; position: fixed; inset: 0; z-index: 1400;
     align-items: center; justify-content: center; padding: 20px;
     background: rgba(11,10,15,0.82); backdrop-filter: blur(4px);
   }
@@ -1165,6 +1215,36 @@
   </div>
 </div>
 
+<!-- SORT LOOSE CARDS MODAL -->
+<div class="cimport-overlay" id="lsort-overlay" onclick="if(event.target===this)closeLooseSort()">
+  <div class="cimport-modal lsort-modal">
+    <button class="cimport-close" onclick="closeLooseSort()">✕</button>
+    <h2>Sort Loose Cards</h2>
+    <p class="cimport-sub">Pick a destination binder below, then use <b>+</b> / <b>−</b> to send copies there. Switch binders and keep going — the same card can be split across as many binders as you like. Nothing moves until you press <b>Move cards</b>.</p>
+
+    <label class="cimport-label">Destination binder</label>
+    <div class="lsort-dests" id="lsort-dests"></div>
+
+    <div class="lsort-tools">
+      <input type="text" class="lsort-search" id="lsort-search" placeholder="Filter loose cards…" autocomplete="off" oninput="lsSetQuery(this.value)">
+      <select class="binder-set-select" title="Sort the list" onchange="lsSetSort(this.value)">
+        <option value="name">Name (A–Z)</option>
+        <option value="qty">Quantity (most first)</option>
+        <option value="value">Value (high→low)</option>
+      </select>
+      <button class="binder-btn" id="lsort-fill" onclick="lsAssignAllShown()" title="Send every remaining copy shown below to the selected binder">Send all shown →</button>
+    </div>
+
+    <div class="lsort-list" id="lsort-list"></div>
+
+    <div class="lsort-foot">
+      <div class="lsort-summary" id="lsort-summary"></div>
+      <button class="btn btn-ghost" onclick="lsClearAll()">Reset</button>
+      <button class="btn btn-primary" id="lsort-apply" onclick="lsApply()">Move cards</button>
+    </div>
+  </div>
+</div>
+
 <!-- CARD DETAIL MODAL -->
 <div class="cm-overlay" id="cm-overlay" onclick="closeCardModal(event)">
   <div class="cm-modal" id="cm-modal">
@@ -1510,11 +1590,12 @@ function renderLoosePrompt() {
   const anyBinder = vbinders.length || tbinders.length;
   el.style.display = '';
   el.innerHTML = `
-    <div class="loose-prompt-text">💡 You have <b>${c.total} loose card${c.total === 1 ? '' : 's'}</b>${c.val > 0 ? ` <span class="lp-val">$${c.val.toFixed(2)}</span>` : ''} not yet in a binder. Tuck them into one to keep your Vault organized.</div>
+    <div class="loose-prompt-text">💡 You have <b>${c.total} loose card${c.total === 1 ? '' : 's'}</b>${c.val > 0 ? ` <span class="lp-val">$${c.val.toFixed(2)}</span>` : ''} not yet in a binder. Sort them to keep your Vault organized — copies of the same card can be split across different binders.</div>
     <div class="loose-prompt-actions">
+      <button class="btn btn-primary" onclick="openLooseSort()">🗂 Sort into binders…</button>
       ${anyBinder
-        ? `<select id="loose-target" class="loose-select">${opts}</select><button class="btn btn-primary" onclick="moveLooseToBinder()">Move all to binder</button>`
-        : `<button class="btn btn-primary" onclick="createBinderForLoose()">Create a binder</button>`}
+        ? `<select id="loose-target" class="loose-select">${opts}</select><button class="btn btn-ghost" onclick="moveLooseToBinder()">Move all</button>`
+        : `<button class="btn btn-ghost" onclick="createBinderForLoose()">Create a binder</button>`}
     </div>`;
 }
 // Move every loose card into the chosen vault binder (default: the dropdown value).
@@ -1553,6 +1634,254 @@ async function createBinderForLoose() {
   binders.push({ id: newId, parent: 'vault', name, cards: {} });
   saveBinders();
   moveLooseToBinder(newId);
+}
+
+// ── SORT LOOSE CARDS ──
+// The "Move all" button above is the blunt instrument; this is the precise one.
+// Copies of a card are allocated one at a time (or in bulk) to whichever binder is
+// currently selected, so 10 copies can end up spread across several binders. The
+// plan lives entirely in `looseSort.alloc` — { cardName: { binderId: {std, foil} } } —
+// and nothing touches the collection until lsApply() commits it.
+const looseSort = { active: null, alloc: {}, q: '', sort: 'name', names: [], idx: {}, loose: {} };
+
+// Snapshot of what's currently loose: { cardName: {std, foil} }
+function looseCardMap() {
+  const col = getCollection(); const out = {};
+  for (const [k, e] of Object.entries(col)) {
+    if (k === BINDERS_KEY || k === OWNED_DECKS_KEY || !e || typeof e !== 'object') continue;
+    const s = e.have || 0, f = e.haveFoil || 0;
+    if (s || f) out[k] = { std: s, foil: f };
+  }
+  return out;
+}
+
+function lsBinders() { return [...bindersFor('vault'), ...bindersFor('trade')]; }
+function lsAllocFor(name) { return looseSort.alloc[name] || (looseSort.alloc[name] = {}); }
+function lsPlanned(name, bid, finish) { return (looseSort.alloc[name]?.[bid]?.[finish]) || 0; }
+// How many copies of this finish are already spoken for across every binder.
+function lsAssigned(name, finish) {
+  let n = 0;
+  for (const q of Object.values(looseSort.alloc[name] || {})) n += q[finish] || 0;
+  return n;
+}
+function lsRemaining(name, finish) {
+  return (looseSort.loose[name]?.[finish] || 0) - lsAssigned(name, finish);
+}
+function lsBinderTotal(bid) {
+  let n = 0;
+  for (const byBinder of Object.values(looseSort.alloc)) {
+    const q = byBinder[bid]; if (q) n += (q.std || 0) + (q.foil || 0);
+  }
+  return n;
+}
+
+function openLooseSort() {
+  looseSort.loose = looseCardMap();
+  looseSort.names = Object.keys(looseSort.loose);
+  looseSort.idx = {};
+  looseSort.names.forEach((n, i) => { looseSort.idx[n] = i; });
+  if (!looseSort.names.length) { toast('No loose cards to sort'); return; }
+  looseSort.alloc = {}; looseSort.q = ''; looseSort.sort = 'name';
+  const bs = lsBinders();
+  looseSort.active = bs.length ? bs[0].id : null;
+  const s = document.getElementById('lsort-search'); if (s) s.value = '';
+  document.getElementById('lsort-overlay').classList.add('open');
+  lsRenderDests(); lsRenderList(); lsUpdateSummary();
+}
+function closeLooseSort() { document.getElementById('lsort-overlay').classList.remove('open'); }
+
+function lsRenderDests() {
+  const el = document.getElementById('lsort-dests'); if (!el) return;
+  const bs = lsBinders();
+  const chips = bs.map(b => {
+    const n = lsBinderTotal(b.id);
+    return `<button class="lsort-chip${b.id === looseSort.active ? ' active' : ''}" onclick="lsSetActive('${b.id}')" title="Send cards to “${bEsc(b.name)}”">
+      <span class="lsc-name">${bEsc(b.name)}</span>
+      <span class="lsc-kind">${b.parent === 'trade' ? 'Trade' : 'Vault'}</span>
+      ${n ? `<span class="lsc-badge">+${n}</span>` : ''}
+    </button>`;
+  }).join('');
+  el.innerHTML = chips + `<button class="lsort-chip new" onclick="lsNewBinder()">＋ New binder</button>`
+    + (bs.length ? '' : `<div class="lsort-summary" style="flex:1 1 100%;margin-top:6px;">You don’t have any binders yet — create one to start sorting.</div>`);
+}
+function lsSetActive(bid) { looseSort.active = bid; lsRenderDests(); lsRenderList(); }
+async function lsNewBinder() {
+  const name = (await crPrompt({ title: 'Name this binder', value: '', placeholder: 'e.g. Beta Set', okText: 'Create' }) || '').trim();
+  if (!name) return;
+  const parent = currentView === 'trade' ? 'trade' : 'vault';
+  const binders = getBinders();
+  const id = 'b' + Date.now().toString(36) + Math.floor(Math.random() * 1e4).toString(36);
+  binders.push({ id, parent, name, cards: {} });
+  saveBinders();
+  looseSort.active = id;
+  sectionCollapsed[parent === 'trade' ? 'tradeBinders' : 'vaultBinders'] = false;
+  renderBinders();
+  lsRenderDests(); lsRenderList();
+}
+
+function lsSetQuery(v) { looseSort.q = String(v || '').toLowerCase().trim(); lsRenderList(); }
+function lsSetSort(v) { looseSort.sort = v; lsRenderList(); }
+
+// Names matching the search box, in the chosen order.
+function lsVisibleNames() {
+  const q = looseSort.q;
+  const qtyOf = n => (looseSort.loose[n].std || 0) + (looseSort.loose[n].foil || 0);
+  const valOf = n => (prices[n]?.market || 0) * (looseSort.loose[n].std || 0)
+                   + (foilPrices[n]?.market || 0) * (looseSort.loose[n].foil || 0);
+  let names = looseSort.names.filter(n => !q || n.toLowerCase().includes(q));
+  if (looseSort.sort === 'qty') names.sort((a, b) => qtyOf(b) - qtyOf(a) || a.localeCompare(b));
+  else if (looseSort.sort === 'value') names.sort((a, b) => valOf(b) - valOf(a) || a.localeCompare(b));
+  else names.sort((a, b) => a.localeCompare(b));
+  return names;
+}
+
+function lsRenderList() {
+  const el = document.getElementById('lsort-list'); if (!el) return;
+  const names = lsVisibleNames();
+  el.innerHTML = names.length
+    ? names.map(n => `<div class="lsort-row" id="lsrow-${lsIdx(n)}">${lsRowInner(n)}</div>`).join('')
+    : `<div class="lsort-empty">No loose cards match “${bEsc(looseSort.q)}”.</div>`;
+  lsSyncRowStates(names);
+  const fill = document.getElementById('lsort-fill');
+  if (fill) fill.disabled = !looseSort.active || !names.length;
+}
+// Stable row index so element ids never have to carry a card name.
+function lsIdx(name) { return looseSort.idx[name]; }
+
+function lsRowInner(n) {
+  const loose = looseSort.loose[n] || { std: 0, foil: 0 };
+  const card = allCards.find(c => c.id === n);
+  const rarity = card ? card.rarity : '';
+  const i = lsIdx(n);
+  const qty = (finish, label, cls) => {
+    const total = loose[finish] || 0;
+    if (!total) return '';
+    const here = lsPlanned(n, looseSort.active, finish);
+    const left = lsRemaining(n, finish);
+    return `<div class="lsr-qty">
+      <span class="lsr-lbl${cls}">${label}</span>
+      <button class="lsr-step" onclick="lsAdjust(${i},'${finish}',-1)" ${here ? '' : 'disabled'}>−</button>
+      <span class="lsr-num${here ? ' has' : ''}">${here}</span>
+      <button class="lsr-step" onclick="lsAdjust(${i},'${finish}',1)" ${left && looseSort.active ? '' : 'disabled'}>+</button>
+      <button class="lsr-all" onclick="lsAdjust(${i},'${finish}',${left})" ${left && looseSort.active ? '' : 'disabled'} title="Send all ${left} remaining">All</button>
+    </div>`;
+  };
+  // What this card has been promised to binders other than the selected one.
+  const elsewhere = Object.entries(looseSort.alloc[n] || {})
+    .filter(([bid, q]) => bid !== looseSort.active && ((q.std || 0) + (q.foil || 0)))
+    .map(([bid, q]) => {
+      const b = findBinder(bid);
+      return b ? `${bEsc(b.name)} <span>×${(q.std || 0) + (q.foil || 0)}</span>` : '';
+    }).filter(Boolean).join(' · ');
+  const leftStd = lsRemaining(n, 'std'), leftFoil = lsRemaining(n, 'foil');
+  const leftBits = [];
+  if (loose.std) leftBits.push(`<b>${leftStd}</b>/${loose.std} std`);
+  if (loose.foil) leftBits.push(`<b>${leftFoil}</b>/${loose.foil} foil`);
+  return `<div class="lsr-name">${bEsc(n)}${rarity ? `<span class="bcr-rarity">${bEsc(rarity)}</span>` : ''}
+      <span class="lsr-left">${leftBits.join(' · ')} left loose</span>
+      ${elsewhere ? `<span class="lsr-elsewhere">→ ${elsewhere}</span>` : ''}
+    </div>
+    ${qty('std', 'Std', '')}
+    ${qty('foil', 'Foil', ' foil')}`;
+}
+
+// Dim rows whose every copy has already been allocated.
+function lsSyncRowStates(names) {
+  (names || lsVisibleNames()).forEach(n => {
+    const row = document.getElementById('lsrow-' + lsIdx(n));
+    if (row) row.classList.toggle('done', lsRemaining(n, 'std') === 0 && lsRemaining(n, 'foil') === 0);
+  });
+}
+
+function lsAdjust(i, finish, delta) {
+  const name = looseSort.names[i];
+  if (!name || !delta) return;
+  if (!looseSort.active) { toast('Pick a destination binder first'); return; }
+  const bid = looseSort.active;
+  const a = lsAllocFor(name);
+  const cur = a[bid] || (a[bid] = { std: 0, foil: 0 });
+  // Clamp to [0, what's still unallocated + what this binder already holds]
+  const max = (cur[finish] || 0) + lsRemaining(name, finish);
+  cur[finish] = Math.max(0, Math.min(max, (cur[finish] || 0) + delta));
+  if (!cur.std && !cur.foil) delete a[bid];
+  const row = document.getElementById('lsrow-' + i);
+  if (row) row.innerHTML = lsRowInner(name);
+  lsSyncRowStates([name]);
+  lsRenderDests(); lsUpdateSummary();
+}
+
+// Dump every remaining copy of every card currently listed into the active binder.
+function lsAssignAllShown() {
+  if (!looseSort.active) { toast('Pick a destination binder first'); return; }
+  const bid = looseSort.active;
+  let added = 0;
+  lsVisibleNames().forEach(n => {
+    const s = lsRemaining(n, 'std'), f = lsRemaining(n, 'foil');
+    if (!s && !f) return;
+    const a = lsAllocFor(n);
+    const cur = a[bid] || (a[bid] = { std: 0, foil: 0 });
+    cur.std += s; cur.foil += f; added += s + f;
+  });
+  if (!added) { toast('Nothing left to assign'); return; }
+  lsRenderDests(); lsRenderList(); lsUpdateSummary();
+}
+
+function lsClearAll() {
+  looseSort.alloc = {};
+  lsRenderDests(); lsRenderList(); lsUpdateSummary();
+}
+
+function lsUpdateSummary() {
+  const el = document.getElementById('lsort-summary');
+  const apply = document.getElementById('lsort-apply');
+  if (!el) return;
+  let moving = 0; const targets = new Set();
+  for (const byBinder of Object.values(looseSort.alloc)) {
+    for (const [bid, q] of Object.entries(byBinder)) {
+      const n = (q.std || 0) + (q.foil || 0);
+      if (n) { moving += n; targets.add(bid); }
+    }
+  }
+  let stillLoose = 0;
+  looseSort.names.forEach(n => { stillLoose += lsRemaining(n, 'std') + lsRemaining(n, 'foil'); });
+  el.innerHTML = moving
+    ? `Moving <b>${moving}</b> card${moving === 1 ? '' : 's'} into <b>${targets.size}</b> binder${targets.size === 1 ? '' : 's'} · ${stillLoose} staying loose`
+    : `Nothing assigned yet — pick a binder, then use + on the cards below.`;
+  if (apply) apply.disabled = !moving;
+}
+
+// Commit the plan: subtract from the loose quantities, add to each binder.
+function lsApply() {
+  const col = getCollection();
+  let moved = 0; const touched = new Set();
+  for (const [name, byBinder] of Object.entries(looseSort.alloc)) {
+    const e = col[name];
+    if (!e || typeof e !== 'object') continue;
+    for (const [bid, q] of Object.entries(byBinder)) {
+      const b = findBinder(bid); if (!b) continue;
+      // Re-clamp against the live entry — the collection may have changed under us.
+      const takeS = Math.min(q.std || 0, e.have || 0);
+      const takeF = Math.min(q.foil || 0, e.haveFoil || 0);
+      if (!takeS && !takeF) continue;
+      if (!b.cards[name]) b.cards[name] = { std: 0, foil: 0 };
+      b.cards[name].std = (b.cards[name].std || 0) + takeS;
+      b.cards[name].foil = (b.cards[name].foil || 0) + takeF;
+      e.have = (e.have || 0) - takeS;
+      e.haveFoil = (e.haveFoil || 0) - takeF;
+      moved += takeS + takeF; touched.add(bid);
+    }
+    if (entryEmpty(e)) delete col[name];
+  }
+  if (!moved) { toast('Nothing assigned yet'); return; }
+  saveCollection(col); // binders live inside the collection object, so this persists them
+  touched.forEach(bid => {
+    binderUI.collapsed[bid] = false;
+    const b = findBinder(bid);
+    if (b) sectionCollapsed[b.parent === 'trade' ? 'tradeBinders' : 'vaultBinders'] = false;
+  });
+  closeLooseSort();
+  updateStats(); renderBinders(); renderLoosePrompt(); filterCards();
+  toast(`Moved ${moved} card${moved === 1 ? '' : 's'} into ${touched.size} binder${touched.size === 1 ? '' : 's'}`);
 }
 
 async function renameBinder(id) {
@@ -2140,7 +2469,11 @@ let _modalCardId = null;
   });
 })();
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape' && document.getElementById('cm-overlay').classList.contains('open')) closeCardModal();
+  if (e.key !== 'Escape') return;
+  // crPrompt handles its own Escape — don't also close whatever is underneath it.
+  if (document.getElementById('cr-prompt-overlay')?.classList.contains('open')) return;
+  if (document.getElementById('cm-overlay').classList.contains('open')) closeCardModal();
+  else if (document.getElementById('lsort-overlay').classList.contains('open')) closeLooseSort();
 });
 
 function openCardModal(id) {
