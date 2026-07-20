@@ -982,7 +982,7 @@
   function renderEntryRow([name, qty]) {
     const cost = cardCost(name);
     const thStr = thresholdSymbols(name, 'th-row-icon').join('');
-    return `<div class="deck-list-row" data-card="${escAttr(name)}" onclick="zoom('${escAttr(name)}')">
+    return `<div class="deck-list-row" data-card="${escHtml(name)}" onclick="zoom('${escAttr(name)}')">
       <span class="deck-list-qty">${qty}×</span>
       <span class="deck-list-name">${escHtml(name)}</span>
       <span class="deck-list-th">${thStr}</span>
@@ -997,7 +997,7 @@
     const rarity = cardRarity(name);
     const type = cardType(name);
     const thStr = thresholdSymbols(name, 'th-row-icon').join('');
-    return `<div class="deck-detail-row" data-card="${escAttr(name)}" onclick="zoom('${escAttr(name)}')">
+    return `<div class="deck-detail-row" data-card="${escHtml(name)}" onclick="zoom('${escAttr(name)}')">
       <span class="dd-qty">${qty}×</span>
       <span class="dd-name">${escHtml(name)}</span>
       <span class="dd-set">${setBadge(cardSet(name))}</span>
@@ -1011,7 +1011,7 @@
 
   function renderEntryCell([name, qty]) {
     const siteClass = isSite(name) ? ' is-site' : '';
-    return `<div class="deck-card-cell${siteClass}" data-card="${escAttr(name)}" onclick="zoom('${escAttr(name)}')">
+    return `<div class="deck-card-cell${siteClass}" data-card="${escHtml(name)}" onclick="zoom('${escAttr(name)}')">
       <div class="cell-img-wrap">
         <img class="card-art" src="${imgUrl(name)}" alt="${escHtml(name)}" loading="lazy" onerror="this.style.opacity='0.2'">
         ${thresholdOverlayHtml(name)}
