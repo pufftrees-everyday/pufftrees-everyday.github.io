@@ -749,6 +749,16 @@
     100% { box-shadow: 0 0 0 0 rgba(200,169,110,0), 0 2px 8px rgba(0,0,0,0.4); }
   }
   @media (prefers-reduced-motion: reduce) { .vis-toggle-btn.make-public { animation: none; box-shadow: 0 0 12px rgba(200,169,110,0.55), 0 2px 8px rgba(0,0,0,0.4); } }
+  /* Deck isn't legal yet — the CTA stays in place (so the path stays obvious) but
+     goes quiet: no gold, no glow, no pulse. The hint beside it says what's missing. */
+  .vis-toggle-btn.make-public[disabled] {
+    background: none; border: 1px dashed var(--border-strong); color: var(--rune);
+    box-shadow: none; animation: none; cursor: not-allowed; transform: none;
+  }
+  .vis-toggle-btn.make-public[disabled]:hover {
+    background: none; border-color: var(--border-strong); color: var(--rune);
+    box-shadow: none; transform: none;
+  }
   .vis-hint { font-size: 0.78rem; color:var(--rune); font-style: italic; width: 100%; }
 
   /* DECK SECTIONS
@@ -3338,6 +3348,8 @@ function renderDeck() {
   // Deck Collection section (Sorcery's 10-card toolbox/sideboard) — always shown so it's discoverable
   const collectionByType = spellTypeGroup ? groupByType(collectionEntries) : null;
   body.innerHTML += renderSection('Collection', 'collection', collectionEntries, `${collectionCount}/10 cards`, collectionOk, '0–10', collectionByType);
+
+  renderVisibilityBar(); // the Inscribe CTA unlocks the moment the deck becomes legal
 }
 
 function groupByType(entries) {
@@ -3797,6 +3809,27 @@ function renderDeckCardRow(section, key, card, qty) {
   </div>`;
 }
 
+// ── ARCHIVE LEGALITY ──
+// The Archive is a public gallery of playable decks, so only a legal build may be
+// inscribed: exactly 1 Avatar, 30+ Atlas sites, 60+ Spellbook spells, at most 10
+// Collection cards, and — under the Duplicator — matching pairs of Uniques only.
+// Returns the outstanding issues so the UI can say what's missing.
+function archiveLegality() {
+  const { avatarCount, atlasCount, spellbookCount, collectionCount } = getDeckCounts();
+  const issues = [];
+  if (avatarCount === 0) issues.push('needs an Avatar');
+  else if (avatarCount > 1) issues.push('only 1 Avatar allowed');
+  if (atlasCount < 30) issues.push(`Atlas ${atlasCount}/30`);
+  if (spellbookCount < 60) issues.push(`Spellbook ${spellbookCount}/60`);
+  if (collectionCount > DECK_COLLECTION_LIMIT) issues.push(`Collection ${collectionCount}/${DECK_COLLECTION_LIMIT}`);
+  if (hasDuplicatorAvatar()) {
+    const iss = duplicatorIssues();
+    if (iss.nonUniques.length) issues.push(`${iss.nonUniques.length} non-Unique card${iss.nonUniques.length > 1 ? 's' : ''} (Duplicator)`);
+    if (iss.unpaired.length) issues.push(`${iss.unpaired.length} unpaired Unique${iss.unpaired.length > 1 ? 's' : ''} (Duplicator)`);
+  }
+  return { ok: issues.length === 0, issues };
+}
+
 // ── DECK VISIBILITY (public/private) ──
 function renderVisibilityBar() {
   const bar = document.getElementById('deck-visibility');
@@ -3823,16 +3856,22 @@ function renderVisibilityBar() {
       <span class="vis-hint">This deck is inscribed in <a href="archive.html" style="color:var(--arcane);">The Archive</a> for all Sorcerers to find.</span>
     </div>`;
   } else {
+    // An unfinished deck can't be inscribed — the CTA stays visible but inert so
+    // the path stays discoverable, with the remaining work spelled out.
+    const legal = archiveLegality();
     bar.innerHTML = `<div class="vis-bar">
       <div class="vis-status private"><span class="vis-dot"></span>Private</div>
-      <button class="vis-toggle-btn make-public" onclick="confirmInscribe()">Inscribe in the Archive</button>
-      <span class="vis-hint">Only you can see this deck. Inscribe it to share it with the realm.</span>
+      <button class="vis-toggle-btn make-public"${legal.ok ? '' : ' disabled'} onclick="confirmInscribe()"${legal.ok ? '' : ` title="Finish the deck first — ${escHtml(legal.issues.join(' · '))}"`}>Inscribe in the Archive</button>
+      <span class="vis-hint">${legal.ok
+        ? 'Only you can see this deck. Inscribe it to share it with the realm.'
+        : `The Archive only accepts legal decks — ${escHtml(legal.issues.join(' · '))}.`}</span>
     </div>`;
   }
 }
 
 // Themed confirmation before publishing to the public Archive
 function confirmInscribe() {
+  if (!blockIfIllegal()) return;
   const ov = document.getElementById('inscribe-overlay');
   if (ov) { ov.classList.add('open'); return; }
   // Fallback if modal markup is missing
@@ -3841,8 +3880,17 @@ function confirmInscribe() {
 function closeInscribe() { const ov = document.getElementById('inscribe-overlay'); if (ov) ov.classList.remove('open'); }
 function doInscribe() { closeInscribe(); setDeckVisibility(true); }
 
+// Shared guard for every path into the Archive (button, modal, keyboard).
+function blockIfIllegal() {
+  const legal = archiveLegality();
+  if (legal.ok) return true;
+  toast(`Not ready for the Archive — ${legal.issues.join(' · ')}`);
+  return false;
+}
+
 async function setDeckVisibility(makePublic) {
   if (!supa || !currentUser || !activeDeckCode) return;
+  if (makePublic && !blockIfIllegal()) return; // last stop before it goes public
   try {
     const { error } = await supa.from('decks')
       .update({ is_public: makePublic, owner_id: currentUser.id })
@@ -3877,6 +3925,13 @@ async function saveDeck() {
           .update({ name, deck_data: payload, is_saved: true, updated_at: new Date().toISOString() })
           .eq('short_code', code).eq('owner_id', currentUser.id);
         if (error) throw error;
+        // Editing a published deck below the legality bar withdraws it from the
+        // Archive (the database trigger does this on save). Mirror that here so
+        // the visibility bar doesn't keep claiming it's still inscribed.
+        if (activeDeckPublic && !archiveLegality().ok) {
+          activeDeckPublic = false;
+          toast('Deck withdrawn from the Archive — it no longer meets the requirements');
+        }
       } else {
         activeDeckCode = await CR.insertDeck({
           name, deck_data: payload,
