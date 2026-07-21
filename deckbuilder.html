@@ -425,11 +425,56 @@
   .text-row .tr-qty { font-family: 'Cinzel', serif; font-weight: 700; color: var(--gold); min-width: 24px; font-size: 0.9rem; flex-shrink: 0; }
   .text-row .tr-name { flex: 1; color: var(--shimmer); font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
   .text-row .tr-th { display: inline-flex; gap: 4px; align-items: center; flex-shrink: 0; }
-  .text-row .tr-step { display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0; }
-  .text-row .tr-stepbtn { width: 20px; height: 20px; border: 1px solid var(--border-strong); background: var(--dusk); color: var(--shimmer); border-radius: 4px; cursor: pointer; font-size: 0.9rem; line-height: 1; display: inline-flex; align-items: center; justify-content: center; padding: 0; }
-  .text-row .tr-stepbtn:hover { border-color: var(--arcane); color: var(--gold); }
-  .text-row .tr-qtynum { font-family: 'Cinzel', serif; font-weight: 700; color: var(--gold); min-width: 16px; text-align: center; font-size: 0.9rem; }
-  .text-row:not(.has-qty) .tr-qtynum { color: var(--mist); }
+  /* Deck stepper — shared by the explorer's Text and Detailed rows */
+  .text-row .tr-step, .db-card-row .tr-step { display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0; }
+  .text-row .tr-stepbtn, .db-card-row .tr-stepbtn { width: 20px; height: 20px; border: 1px solid var(--border-strong); background: var(--dusk); color: var(--shimmer); border-radius: 4px; cursor: pointer; font-size: 0.9rem; line-height: 1; display: inline-flex; align-items: center; justify-content: center; padding: 0; transition: background 0.12s, border-color 0.12s, color 0.12s; }
+  .text-row .tr-stepbtn:hover, .db-card-row .tr-stepbtn:hover { background: var(--rune); border-color: var(--arcane); color: #fff; }
+  .text-row .tr-qtynum, .db-card-row .tr-qtynum { font-family: 'Cinzel', serif; font-weight: 700; color: var(--gold); min-width: 16px; text-align: center; font-size: 0.9rem; }
+  .text-row:not(.has-qty) .tr-qtynum, .db-card-row:not(.has-qty) .tr-qtynum { color: var(--mist); }
+
+  /* COLLECTION STEPPER — the gold "− C +" that sits beside the deck stepper in
+     every explorer view. It sends copies straight to the deck's 10-card
+     Collection (sideboard) without opening the card popup.
+     Gold means Collection everywhere on this page (the ↓ move arrows, the
+     section header, the add toast), so the control is a gold pill rather than a
+     second set of square buttons — at a glance the two steppers never blur
+     together. The C dims to a hint until the card is actually in the
+     Collection, at which point it's replaced by the count. */
+  .coll-step {
+    display: inline-flex; align-items: center; gap: 2px; flex-shrink: 0;
+    padding: 1px 2px; border-radius: 999px;
+    background: rgba(200,169,110,0.06); border: 1px solid rgba(200,169,110,0.22);
+    transition: background 0.12s, border-color 0.12s;
+  }
+  .coll-step .cs-btn {
+    width: 18px; height: 18px; padding: 0; border: 0; background: none;
+    font-family: inherit; font-size: 0.85rem; line-height: 1;
+    color: rgba(200,169,110,0.7); border-radius: 50%; cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
+    transition: background 0.12s, color 0.12s;
+  }
+  .coll-step .cs-btn:hover { background: var(--gold); color: #1a1410; }
+  .coll-step .cs-mark {
+    font-family: 'Cinzel', serif; font-weight: 700; font-size: 0.66rem;
+    letter-spacing: 0.04em; min-width: 13px; text-align: center;
+    color: rgba(200,169,110,0.5); transition: color 0.12s;
+  }
+  .coll-step:hover { border-color: rgba(200,169,110,0.45); }
+  .coll-step.has { background: rgba(200,169,110,0.15); border-color: rgba(200,169,110,0.5); }
+  .coll-step.has .cs-mark { color: var(--gold); font-size: 0.8rem; }
+  /* The Detailed row carries the most columns, so its steppers run one size down
+     to keep card names from truncating. */
+  .db-card-row .tr-stepbtn { width: 18px; height: 18px; font-size: 0.82rem; }
+  .db-card-row .tr-step { gap: 3px; }
+  .db-card-row .tr-qtynum { min-width: 12px; font-size: 0.82rem; }
+  .db-card-row .cs-btn { width: 16px; height: 16px; font-size: 0.78rem; }
+  .db-card-row .cs-mark { min-width: 11px; }
+  /* Hairline divider so "deck" and "Collection" read as two distinct destinations */
+  .text-row .coll-step, .db-card-row .coll-step { position: relative; margin-left: 8px; }
+  .text-row .coll-step::before, .db-card-row .coll-step::before {
+    content: ''; position: absolute; left: -5px; top: 50%; transform: translateY(-50%);
+    width: 1px; height: 15px; background: var(--border-strong);
+  }
   /* Text view: wide columns so names stay readable (fewer, roomier columns) */
   .card-list-grid.list-view.text-view { grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); }
 
@@ -457,11 +502,11 @@
     gap: 4px 8px;
   }
   .card-list-grid.list-view.sites-only { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  /* Columns: name · set · rarity · type · thresholds · mana · in-deck · add
+  /* Columns: name · set · rarity · type · thresholds · mana · deck stepper · Collection stepper
      (mana sits just right of the thresholds, matching the /deck viewer) */
   .db-card-row {
     display: grid; grid-template-columns: 1fr auto auto auto auto auto auto auto;
-    align-items: center; gap: 8px;
+    align-items: center; gap: 6px;
     background: #13111e; border: 1px solid var(--border);
     border-left: 3px solid var(--border-strong);
     padding: 5px 9px; border-radius: 3px; cursor: pointer;
@@ -501,9 +546,6 @@
   .db-row-rarity.exceptional { background: rgba(90,138,176,0.14); color: var(--water); }
   .db-row-rarity.elite { background: rgba(155,135,212,0.14); color: var(--arcane); }
   .db-row-rarity.unique { background: rgba(200,169,110,0.14); color: var(--gold); }
-  .db-row-add { font-family: 'Cinzel', serif; font-size: 0.56rem; font-weight: 700; background: var(--rune); border: 1px solid var(--arcane); color: #fff; padding: 3px 8px; border-radius: 3px; cursor: pointer; white-space: nowrap; }
-  .db-row-add:hover { background: var(--arcane); }
-  .db-row-indeck { font-size: 0.66rem; color: var(--gold); white-space: nowrap; min-width: 18px; text-align: center; }
   @media (max-width: 1100px) {
     .card-list-grid.list-view { grid-template-columns: 1fr; }
   }
@@ -540,14 +582,20 @@
   .card-item img { width: 100%; aspect-ratio: 3/4; object-fit: cover; display: block; }
   .card-item-name { padding: 5px 8px; font-size: 0.85rem; color: var(--shimmer); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.3; }
 
-  /* deck count badge on card */
-  .card-item .in-deck-badge {
+  /* Count badges, stacked top-right: purple = copies in the deck, gold = copies
+     set aside in the Collection. The Collection badge matters because the hover
+     steppers are hidden until you're over the card. */
+  .card-item .ci-badges {
     position: absolute; top: 3px; right: 3px;
-    background: var(--rune); color: #fff;
-    font-family: 'Cinzel', serif; font-size: 0.6rem; font-weight: 700;
-    border-radius: 2px; padding: 1px 4px;
-    pointer-events: none;
+    display: flex; flex-direction: column; align-items: flex-end; gap: 3px;
+    pointer-events: none; z-index: 3;
   }
+  .card-item .in-deck-badge, .card-item .in-coll-badge {
+    font-family: 'Cinzel', serif; font-size: 0.6rem; font-weight: 700;
+    border-radius: 2px; padding: 1px 4px; line-height: 1.4;
+  }
+  .card-item .in-deck-badge { background: var(--rune); color: #fff; }
+  .card-item .in-coll-badge { background: var(--gold); color: #1a1410; }
 
   /* Hover-reveal add/remove controls on explorer cards (Card + Large views).
      Mirrors the deck panel's .dvg-controls so moving a card left↔right feels the
@@ -555,11 +603,18 @@
      Hover-only (touch devices use the card modal / Text & Detailed views). */
   .ci-controls {
     position: absolute; bottom: 0; left: 0; right: 0;
-    background: linear-gradient(0deg, rgba(11,10,15,0.96) 58%, transparent);
-    padding: 16px 4px 5px;
-    display: flex; gap: 4px; align-items: center; justify-content: center;
+    background: linear-gradient(0deg, rgba(11,10,15,0.97) 62%, transparent);
+    padding: 20px 4px 6px;
+    display: flex; flex-direction: column; gap: 4px; align-items: center; justify-content: center;
     opacity: 0; transition: opacity 0.15s; z-index: 4;
   }
+  /* Row 1 = deck, row 2 = Collection. Stacked rather than side-by-side so six
+     controls still get comfortable hit areas on a narrow grid tile. */
+  .ci-row { display: flex; gap: 4px; align-items: center; justify-content: center; }
+  /* Roomier hit areas on the card face, where there's space for them */
+  .ci-controls .cs-btn { width: 21px; height: 21px; font-size: 0.95rem; }
+  .ci-controls .cs-mark { min-width: 16px; font-size: 0.7rem; }
+  .ci-controls .coll-step { padding: 1px 3px; }
   @media (hover: hover) and (pointer: fine) {
     .card-item:hover .ci-controls { opacity: 1; }
   }
@@ -2520,20 +2575,28 @@ function renderCardGrid(append = false) {
 }
 
 function renderDbCardItem(card) {
-  const inDeck = getDeckCountForCard(card.id);
+  const inDeck = getMainDeckCountForCard(card.id);
+  const inColl = getCollectionCountForCard(card.id);
   const id = escId(card.id);
-  // Hover overlay mirroring the deck panel: − removes one from the deck, + adds one.
+  // Hover overlay mirroring the deck panel: − removes one, + adds one.
+  // Top row goes to the deck, bottom row to the Collection (sideboard).
   const controls = readOnly ? '' : `<div class="ci-controls">
-      <button class="qty-btn" onclick="event.stopPropagation();quickRemoveFromDeck('${id}')" title="Remove one from deck" aria-label="Remove one from deck">−</button>
-      <span class="ci-count">${inDeck}</span>
-      <button class="qty-btn ci-add" onclick="event.stopPropagation();quickAddToDeck('${id}')" title="Add one to deck" aria-label="Add one to deck">+</button>
+      <div class="ci-row">
+        <button class="qty-btn" onclick="event.stopPropagation();quickRemoveFromDeck('${id}')" title="Remove one from deck" aria-label="Remove one from deck">−</button>
+        <span class="ci-count">${inDeck}</span>
+        <button class="qty-btn ci-add" onclick="event.stopPropagation();quickAddToDeck('${id}')" title="Add one to deck" aria-label="Add one to deck">+</button>
+      </div>
+      <div class="ci-row">${collStepHtml(id, inColl)}</div>
     </div>`;
   return `<div class="card-item" draggable="true" data-card-id="${id}"
     onclick="openModal('${id}','explorer')"
     ondragstart="onCardDragStart(event,'${id}')"
     ondragend="onCardDragEnd(event)">
     <img src="${getImageUrl(card)}" alt="${card.name}" loading="lazy" onerror="this.style.opacity='0.2'" draggable="false">
-    ${inDeck > 0 ? `<div class="in-deck-badge">×${inDeck}</div>` : ''}
+    ${(inDeck > 0 || inColl > 0) ? `<div class="ci-badges">
+      ${inDeck > 0 ? `<div class="in-deck-badge">×${inDeck}</div>` : ''}
+      ${inColl > 0 ? `<div class="in-coll-badge" title="In your Collection (sideboard)">C×${inColl}</div>` : ''}
+    </div>` : ''}
     <div class="card-item-name">${card.name}</div>
     ${controls}
   </div>`;
@@ -2565,16 +2628,19 @@ function rowThIcons(card) {
   }
   return '';
 }
-// Clean Text row: mana cost · quick +/- in-deck count · name · threshold symbols
+// Clean Text row: deck stepper · Collection stepper · name · thresholds · mana cost
 function renderDbCardTextRow(card) {
-  const inDeck = getDeckCountForCard(card.id);
+  const id = escId(card.id);
+  const inDeck = getMainDeckCountForCard(card.id);
+  const inColl = getCollectionCountForCard(card.id);
   const cost = (card.cost != null && card.cost !== '') ? card.cost : '';
-  return `<div class="text-row${inDeck > 0 ? ' has-qty' : ''}" data-card-id="${escId(card.id)}" onclick="openModal('${escId(card.id)}','explorer')">
+  return `<div class="text-row${inDeck > 0 ? ' has-qty' : ''}" data-card-id="${id}" onclick="openModal('${id}','explorer')">
     <span class="tr-step">
-      <button class="tr-stepbtn" onclick="event.stopPropagation();quickRemoveFromDeck('${escId(card.id)}')" aria-label="Remove one" title="Remove one from deck">−</button>
+      <button class="tr-stepbtn" onclick="event.stopPropagation();quickRemoveFromDeck('${id}')" aria-label="Remove one" title="Remove one from deck">−</button>
       <span class="tr-qtynum">${inDeck}</span>
-      <button class="tr-stepbtn" onclick="event.stopPropagation();quickAddToDeck('${escId(card.id)}')" aria-label="Add one" title="Add one to deck">+</button>
+      <button class="tr-stepbtn" onclick="event.stopPropagation();quickAddToDeck('${id}')" aria-label="Add one" title="Add one to deck">+</button>
     </span>
+    ${collStepHtml(id, inColl)}
     <span class="tr-name">${card.name}</span>
     <span class="tr-th">${thIcons(card.thresholds)}</span>
     <span class="tr-cost${cost===''?' empty':''}">${cost}</span>
@@ -2582,24 +2648,71 @@ function renderDbCardTextRow(card) {
 }
 
 function renderDbCardRow(card) {
-  const inDeck = getDeckCountForCard(card.id);
+  const id = escId(card.id);
+  const inDeck = getMainDeckCountForCard(card.id);
+  const inColl = getCollectionCountForCard(card.id);
   const rarity = card.rarity || '';
   const rarityClass = rarity.toLowerCase();
   const cost = (card.cost != null && card.cost !== '') ? card.cost : '';
-  return `<div class="db-card-row" data-card-id="${escId(card.id)}" onclick="openModal('${escId(card.id)}','explorer')">
+  return `<div class="db-card-row${inDeck > 0 ? ' has-qty' : ''}" data-card-id="${id}" onclick="openModal('${id}','explorer')">
     <div class="db-row-name">${card.name}</div>
     <span class="db-row-meta set db-set">${setBadge(card.set)}</span>
     <span class="db-row-rarity ${rarityClass}">${rarityAbbr(rarity)}</span>
     <span class="db-row-meta db-type">${card.type || ''}</span>
     <span class="db-row-th">${rowThIcons(card)}</span>
     <span class="cr-mana${cost===''?' empty':''}">${cost}</span>
-    <span class="db-row-indeck">${inDeck > 0 ? '×'+inDeck : ''}</span>
-    <button class="db-row-add" onclick="event.stopPropagation();quickAddToDeck('${escId(card.id)}')">+ Add</button>
+    <span class="tr-step">
+      <button class="tr-stepbtn" onclick="event.stopPropagation();quickRemoveFromDeck('${id}')" aria-label="Remove one" title="Remove one from deck">−</button>
+      <span class="tr-qtynum">${inDeck}</span>
+      <button class="tr-stepbtn" onclick="event.stopPropagation();quickAddToDeck('${id}')" aria-label="Add one" title="Add one to deck">+</button>
+    </span>
+    ${collStepHtml(id, inColl)}
   </div>`;
 }
 
 function rarityAbbr(r) {
   return { 'Unique':'Uni', 'Elite':'Eli', 'Exceptional':'Exc', 'Ordinary':'Ord' }[r] || r;
+}
+
+// ── EXPLORER STEPPERS ──
+// Every explorer card carries two: the deck stepper (− n +) and the Collection
+// stepper (− C +). The Collection one puts copies straight into the deck's
+// 10-card sideboard without making the user open the card popup first.
+function collStepHtml(id, inColl) {
+  if (readOnly) return '';
+  return `<span class="coll-step${inColl > 0 ? ' has' : ''}" onclick="event.stopPropagation()">
+      <button class="cs-btn" onclick="quickRemoveFromCollection('${id}')" aria-label="Remove one from Collection" title="Remove one from your Collection (sideboard)">−</button>
+      <span class="cs-mark" title="Collection — this deck's 10-card sideboard">${inColl > 0 ? inColl : 'C'}</span>
+      <button class="cs-btn" onclick="quickAddToCollection('${id}')" aria-label="Add one to Collection" title="Set one aside in your Collection (sideboard)">+</button>
+    </span>`;
+}
+
+// Copies in the deck proper (Avatar + Atlas + Spellbook). Deliberately excludes
+// the Collection so each explorer stepper reports only its own destination —
+// getDeckCountForCard() still counts everything, since rarity limits span both.
+function getMainDeckCountForCard(id) {
+  const k = String(id);
+  return (deck.avatar[k]?.qty || 0) + (deck.atlas[k]?.qty || 0) + (deck.spellbook[k]?.qty || 0);
+}
+
+function getCollectionCountForCard(id) {
+  return deck.collection[String(id)]?.qty || 0;
+}
+
+function quickAddToCollection(id) {
+  const card = allCards.find(c => c.id === id || c.name === id);
+  if (!card) return;
+  const result = addCardToDeckCollection(card, 1);
+  if (!result.ok) { toast(result.message); return; }
+  renderDeck();
+  renderCardGrid();
+  collectionToast('📦 ' + result.message);
+  flashCollectionSection(false); // no scroll — the user is working in the explorer
+}
+
+function quickRemoveFromCollection(id) {
+  const key = String(id);
+  if (deck.collection[key]) changeQty('collection', key, -1);
 }
 
 function quickAddToDeck(id) {
@@ -2615,10 +2728,12 @@ function quickAddToDeck(id) {
   }
 }
 
-// Remove one copy of a card from whichever deck section holds it (Text view −)
+// Remove one copy from whichever deck section holds it. The Collection is left
+// alone — it has its own stepper, so the deck − must never silently eat a
+// sideboard copy.
 function quickRemoveFromDeck(id) {
   const key = String(id);
-  for (const section of ['avatar','atlas','spellbook','collection']) {
+  for (const section of ['avatar','atlas','spellbook']) {
     if (deck[section][key]) { changeQty(section, key, -1); return; }
   }
 }
@@ -2812,14 +2927,16 @@ function collectionToast(msg) {
 }
 
 // Reveal + pulse the Collection deck section so it's obvious where the card landed.
-function flashCollectionSection() {
+// scroll=false for the explorer's − C + stepper: yanking the deck panel around on
+// every click would fight the user while they're browsing.
+function flashCollectionSection(scroll = true) {
   const el = document.getElementById('deck-section-collection');
   if (!el) return;
   sectionCollapsed.collection = false; // keep it revealed after the flash
   el.classList.remove('collapsed', 'flash-collection');
   void el.offsetWidth; // restart the animation if it's mid-play
   el.classList.add('flash-collection');
-  el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  if (scroll) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   setTimeout(() => el.classList.remove('flash-collection'), 1600);
 }
 
