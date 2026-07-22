@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /
+
+# Personal / transient pages — no value in search results, and they render
+# empty for a logged-out crawler. The pages themselves also carry a noindex
+# tag where appropriate; this just saves the crawl budget.
+Disallow: /reset-password.html
+Disallow: /gallery.html
+Disallow: /testdeck.html
+Disallow: /testdraw.html
+Disallow: /collection.html
+Disallow: /decks.html
+
+Sitemap: https://cursedrealm.org/sitemap.xml

@@ -133,6 +133,15 @@
   function escHtml(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
   function getParam(n){ return new URLSearchParams(location.search).get(n); }
 
+  // Swap the static <meta name="description"> for one describing this specific
+  // page. Search engines read the rendered head; users never see it.
+  function setMetaDescription(text) {
+    let el = document.querySelector('meta[name="description"]');
+    if (!el) { el = document.createElement('meta'); el.setAttribute('name', 'description'); document.head.appendChild(el); }
+    el.setAttribute('content', text);
+  }
+
+
   function chooseSet(sets) {
     return (sets||[]).find(s => /beta/i.test(s.name||''))
       || (sets||[]).find(s => /alpha/i.test(s.name||''))
@@ -173,6 +182,7 @@
     const artists = [...artistSet];
 
     document.title = `${card.name} — Cursed Realm`;
+    setMetaDescription(`${card.name} — Sorcery: Contested Realm Avatar card details, rules text, thresholds, sets and printings on Cursed Realm.`);
 
     // stat boxes
     const stats = [];

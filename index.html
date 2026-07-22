@@ -12,6 +12,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Cursed Realm — Sorcery: Contested Realm</title>
+<link rel="canonical" href="https://cursedrealm.org/">
 <meta name="description" content="A fan-made companion for Sorcery: Contested Realm — browse every card, build and share decks, track your collection, and explore the community deck gallery.">
 
 <!-- Open Graph (Discord, Facebook, iMessage, etc.) -->
@@ -748,6 +749,47 @@
 <script src="price-chart.js?v=3"></script>
 <script src="card-faq.js?v=1"></script>
 <script src="invoke.js?v=1"></script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": "https://cursedrealm.org/#website",
+      "url": "https://cursedrealm.org/",
+      "name": "Cursed Realm",
+      "description": "A community-built companion site for the Sorcery: Contested Realm trading card game.",
+      "inLanguage": "en"
+    },
+    {
+      "@type": "WebApplication",
+      "@id": "https://cursedrealm.org/#app",
+      "name": "Cursed Realm",
+      "url": "https://cursedrealm.org/",
+      "applicationCategory": "GameApplication",
+      "operatingSystem": "Any",
+      "browserRequirements": "Requires JavaScript",
+      "isAccessibleForFree": true,
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+      "description": "Free deck builder, card database, collection tracker, price history and rulings reference for Sorcery: Contested Realm.",
+      "featureList": [
+        "Sorcery: Contested Realm card database with advanced search",
+        "Deck builder with mana curve and threshold analysis",
+        "Public deck archive and deck sharing",
+        "Collection tracking with card prices and portfolio value",
+        "Card rulings and FAQ reference",
+        "Searchable rulebook and event guide",
+        "Two-player life tracker"
+      ],
+      "about": {
+        "@type": "Game",
+        "name": "Sorcery: Contested Realm",
+        "genre": "Trading card game"
+      }
+    }
+  ]
+}
+</script>
 </head>
 <body>
 

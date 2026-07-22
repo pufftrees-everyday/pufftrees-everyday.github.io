@@ -177,6 +177,15 @@
   function escHtml(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
   function getParam(n){ return new URLSearchParams(location.search).get(n); }
 
+  // Swap the static <meta name="description"> for one describing this specific
+  // page. Search engines read the rendered head; users never see it.
+  function setMetaDescription(text) {
+    let el = document.querySelector('meta[name="description"]');
+    if (!el) { el = document.createElement('meta'); el.setAttribute('name', 'description'); document.head.appendChild(el); }
+    el.setAttribute('content', text);
+  }
+
+
   function chooseSet(sets) {
     return (sets||[]).find(s => /beta/i.test(s.name||''))
       || (sets||[]).find(s => /alpha/i.test(s.name||''))
@@ -229,6 +238,7 @@
     const statusEl = document.getElementById('status');
     if (!artist) { statusEl.textContent = 'No artist specified.'; return; }
     document.title = `${artist} — Cursed Realm`;
+    setMetaDescription(`Every Sorcery: Contested Realm card illustrated by ${artist} — full card list, sets, and artwork on Cursed Realm.`);
 
     let raw;
     try {
