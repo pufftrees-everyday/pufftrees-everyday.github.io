@@ -2084,6 +2084,14 @@ function hasDuplicatorAvatar() {
   return !!(av && av.card && av.card.name === 'Duplicator');
 }
 
+// The Imposter avatar: "(3) → Banish an Avatar from your collection to mask yourself."
+// It's the one avatar whose deck may keep other Avatars in the 10-card Collection
+// (sideboard) — they're the masks it swaps into.
+function hasImposterAvatar() {
+  const av = Object.values(deck.avatar || {})[0];
+  return !!(av && av.card && av.card.name === 'Imposter');
+}
+
 // The per-card copy limit: 0 or 2 under the Duplicator avatar; Infinity for the unlimited
 // cards; otherwise by rarity.
 function copyLimit(card) {
@@ -2092,6 +2100,9 @@ function copyLimit(card) {
   if (card.type !== 'Avatar' && hasDuplicatorAvatar()) {
     return card.rarity === 'Unique' ? 2 : 0; // Uniques allowed as a pair; nothing else
   }
+  // Avatars are singular. Most carry no rarity in the data, so without this they'd
+  // fall through to the Ordinary default (4) and stack in the Imposter's Collection.
+  if (card.type === 'Avatar') return 1;
   if (UNLIMITED_CARDS.has(String(card.name || '').trim().toLowerCase())) return Infinity;
   const rarity = card.rarity || 'Ordinary';
   return RARITY_LIMITS[rarity] || 4;
@@ -2597,7 +2608,7 @@ function renderDbCardItem(card) {
         <span class="ci-count">${inDeck}</span>
         <button class="qty-btn ci-add" onclick="event.stopPropagation();quickAddToDeck('${id}')" title="Add one to deck" aria-label="Add one to deck">+</button>
       </div>
-      <div class="ci-row">${collStepHtml(id, inColl)}</div>
+      <div class="ci-row">${collStepHtml(id, inColl, card)}</div>
     </div>`;
   return `<div class="card-item" draggable="true" data-card-id="${id}"
     onclick="openModal('${id}','explorer')"
@@ -2651,7 +2662,7 @@ function renderDbCardTextRow(card) {
       <span class="tr-qtynum">${inDeck}</span>
       <button class="tr-stepbtn" onclick="event.stopPropagation();quickAddToDeck('${id}')" aria-label="Add one" title="Add one to deck">+</button>
     </span>
-    ${collStepHtml(id, inColl)}
+    ${collStepHtml(id, inColl, card)}
     <span class="tr-name">${card.name}</span>
     <span class="tr-th">${thIcons(card.thresholds)}</span>
     <span class="tr-cost${cost===''?' empty':''}">${cost}</span>
@@ -2677,7 +2688,7 @@ function renderDbCardRow(card) {
       <span class="tr-qtynum">${inDeck}</span>
       <button class="tr-stepbtn" onclick="event.stopPropagation();quickAddToDeck('${id}')" aria-label="Add one" title="Add one to deck">+</button>
     </span>
-    ${collStepHtml(id, inColl)}
+    ${collStepHtml(id, inColl, card)}
   </div>`;
 }
 
@@ -2689,8 +2700,11 @@ function rarityAbbr(r) {
 // Every explorer card carries two: the deck stepper (− n +) and the Collection
 // stepper (− C +). The Collection one puts copies straight into the deck's
 // 10-card sideboard without making the user open the card popup first.
-function collStepHtml(id, inColl) {
+function collStepHtml(id, inColl, card) {
   if (readOnly) return '';
+  // Avatars only belong in the Collection under the Imposter, so the stepper stays
+  // hidden for them otherwise rather than offering a click that can only fail.
+  if (card && card.type === 'Avatar' && !hasImposterAvatar()) return '';
   return `<span class="coll-step${inColl > 0 ? ' has' : ''}" onclick="event.stopPropagation()">
       <button class="cs-btn" onclick="quickRemoveFromCollection('${id}')" aria-label="Remove one from Collection" title="Remove one from your Collection (sideboard)">−</button>
       <span class="cs-mark" title="Collection — this deck's 10-card sideboard">${inColl > 0 ? inColl : 'C'}</span>
@@ -2835,8 +2849,10 @@ function refreshModalDeckControls() {
   if (!modalFromDeck) {
     moveWrap.style.display = 'none';
     moveWrap.innerHTML = '';
-    if (collBtn) collBtn.style.display = '';
-    if (collNote) collNote.style.display = '';
+    // Avatars can only be set aside as masks when the Imposter is the deck's Avatar.
+    const collectable = card.type !== 'Avatar' || hasImposterAvatar();
+    if (collBtn) collBtn.style.display = collectable ? '' : 'none';
+    if (collNote) collNote.style.display = collectable ? '' : 'none';
     if (title) title.textContent = 'Add to Deck';
     return;
   }
@@ -2854,7 +2870,8 @@ function refreshModalDeckControls() {
 
   let html = '';
   if (inMain) html += `<button class="modal-move-btn to-collection" onclick="moveModalToCollection()" title="Move one copy to your 10-card Collection (sideboard)">↓ Move to Collection</button>`;
-  if (inColl) html += `<button class="modal-move-btn to-deck" onclick="moveModalToDeck()" title="Move one copy back into your deck">↑ Move to Deck</button>`;
+  // An Avatar in the Collection is an Imposter mask — it has no main-deck home to move to.
+  if (inColl && canCollection) html += `<button class="modal-move-btn to-deck" onclick="moveModalToDeck()" title="Move one copy back into your deck">↑ Move to Deck</button>`;
   moveWrap.innerHTML = html;
   moveWrap.style.display = html ? 'flex' : 'none';
 }
@@ -3036,6 +3053,13 @@ function pickAvatar(id) {
   closeAvatarPicker();
   renderDeck();
   renderCardGrid();
+  // Swapping off the Imposter strands any masks it was keeping in the Collection —
+  // they stay put (never silently deleted) but the deck is illegal until they go.
+  const masks = collectionAvatars();
+  if (masks.length && card.name !== 'Imposter') {
+    toast(`${card.name} set as your Avatar — your Collection still holds ${masks.length} Avatar${masks.length>1?'s':''}, which only the Imposter may keep.`);
+    return;
+  }
   toast(`${card.name} set as your Avatar!`);
 }
 
@@ -3115,6 +3139,11 @@ function addCardToDeckInner(card, qty = 1) {
   if (section === 'avatar') {
     const avatarKeys = Object.keys(deck.avatar);
     if (avatarKeys.length > 0 && !deck.avatar[key]) {
+      // Under the Imposter there IS somewhere else for a second Avatar to go, so
+      // point at the Collection stepper instead of a flat refusal.
+      if (hasImposterAvatar()) {
+        return { ok: false, message: `The Imposter is your Avatar — use the 📦 Collection stepper to set ${card.name} aside as a mask.` };
+      }
       return { ok: false, message: `You already have an Avatar (${deck.avatar[avatarKeys[0]].card.name}). Remove it first.` };
     }
     deck.avatar[key] = { card, qty: 1 };
@@ -3157,9 +3186,10 @@ function addCardToDeckCollectionInner(card, qty = 1) {
   const rarity = card.rarity || 'Ordinary';
   const limit = copyLimit(card);
 
-  // Avatars cannot go in the Collection
-  if (getDeckSection(card) === 'avatar') {
-    return { ok: false, message: `Avatars can't be placed in the Collection.` };
+  // Avatars normally can't go in the Collection — the Imposter is the exception,
+  // since it banishes an Avatar from your collection to mask itself.
+  if (getDeckSection(card) === 'avatar' && !hasImposterAvatar()) {
+    return { ok: false, message: `Avatars can only go in the Collection when the Imposter is your Avatar.` };
   }
 
   // The Duplicator avatar forbids everything but Uniques.
@@ -3254,9 +3284,15 @@ function moveToDeckCollection(section, key) {
 function moveFromCollectionToDeck(key) {
   const entry = deck.collection[key];
   if (!entry) return;
-  const before = serializeDeck();
   const card = entry.card;
-  const section = getDeckSection(card); // 'atlas' | 'spellbook'
+  const section = getDeckSection(card); // 'atlas' | 'spellbook' | 'avatar'
+  // A mask in the Imposter's Collection can't be promoted into the Avatar slot —
+  // that slot is taken, and a deck may only ever have one Avatar.
+  if (section === 'avatar') {
+    toast(`${card.name} is a mask for the Imposter — it stays in the Collection.`);
+    return;
+  }
+  const before = serializeDeck();
   if (entry.qty <= 1) delete deck.collection[key]; else entry.qty -= 1;
   const dkey = String(card.id);
   if (deck[section][dkey]) deck[section][dkey].qty += 1;
@@ -3289,6 +3325,15 @@ function duplicatorIssues() {
   return { nonUniques, unpaired, clean: nonUniques.length === 0 && unpaired.length === 0 };
 }
 
+// Avatars sitting in the Collection. Legal only under the Imposter (they're the masks
+// it banishes to copy) — so if the avatar is swapped away afterwards, these become
+// the reason the deck stops being Archive-legal.
+function collectionAvatars() {
+  return Object.values(deck.collection || {})
+    .filter(e => e && e.card && e.card.type === 'Avatar')
+    .map(e => e.card.name);
+}
+
 // ── RENDER DECK ──
 function renderDeck() {
   syncDeckSortButtons();
@@ -3312,6 +3357,15 @@ function renderDeck() {
     const tail = !hasCards ? '' : (iss.clean ? ' All Uniques are paired ✓' : ' — ' + parts.join(', ') + '.');
     dupNote = `<div class="dup-note ${iss.clean?'ok':'warn'}"${detail?` title="${detail.replace(/"/g,'&quot;')}"`:''}><b>Duplicator:</b> spellbook &amp; atlas may only hold matching pairs of Uniques (2 each).${tail}</div>`;
   }
+  // Imposter note — explains why Avatars are allowed in the Collection, and flags
+  // masks left behind when the deck's avatar is swapped to something else.
+  const masks = collectionAvatars();
+  let impNote = '';
+  if (hasImposterAvatar()) {
+    impNote = `<div class="dup-note ok"><b>Imposter:</b> your Collection may hold other Avatars as masks — it banishes one from your collection to gain its abilities.${masks.length ? ` ${masks.length} mask${masks.length>1?'s':''} ready ✓` : ''}</div>`;
+  } else if (masks.length) {
+    impNote = `<div class="dup-note warn" title="${escHtml(masks.join(' · '))}"><b>Avatars in your Collection:</b> only the Imposter may keep Avatars there — remove ${masks.length > 1 ? 'them' : escHtml(masks[0])} or make the Imposter your Avatar.</div>`;
+  }
 
   document.getElementById('deck-stats').innerHTML = `
     <div class="stat-pill ${avatarOk?'ok':'warn'}"><b>${avatarCount}</b> Avatar ${avatarOk?'✓':'(need 1)'}</div>
@@ -3320,6 +3374,7 @@ function renderDeck() {
     ${collectionCount > 0 ? `<div class="stat-pill ${collectionOk?'ok':'warn'}"><b>${collectionCount}</b>/10 Collection ${collectionOk?'✓':''}</div>` : ''}
     <div class="stat-pill"><b>${total}</b> total</div>
     ${dupNote}
+    ${impNote}
   `;
 
   const body = document.getElementById('deck-body');
@@ -3742,7 +3797,10 @@ function renderSection(title, section, entries, reqMsg, isOk, req, groups) {
 
 // The move button that sits just left of the − : a ↓ on Atlas/Spellbook cards (send one
 // to the Collection sideboard) and a ↑ on Collection cards (send one back to the deck).
-function deckMoveBtn(section, k, cls) {
+function deckMoveBtn(section, k, cls, card) {
+  // Avatars in the Collection are the Imposter's masks — there's nowhere to move
+  // them to, so they get no ↑.
+  if (section === 'collection' && card && card.type === 'Avatar') return '';
   if (section === 'collection')
     return `<button class="${cls} dr-move-btn to-deck" onclick="event.stopPropagation();moveFromCollectionToDeck('${k}')" title="Move one back into the deck" aria-label="Move one back into the deck">↑</button>`;
   if (section === 'atlas' || section === 'spellbook')
@@ -3755,7 +3813,7 @@ function renderDeckCard(section, key, card, qty) {
   const isSite = card.type === 'Site';
   const k = escId(key);
   const controls = readOnly ? '' : `<div class="dvg-controls">
-      ${deckMoveBtn(section, k, 'qty-btn')}
+      ${deckMoveBtn(section, k, 'qty-btn', card)}
       ${section !== 'avatar' ? `<button class="qty-btn" onclick="event.stopPropagation();changeQty('${section}','${k}',-1)">−</button>
       <button class="qty-btn" onclick="event.stopPropagation();changeQty('${section}','${k}',1)">+</button>` : ''}
       <button class="del-btn" onclick="event.stopPropagation();removeCard('${section}','${k}')">✕</button>
@@ -3795,7 +3853,7 @@ function renderDeckCardRow(section, key, card, qty) {
   const priceHtml = (readOnly && cardPrice(card.name) > 0)
     ? `<span class="card-price">$${(cardPrice(card.name)*qty).toFixed(2)}</span>` : '';
   const controls = readOnly ? priceHtml : `<div class="dr-controls">
-      ${deckMoveBtn(section, k, 'dr-qty-btn')}
+      ${deckMoveBtn(section, k, 'dr-qty-btn', card)}
       ${section !== 'avatar' ? `<button class="dr-qty-btn" onclick="event.stopPropagation();changeQty('${section}','${k}',-1)">−</button>
       <button class="dr-qty-btn" onclick="event.stopPropagation();changeQty('${section}','${k}',1)">+</button>` : ''}
       <button class="dr-del-btn" onclick="event.stopPropagation();removeCard('${section}','${k}')">✕</button>
@@ -3827,6 +3885,11 @@ function archiveLegality() {
     const iss = duplicatorIssues();
     if (iss.nonUniques.length) issues.push(`${iss.nonUniques.length} non-Unique card${iss.nonUniques.length > 1 ? 's' : ''} (Duplicator)`);
     if (iss.unpaired.length) issues.push(`${iss.unpaired.length} unpaired Unique${iss.unpaired.length > 1 ? 's' : ''} (Duplicator)`);
+  }
+  // Only the Imposter may keep Avatars in the Collection.
+  if (!hasImposterAvatar()) {
+    const masks = collectionAvatars();
+    if (masks.length) issues.push(`${masks.length} Avatar${masks.length > 1 ? 's' : ''} in the Collection (Imposter only)`);
   }
   return { ok: issues.length === 0, issues };
 }
@@ -4686,6 +4749,30 @@ function runImport() {
   let inCollection = false;
   const collTotal = () => Object.values(newDeck.collection).reduce((s,e)=>s+(e.qty||0),0);
 
+  // Avatars may only sit in the Collection when the deck's Avatar is the Imposter, so
+  // we need to know the *resulting* avatar before the main pass — a pasted list can
+  // put its Avatar line after the sideboard block, and the paste also merges into
+  // whatever avatar the deck already has.
+  const scanAvatar = () => {
+    let inColl = false, found = null;
+    for (const line of lines) {
+      const header = line.replace(/^(?:\/\/+|#+)\s*/, '').trim();
+      if (sideboardRe.test(header)) { inColl = true; continue; }
+      if (mainSectionRe.test(header)) { inColl = false; continue; }
+      if (inColl || line.startsWith('//') || line.startsWith('#')) continue;
+      const m = line.match(/^(\d+)[xX]?\s*(.+)/);
+      if (!m) continue;
+      const c = allCards.find(x => x.name.toLowerCase() === m[2].trim().toLowerCase());
+      if (c && c.type === 'Avatar') found = c;   // last one wins, as in the main pass
+    }
+    return found;
+  };
+  const pastedAvatar = scanAvatar();
+  const currentAvatar = Object.values(newDeck.avatar || {})[0];
+  const finalAvatar = pastedAvatar || (currentAvatar && currentAvatar.card) || null;
+  const finalAvatarId = finalAvatar ? String(finalAvatar.id) : null;
+  const imposterDeck = !!(finalAvatar && finalAvatar.name === 'Imposter');
+
   for (const line of lines) {
     // Strip a leading comment marker first — the exporter writes every section
     // header as a comment ("// Collection (Sideboard)"), so we must test the
@@ -4706,8 +4793,11 @@ function runImport() {
     const limit = copyLimit(card);
     const key = String(card.id);
 
-    // Avatars never go to the collection; everything else can.
-    if (inCollection && card.type !== 'Avatar') {
+    // Avatars reach the collection only under the Imposter, which banishes one from
+    // your collection to mask itself — and never a second copy of the deck's own
+    // Avatar. Any other Avatar line falls through and fills the Avatar slot instead.
+    const collectable = card.type !== 'Avatar' || (imposterDeck && key !== finalAvatarId);
+    if (inCollection && collectable) {
       const room = DECK_COLLECTION_LIMIT - collTotal();
       if (room <= 0) { collFull += qty; continue; }
       const existing = newDeck.collection[key] ? newDeck.collection[key].qty : 0;
