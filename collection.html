@@ -1158,8 +1158,8 @@
 <div class="cimport-overlay" id="cimport-overlay" onclick="if(event.target===this)closeCollectionImport()">
   <div class="cimport-modal">
     <button class="cimport-close" onclick="closeCollectionImport()">✕</button>
-    <h2>Import into a Binder</h2>
-    <p class="cimport-sub">Upload a file or paste a list. Your cards land in a <b>new binder</b> so nothing in your Vault is overwritten. Reads <b>curiosa.io collection exports</b> (the <code>card name, set, finish, product, quantity, notes</code> CSV), Cursed Realm exports (text / CSV / detailed), curiosa.io decklists, and most <code>2x Card Name</code> lists. Add <code>(Foil)</code> after a name for foils.<br><span style="color:var(--rune);font-size:0.86em;">Copies of the same card from different sets are combined into one total — the Vault tracks standard/foil, not per-printing.</span></p>
+    <h2>Import Cards</h2>
+    <p class="cimport-sub">Upload a file or paste a list. Your cards land in a <b>new binder</b> (or drop straight into <b>Loose Cards</b>) so nothing else in your Vault is overwritten. Reads <b>curiosa.io collection exports</b> (the <code>card name, set, finish, product, quantity, notes</code> CSV), Cursed Realm exports (text / CSV / detailed), curiosa.io decklists, and most <code>2x Card Name</code> lists. Add <code>(Foil)</code> after a name for foils.<br><span style="color:var(--rune);font-size:0.86em;">Copies of the same card from different sets are combined into one total — the Vault tracks standard/foil, not per-printing.</span></p>
 
     <label class="cimport-label">Choose a file</label>
     <input type="file" id="cimport-file" accept=".txt,.text,.csv,.json,.tsv" onchange="onImportFile(event)">
@@ -1168,15 +1168,16 @@
     <textarea id="cimport-text" class="cimport-textarea" placeholder="2x Sea Serpent&#10;1x Philosopher's Stone (Foil)&#10;3 Bridge Troll&#10;…"></textarea>
 
     <div class="cimport-row">
-      <div style="flex:1 1 240px;min-width:0;">
+      <div id="cimport-name-wrap" style="flex:1 1 240px;min-width:0;">
         <label class="cimport-label">Binder name</label>
         <input type="text" id="cimport-name" class="cimport-input" placeholder="Imported cards" autocomplete="off">
       </div>
       <div>
         <label class="cimport-label">Add to</label>
-        <select id="cimport-target" class="cimport-input">
-          <option value="vault">Vault binders</option>
-          <option value="trade">Trade binders</option>
+        <select id="cimport-target" class="cimport-input" onchange="onImportTargetChange()">
+          <option value="vault">New Vault binder</option>
+          <option value="trade">New Trade binder</option>
+          <option value="loose">Loose cards (no binder)</option>
         </select>
       </div>
     </div>
@@ -3729,7 +3730,14 @@ function openCollectionImport() {
   document.getElementById('cimport-name').value = '';
   const msg = document.getElementById('cimport-msg');
   if (msg) { msg.style.display = 'none'; msg.innerHTML = ''; }
+  onImportTargetChange();
   document.getElementById('cimport-overlay').classList.add('open');
+}
+// Loose imports don't create a binder, so the binder-name field is irrelevant then.
+function onImportTargetChange() {
+  const t = document.getElementById('cimport-target');
+  const wrap = document.getElementById('cimport-name-wrap');
+  if (wrap) wrap.style.display = (t && t.value === 'loose') ? 'none' : '';
 }
 function closeCollectionImport() { document.getElementById('cimport-overlay').classList.remove('open'); }
 function onImportFile(e) {
@@ -3877,14 +3885,32 @@ function runCollectionImport() {
     showMsg('<span class="warn">No cards matched. Check the format — one card per line, e.g. <code>2x Card Name</code>.</span>');
     return;
   }
-  const target = (document.getElementById('cimport-target').value === 'trade') ? 'trade' : 'vault';
-  const name = (document.getElementById('cimport-name').value || '').trim() || importFileName || 'Imported cards';
-  const binders = getBinders();
-  const newId = 'b' + Date.now().toString(36) + Math.floor(Math.random() * 1e4).toString(36);
-  binders.push({ id: newId, parent: target, name, cards });
-  binderUI.collapsed[newId] = false;
-  saveBinders(); updateStats();
-  const summary = `Imported ${matchedQty} cards (${matchedUnique} unique) into “${name}”.`;
+  const targetVal = document.getElementById('cimport-target').value;
+  let summary, jumpView;
+  if (targetVal === 'loose') {
+    // Drop straight into Loose Cards: merge into the collection's own have/haveFoil
+    // counts instead of creating a binder.
+    const col = getCollection();
+    for (const [k, q] of Object.entries(cards)) {
+      let e = col[k];
+      if (!e || typeof e !== 'object') e = col[k] = {};
+      e.have = (e.have || 0) + (q.std || 0);
+      e.haveFoil = (e.haveFoil || 0) + (q.foil || 0);
+    }
+    saveCollection(col); updateStats();
+    summary = `Imported ${matchedQty} cards (${matchedUnique} unique) into Loose Cards.`;
+    jumpView = 'all';
+  } else {
+    const target = (targetVal === 'trade') ? 'trade' : 'vault';
+    const name = (document.getElementById('cimport-name').value || '').trim() || importFileName || 'Imported cards';
+    const binders = getBinders();
+    const newId = 'b' + Date.now().toString(36) + Math.floor(Math.random() * 1e4).toString(36);
+    binders.push({ id: newId, parent: target, name, cards });
+    binderUI.collapsed[newId] = false;
+    saveBinders(); updateStats();
+    summary = `Imported ${matchedQty} cards (${matchedUnique} unique) into “${name}”.`;
+    jumpView = (target === 'trade') ? 'trade' : 'all';
+  }
   // When every line matched, close and jump to the new binder as before. When
   // some didn't, keep the modal open and NAME them — on a full collection
   // import a bare count is useless, you can't tell which cards to fix by hand.
@@ -3900,7 +3926,7 @@ function runCollectionImport() {
     return;
   }
   closeCollectionImport();
-  setView(target === 'trade' ? 'trade' : 'all'); // jump to where the binder now lives
+  setView(jumpView); // jump to where the imported cards now live
   toast(summary);
 }
 
