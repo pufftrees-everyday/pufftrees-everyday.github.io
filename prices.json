@@ -1,5 +1,5 @@
 {
-  "generated": "2026-07-25T10:48:09.168Z",
+  "generated": "2026-07-25T14:06:17.129Z",
   "source": "JustTCG (justtcg.com)",
   "game": "Sorcery: Contested Realm",
   "counts": {
@@ -383,7 +383,7 @@
       "market": 14.77
     },
     "Wuthering Heights": {
-      "market": 14.7
+      "market": 14.54
     },
     "Draco Corvus": {
       "market": 14.33
@@ -454,14 +454,14 @@
     "Xeraphine Konrul": {
       "market": 11.36
     },
-    "Rubble": {
-      "market": 0.42
-    },
     "Gigantism": {
       "market": 9.19
     },
     "Mix Aer": {
       "market": 2.87
+    },
+    "Rubble": {
+      "market": 0.42
     },
     "Earthquake": {
       "market": 11.15
@@ -758,7 +758,7 @@
       "market": 5.16
     },
     "Observatory": {
-      "market": 2.74
+      "market": 2.75
     },
     "Myrrh's Trophy Room": {
       "market": 5.09
@@ -1034,7 +1034,7 @@
       "market": 2.37
     },
     "Magellan Globe": {
-      "market": 0.66
+      "market": 0.67
     },
     "Yog-Sothoth": {
       "market": 2.25
@@ -1642,14 +1642,14 @@
     "Stargazer": {
       "market": 0.5
     },
-    "Bane Widow": {
-      "market": 0.16
-    },
     "Summoning Sphere": {
       "market": 0.33
     },
     "Sunken Treasure": {
       "market": 0.19
+    },
+    "Bane Widow": {
+      "market": 0.16
     },
     "Lone Tower": {
       "market": 0.2
@@ -2041,9 +2041,6 @@
     "Drought": {
       "market": 0.15
     },
-    "Windblast": {
-      "market": 0.14
-    },
     "Invasion": {
       "market": 0.32
     },
@@ -2074,6 +2071,9 @@
     "Wildfire": {
       "market": 0.16
     },
+    "Windblast": {
+      "market": 0.14
+    },
     "Sir Tristan": {
       "market": 0.31
     },
@@ -2096,9 +2096,6 @@
       "market": 0.31
     },
     "Accursed Albatross": {
-      "market": 0.17
-    },
-    "Awakened Mummies": {
       "market": 0.17
     },
     "Sirian Templar": {
@@ -2190,6 +2187,9 @@
     },
     "Sentinel Trap": {
       "market": 0.28
+    },
+    "Awakened Mummies": {
+      "market": 0.17
     },
     "Iron Shackles": {
       "market": 0.25
@@ -2374,9 +2374,6 @@
     "Shallow Grave": {
       "market": 0.21
     },
-    "Border Militia": {
-      "market": 0.11
-    },
     "Disenchant": {
       "market": 0.12
     },
@@ -2427,6 +2424,9 @@
     },
     "Witching Hour": {
       "market": 0.2
+    },
+    "Border Militia": {
+      "market": 0.11
     },
     "Porcupine Pufferfish": {
       "market": 0.08
@@ -2551,6 +2551,9 @@
     "Purple Knight": {
       "market": 0.17
     },
+    "Siege Giant": {
+      "market": 0.17
+    },
     "Snowball": {
       "market": 0.17
     },
@@ -2597,9 +2600,6 @@
       "market": 0.16
     },
     "Bog": {
-      "market": 0.16
-    },
-    "Siege Giant": {
       "market": 0.16
     },
     "Accusation": {
@@ -3319,8 +3319,14 @@
     "Virgin in Prayer": {
       "market": 0.08
     },
+    "Azuridge Caravan": {
+      "market": 0.05
+    },
     "Incinerate": {
       "market": 0.06
+    },
+    "Mage Slayer": {
+      "market": 0.07
     },
     "Burning Hands": {
       "market": 0.07
@@ -3344,9 +3350,6 @@
       "market": 0.07
     },
     "Thieving Magpie": {
-      "market": 0.07
-    },
-    "Mage Slayer": {
       "market": 0.07
     },
     "Bless": {
@@ -3375,9 +3378,6 @@
     },
     "Static Servant": {
       "market": 0.07
-    },
-    "Azuridge Caravan": {
-      "market": 0.05
     },
     "Band of Thieves": {
       "market": 0.06
@@ -4795,7 +4795,7 @@
       "market": 1.77
     },
     "Guile Sirens": {
-      "market": 1.81
+      "market": 1.74
     },
     "Shifting Sands": {
       "market": 2.8
@@ -5451,6 +5451,9 @@
     "Golden Harp": {
       "market": 8.31
     },
+    "Wild Fanatic": {
+      "market": 8.19
+    },
     "Midnight Rogue": {
       "market": 1.1
     },
@@ -5477,9 +5480,6 @@
     },
     "Spectral Stalker": {
       "market": 1.33
-    },
-    "Wild Fanatic": {
-      "market": 8
     },
     "Sir Balin": {
       "market": 7.99
@@ -6579,13 +6579,13 @@
     "Degradation": {
       "market": 0.97
     },
-    "Hunter's Lodge": {
-      "market": 0.97
-    },
     "Joust!": {
       "market": 0.97
     },
     "Grain Sparrow": {
+      "market": 0.96
+    },
+    "Hunter's Lodge": {
       "market": 0.96
     },
     "Iron Man Talus": {
@@ -6705,7 +6705,7 @@
       "market": 171.04
     },
     "Beta - Booster Box": {
-      "market": 163.47
+      "market": 163.44
     },
     "Arthurian Legends Booster Box": {
       "market": 119.88
@@ -6753,7 +6753,7 @@
       "market": 6.74
     },
     "Toolbox": {
-      "market": 5.41
+      "market": 5.45
     },
     "Sirian Templar (Box Topper)": {
       "market": 4.75
@@ -7988,7 +7988,7 @@
     "Wuthering Heights": {
       "Gothic": {
         "foil": 122.44,
-        "standard": 14.7
+        "standard": 14.54
       }
     },
     "Draco Corvus": {
@@ -8137,7 +8137,7 @@
       },
       "Beta": {
         "foil": 29.15,
-        "standard": 2.74
+        "standard": 2.75
       }
     },
     "Draconian Bonekite": {
@@ -10338,7 +10338,7 @@
     "Awakened Mummies": {
       "Alpha": {
         "foil": 20.99,
-        "standard": 0.3
+        "standard": 0.27
       },
       "Beta": {
         "foil": 2.67,
@@ -10589,7 +10589,7 @@
         "standard": 0.43
       },
       "Beta": {
-        "foil": 1.81,
+        "foil": 1.74,
         "standard": 0.22
       }
     },
@@ -11710,14 +11710,6 @@
         "standard": 0.19
       }
     },
-    "Rubble": {
-      "Promotional": {
-        "standard": 11.26
-      },
-      "Gothic": {
-        "standard": 0.42
-      }
-    },
     "Deep-Sea Mermaids": {
       "Alpha": {
         "foil": 11.25,
@@ -11752,6 +11744,14 @@
       "Gothic": {
         "foil": 11.21,
         "standard": 0.39
+      }
+    },
+    "Rubble": {
+      "Promotional": {
+        "standard": 11.16
+      },
+      "Gothic": {
+        "standard": 0.42
       }
     },
     "Plumed Pegasus": {
@@ -11928,7 +11928,7 @@
     "Bane Widow": {
       "Alpha": {
         "foil": 10.28,
-        "standard": 0.49
+        "standard": 0.48
       },
       "Beta": {
         "foil": 2.16,
@@ -12026,7 +12026,7 @@
     "Windblast": {
       "Alpha": {
         "foil": 9.89,
-        "standard": 0.32
+        "standard": 0.31
       },
       "Beta": {
         "foil": 2.43,
@@ -12317,7 +12317,7 @@
     "Azuridge Caravan": {
       "Alpha": {
         "foil": 8.68,
-        "standard": 0.06
+        "standard": 0.07
       },
       "Beta": {
         "foil": 1.98,
@@ -12445,6 +12445,12 @@
         "standard": 0.5
       }
     },
+    "Wild Fanatic": {
+      "Gothic": {
+        "foil": 8.19,
+        "standard": 0.12
+      }
+    },
     "Midnight Rogue": {
       "Alpha": {
         "foil": 8.18,
@@ -12523,12 +12529,6 @@
         "standard": 0.11
       }
     },
-    "Wild Fanatic": {
-      "Gothic": {
-        "foil": 8,
-        "standard": 0.12
-      }
-    },
     "Sir Balin": {
       "Arthurian Legends": {
         "foil": 7.99,
@@ -12584,7 +12584,7 @@
     "Border Militia": {
       "Alpha": {
         "foil": 7.72,
-        "standard": 0.2
+        "standard": 0.19
       },
       "Beta": {
         "foil": 3.39,
@@ -12816,7 +12816,7 @@
     "Mage Slayer": {
       "Alpha": {
         "foil": 6.83,
-        "standard": 0.06
+        "standard": 0.07
       },
       "Beta": {
         "foil": 0.77,
@@ -13224,7 +13224,7 @@
     "Magellan Globe": {
       "Beta": {
         "foil": 4.88,
-        "standard": 0.66
+        "standard": 0.67
       },
       "Alpha": {
         "standard": 2.35
@@ -14339,7 +14339,7 @@
     "Siege Giant": {
       "Arthurian Legends": {
         "foil": 1.92,
-        "standard": 0.16
+        "standard": 0.17
       }
     },
     "Molten Maar": {
@@ -15001,12 +15001,6 @@
         "standard": 0.13
       }
     },
-    "Hunter's Lodge": {
-      "Arthurian Legends": {
-        "foil": 0.97,
-        "standard": 0.2
-      }
-    },
     "Joust!": {
       "Arthurian Legends": {
         "foil": 0.97,
@@ -15022,6 +15016,12 @@
       "Arthurian Legends": {
         "foil": 0.96,
         "standard": 0.1
+      }
+    },
+    "Hunter's Lodge": {
+      "Arthurian Legends": {
+        "foil": 0.96,
+        "standard": 0.2
       }
     },
     "Iron Man Talus": {
