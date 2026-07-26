@@ -342,22 +342,31 @@
   @media (max-width: 560px) { .deck-details { grid-template-columns: 1fr; } .dd-type { display: none; } }
 
   /* CARD / LARGE grid view */
-  .deck-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+  /* Every section (Atlas / Spellbook / Collection) shares one column width, so a card
+     is the same size everywhere. That is what lets a rotated Site render at exactly the
+     same card size as a portrait card — see the .is-site rules below, which do their
+     sizing from --dg-gap, so keep it in sync with the grid's actual gap. */
+  .deck-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(195px, 1fr)); --dg-gap: 12px; gap: var(--dg-gap); }
   /* Cap large views at 380px (low-res native width) so card art is never upscaled. */
-  .deck-grid.large { grid-template-columns: repeat(auto-fill, minmax(230px, 380px)); justify-content: center; gap: 16px; }
-  /* Bigger Spellbook + Collection card images (normal + large views) in the deck viewer */
-  #section-Spellbook .deck-grid, #section-Collection .deck-grid { grid-template-columns: repeat(auto-fill, minmax(195px, 1fr)); }
-  #section-Spellbook .deck-grid.large, #section-Collection .deck-grid.large { grid-template-columns: repeat(auto-fill, minmax(280px, 380px)); justify-content: center; }
+  .deck-grid.large { grid-template-columns: repeat(auto-fill, minmax(280px, 380px)); justify-content: center; --dg-gap: 16px; }
   .deck-card-cell { position: relative; border-radius: 9px; overflow: hidden; border: 1px solid var(--border); background: var(--dusk); cursor: pointer; transition: transform 0.15s, border-color 0.15s; }
   .deck-card-cell:hover { transform: translateY(-3px); border-color: var(--arcane); z-index: 2; }
   .cell-img-wrap { position: relative; width: 100%; aspect-ratio: 5/7; overflow: hidden; }
   .deck-card-cell > .cell-img-wrap > img.card-art { width: 100%; height: 100%; display: block; object-fit: cover; background: #0b0a0f; }
-  /* Site cards rendered landscape with the image rotated 90° (full card visible) */
-  /* Sites span 2 grid columns so they render much larger than portrait cards.
-     In card view a site ≈ the old large size; in large view it ≈ double that. */
-  .deck-card-cell.is-site { grid-column: span 2; }
+  /* Site cards render landscape (image rotated 90°), and a rotated site must be EXACTLY
+     a portrait card turned on its side: one column wide (its short edge) by 1.4 columns
+     long. 1.4 columns doesn't fit in one column, so the cell spans 2 and is sized back
+     down to the card itself:
+        column width W = (100% - gap) / 2      (100% = the 2-column grid area)
+        card art       = (W - 2px of border) wide, 1.4x that long
+        cell           = card art + this cell's own 2px of border (border-box)
+     The -4px / +2px terms are the 1px .deck-card-cell borders; update them if that
+     border width ever changes, or sites will drift out of sync with portrait cards. */
+  .deck-card-cell.is-site { grid-column: span 2; justify-self: center; width: calc((100% - var(--dg-gap, 12px) - 4px) * 7 / 10 + 2px); }
   .deck-card-cell.is-site .cell-img-wrap { aspect-ratio: 7/5; display: flex; align-items: center; justify-content: center; background: #0b0a0f; overflow: hidden; }
-  .deck-card-cell.is-site > .cell-img-wrap > img.card-art { position: absolute; width: 80%; height: auto; aspect-ratio: 5/7; transform: rotate(90deg); object-fit: contain; }
+  /* Before rotation the image is exactly a portrait card: 5/7 of the landscape wrap's
+     width, 7/5 of that tall. Same object-fit as portrait cards so both crop identically. */
+  .deck-card-cell.is-site > .cell-img-wrap > img.card-art { position: absolute; width: calc(100% * 5 / 7); height: auto; aspect-ratio: 5/7; transform: rotate(90deg); object-fit: cover; }
   .deck-card-cell .qty-chip { position: absolute; bottom: 7px; right: 7px; background: rgba(11,10,15,0.9); border: 1.5px solid var(--gold); color: var(--gold); font-family: 'Cinzel', serif; font-weight: 700; font-size: 1.4rem; line-height: 1; padding: 5px 11px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.5); z-index: 3; }
   .deck-card-cell .qty-chip .qty-x { font-size: 0.85rem; opacity: 0.8; margin-left: 1px; }
   .deck-grid.large .deck-card-cell .qty-chip { font-size: 1.7rem; padding: 6px 13px; }
@@ -473,21 +482,27 @@
   @media (max-width: 720px) {
     .deck-hero { grid-template-columns: 130px 1fr; gap: 16px; }
     .deck-hero-name { font-size: 1.5rem; }
-    .deck-grid { grid-template-columns: repeat(auto-fill, minmax(110px,1fr)); gap: 9px; }
-    .deck-grid.large { grid-template-columns: repeat(auto-fill, minmax(150px,1fr)); }
-    #section-Spellbook .deck-grid, #section-Collection .deck-grid { grid-template-columns: repeat(auto-fill, minmax(140px,1fr)); }
-    #section-Spellbook .deck-grid.large, #section-Collection .deck-grid.large { grid-template-columns: repeat(auto-fill, minmax(200px,1fr)); }
+    /* The min(...) caps each column at half the row so there are always at least 2 of
+       them however narrow the phone is, which the span-2 site cells rely on; below that
+       the cards just shrink. */
+    .deck-grid { grid-template-columns: repeat(auto-fill, minmax(min(140px, calc(50% - var(--dg-gap))),1fr)); --dg-gap: 9px; }
+    .deck-grid.large { grid-template-columns: repeat(auto-fill, minmax(200px,1fr)); }
     /* keep sites spanning 2 on mobile too (they read better large), but never overflow */
     .deck-card-cell.is-site { grid-column: span 2; }
+  }
+  /* Large view on a phone is one big card per row, so there is no second column for a
+     site to span into. Instead the site takes the whole row and portrait cards shrink to
+     5/7 of it — the same card, one turned. This stays exact whatever the column count,
+     so the exact breakpoint doesn't matter; below it cards are just 5/7 of a column. */
+  @media (max-width: 479px) {
+    .deck-grid.large .deck-card-cell { justify-self: center; width: calc((100% - 2px) * 5 / 7 + 2px); }
+    .deck-grid.large .deck-card-cell.is-site { grid-column: span 1; width: 100%; }
   }
   @media (max-width: 560px) {
     /* Tidy the toolbar: tighter gaps, controls wrap evenly, download on its own full row */
     .deck-toolbar { flex-direction: column; align-items: stretch; gap: 14px; }
     .toolbar-left { gap: 14px 18px; row-gap: 14px; }
     .deck-toolbar > .btn { width: 100%; }
-  }
-  @media (max-width: 280px) {
-    .deck-card-cell.is-site { grid-column: span 1; }
   }
 </style>
 </head>

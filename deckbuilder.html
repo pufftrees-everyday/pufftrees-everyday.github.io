@@ -844,16 +844,20 @@
   .sub-section-arrow.collapsed { transform: rotate(-90deg); }
   .sub-section-count { font-family: 'Crimson Pro', serif; font-style: normal; letter-spacing: 0; font-size: 0.85rem; color: var(--arcane); font-weight: 400; }
 
-  .sub-section-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; grid-column: 1 / -1; margin-bottom: 6px; }
+  /* --dcg-gap mirrors this grid's gap; the rotated-site sizing below does its maths from
+     it, so the two must stay in sync (same for .deck-card-grid and the large variants). */
+  .sub-section-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(200px, calc(50% - var(--dcg-gap))), 1fr)); --dcg-gap: 10px; gap: var(--dcg-gap); grid-column: 1 / -1; margin-bottom: 6px; }
   /* !important so a collapsed group stays hidden even in list/large view,
      whose display rules are defined later with equal specificity. */
   .sub-section-cards.hidden { display: none !important; }
 
   /* VISUAL CARD GRID IN DECK */
-  .deck-card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+  /* The min(...) caps a column at half the row, so these grids always have at least 2
+     columns however narrow the deck panel is dragged. The span-2 site cells rely on it. */
+  .deck-card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(200px, calc(50% - var(--dcg-gap))), 1fr)); --dcg-gap: 10px; gap: var(--dcg-gap); }
   /* DECK SIDE — LARGE CARD VIEW (~2x size, ~quarter the count per row) */
-  .deck-card-grid-large { grid-template-columns: repeat(auto-fill, minmax(300px, 380px)); justify-content: center; gap: 14px; }
-  .sub-section-cards.large-mode { grid-template-columns: repeat(auto-fill, minmax(300px, 380px)); justify-content: center; gap: 14px; }
+  .deck-card-grid-large { grid-template-columns: repeat(auto-fill, minmax(min(300px, calc(50% - var(--dcg-gap))), 380px)); justify-content: center; --dcg-gap: 14px; }
+  .sub-section-cards.large-mode { grid-template-columns: repeat(auto-fill, minmax(min(300px, calc(50% - var(--dcg-gap))), 380px)); justify-content: center; --dcg-gap: 14px; }
 
   /* DECK SIDE — DETAILED view: two columns, like the card explorer's detailed list */
   .deck-card-list,
@@ -959,8 +963,18 @@
   .dvg-card:hover { border-color: var(--arcane); box-shadow: var(--glow); }
   .dvg-card img { width: 100%; aspect-ratio: 3/4; object-fit: cover; display: block; border-radius: 3px; }
 
-  /* Site cards always rotated in deck view — full card visible */
+  /* Site cards are always rotated in deck view, and a rotated site must be EXACTLY a
+     portrait card turned on its side: one column wide (its short edge) by 4/3 columns
+     long. That doesn't fit in one column, so the cell spans 2 and is sized back down:
+        column width W = (100% - gap) / 2      (100% = the 2-column grid area)
+        card art       = (W - 2px of border) wide, 4/3 that long
+        cell           = card art + this cell's own 2px of border (border-box)
+     The -4px / +2px terms are the 1px .dvg-card borders; update them if that border
+     width changes, or sites will drift out of sync with portrait cards. */
   .dvg-card.is-site {
+    grid-column: span 2;
+    justify-self: center;
+    width: calc((100% - var(--dcg-gap, 10px) - 4px) * 2 / 3 + 2px);
     aspect-ratio: 4/3;
     display: flex;
     align-items: center;
@@ -968,12 +982,14 @@
     background: var(--dusk);
     overflow: visible;
   }
+  /* Before rotation the image is exactly a portrait card: 75% of the (landscape) cell's
+     width, 4/3 that tall. Same object-fit as portrait cards so both crop identically. */
   .dvg-card.is-site > img {
     position: absolute;
     width: 75%;
     aspect-ratio: 3/4;
     transform: rotate(90deg);
-    object-fit: contain;
+    object-fit: cover;
     transform-origin: center center;
   }
 
@@ -1301,7 +1317,7 @@
     .deck-panel, .explorer { min-height: 0; }
     .card-list-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
     .card-list-grid.large-view { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
-    .deck-card-grid, .sub-section-cards { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
+    .deck-card-grid, .sub-section-cards { grid-template-columns: repeat(auto-fill, minmax(min(130px, calc(50% - var(--dcg-gap))), 1fr)); }
     .deck-card-grid-large, .sub-section-cards.large-mode { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
     .advanced-panel { max-height: none; }
   }
@@ -1311,6 +1327,17 @@
     .card-list-grid.large-view { grid-template-columns: 1fr; }
     .deck-card-grid, .sub-section-cards { grid-template-columns: repeat(2, 1fr); }
     .deck-card-grid-large, .sub-section-cards.large-mode { grid-template-columns: 1fr; }
+  }
+
+  /* Large view on a phone is one big card per row, so there is no second column for a
+     site to span into. Instead the site takes the whole row and portrait cards shrink to
+     3/4 of it — the same card, one turned. This stays exact whatever the column count,
+     so the exact breakpoint doesn't matter; below it cards are just 3/4 of a column. */
+  @media (max-width: 560px) {
+    .deck-card-grid-large > .dvg-card,
+    .sub-section-cards.large-mode > .dvg-card { justify-self: center; width: calc((100% - 2px) * 3 / 4 + 2px); }
+    .deck-card-grid-large > .dvg-card.is-site,
+    .sub-section-cards.large-mode > .dvg-card.is-site { grid-column: span 1; width: 100%; }
   }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
