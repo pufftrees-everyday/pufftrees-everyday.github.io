@@ -544,15 +544,8 @@
      3 on a typical desktop, more on wide screens — instead of a fixed, sparse 2. */
   .card-grid.list-view { display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 4px 10px; }
   .card-grid.list-view.sites-only { grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); }
-  /* Cap at 380px — the native width of low-res sets (Alpha/Beta/Promo/Dragonlord),
-     so card art is never upscaled past its source resolution. */
-  .card-grid.large-view { grid-template-columns: repeat(auto-fill, minmax(300px, 380px)); justify-content: center; }
-  /* Large view is the biggest view: its rotated Sites should be wider than Card
-     view's (which use minmax(380px,1fr)). Scoped above the phone breakpoint so
-     mobile keeps the compact sites-only sizing. */
-  @media (min-width: 701px) {
-    .card-grid.large-view.sites-only { grid-template-columns: repeat(auto-fill, minmax(520px, 1fr)); }
-  }
+  /* No Large card view here: the explorer's Card view is already big enough on this page.
+     The other card surfaces (Vault, deck builder, deck viewer) still have all 4 views. */
   /* Clean Text view rows: cost · name · threshold symbols (distinct from Detailed) */
   .th-group { display: inline-flex; gap: 2px; align-items: center; }
   .th-row-icon { width: 15px; height: 15px; object-fit: contain; display: inline-block; vertical-align: middle; }
@@ -1013,7 +1006,6 @@
           <button class="viewmode-btn" id="vm-list" onclick="setViewMode('list')" title="Text view" aria-label="Text view">☰</button>
           <button class="viewmode-btn" id="vm-details" onclick="setViewMode('details')" title="Detailed view" aria-label="Detailed view">▤</button>
           <button class="viewmode-btn active" id="vm-grid" onclick="setViewMode('grid')" title="Card view" aria-label="Card view">⊞</button>
-          <button class="viewmode-btn" id="vm-large" onclick="setViewMode('large')" title="Large card view" aria-label="Large card view">⊡</button>
         </div>
       </div>
     </div>
@@ -1140,7 +1132,10 @@
 let allCards = [];
 let currentCards = [];
 let visibleCount = 200;
-let viewMode = sessionStorage.getItem('cr_explorer_view') || 'grid'; // grid | list — resets to grid each new visit
+// list | details | grid — resets to grid each new visit. 'large' was a 4th view here once;
+// fall back to grid so a session that stored it doesn't land on a mode with no button.
+let viewMode = sessionStorage.getItem('cr_explorer_view') || 'grid';
+if (!['list','details','grid'].includes(viewMode)) viewMode = 'grid';
 let deck = {};
 let currentModalCard = null;
 let activeDeckId = null;
@@ -1287,9 +1282,8 @@ function renderCards(cards, append = false) {
   const rowsView = viewMode === 'list' || viewMode === 'details';
   grid.classList.toggle('list-view', rowsView);
   grid.classList.toggle('text-view', viewMode === 'list');
-  grid.classList.toggle('large-view', viewMode === 'large');
-  // Rotate sites in the image grids (Card + Large), not the row views
-  const rotateSites = sitesOnly && (viewMode === 'grid' || viewMode === 'large');
+  // Rotate sites in the image grid (Card view), not the row views
+  const rotateSites = sitesOnly && viewMode === 'grid';
   if (!append) {
     currentCards = cards;
     visibleCount = PAGE_SIZE;
@@ -1369,7 +1363,7 @@ function setBadge(setName) {
 function setViewMode(mode) {
   viewMode = mode;
   sessionStorage.setItem('cr_explorer_view', mode);
-  ['list','details','grid','large'].forEach(m => {
+  ['list','details','grid'].forEach(m => {
     const b = document.getElementById('vm-' + m);
     if (b) b.classList.toggle('active', mode === m);
   });
@@ -2053,7 +2047,7 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape'){closeModal({});clo
 })();
 
 // INIT
-['list','details','grid','large'].forEach(m => {
+['list','details','grid'].forEach(m => {
   const b = document.getElementById('vm-' + m);
   if (b) b.classList.toggle('active', viewMode === m);
 });
