@@ -1,5 +1,5 @@
 {
-  "generated": "2026-07-27T10:13:19.835Z",
+  "generated": "2026-07-27T15:19:06.080Z",
   "source": "JustTCG (justtcg.com)",
   "game": "Sorcery: Contested Realm",
   "counts": {
@@ -128,7 +128,7 @@
       "market": 53.84
     },
     "Fields of Phyxis": {
-      "market": 0.28
+      "market": 0.3
     },
     "Char Omphalos": {
       "market": 52.04
@@ -817,9 +817,6 @@
     "Satanic Panic": {
       "market": 4.59
     },
-    "Hellmouth": {
-      "market": 4.57
-    },
     "Deathspeaker": {
       "market": 0.85
     },
@@ -828,6 +825,9 @@
     },
     "Peace Offering": {
       "market": 4.53
+    },
+    "Hellmouth": {
+      "market": 4.51
     },
     "Red Rock of Ravannis": {
       "market": 4.51
@@ -1162,6 +1162,9 @@
     "Poison Nova": {
       "market": 0.62
     },
+    "Lacuna Entity": {
+      "market": 1.27
+    },
     "Atlas Wanderers": {
       "market": 0.76
     },
@@ -1185,9 +1188,6 @@
     },
     "Land Deed": {
       "market": 0.55
-    },
-    "Lacuna Entity": {
-      "market": 1.17
     },
     "Purge Juggernaut": {
       "market": 0.28
@@ -1315,11 +1315,11 @@
     "Divine Healing": {
       "market": 0.41
     },
+    "Kelp Cavern": {
+      "market": 0.91
+    },
     "Dwarven Forge": {
       "market": 0.75
-    },
-    "Kelp Cavern": {
-      "market": 0.9
     },
     "Whirling Blades": {
       "market": 0.9
@@ -1408,7 +1408,7 @@
     "No Man's Land": {
       "market": 0.7
     },
-    "Plague Pits": {
+    "Into the Abyss": {
       "market": 0.69
     },
     "Far East Assassin": {
@@ -1417,7 +1417,7 @@
     "Candlemas Monks": {
       "market": 0.68
     },
-    "Into the Abyss": {
+    "Plague Pits": {
       "market": 0.68
     },
     "Sky Baron": {
@@ -1471,6 +1471,9 @@
     "Frontier Settlers": {
       "market": 0.25
     },
+    "Ophanim": {
+      "market": 0.61
+    },
     "Bedrock": {
       "market": 0.23
     },
@@ -1478,9 +1481,6 @@
       "market": 0.24
     },
     "Bleeding Skull": {
-      "market": 0.6
-    },
-    "Ophanim": {
       "market": 0.6
     },
     "Symmetric Suffering": {
@@ -2701,6 +2701,9 @@
     "Necropotence": {
       "market": 0.15
     },
+    "Nommo Monitor": {
+      "market": 0.15
+    },
     "Survivors of Serava": {
       "market": 0.15
     },
@@ -2765,9 +2768,6 @@
       "market": 0.14
     },
     "Harpyon Urge": {
-      "market": 0.14
-    },
-    "Nommo Monitor": {
       "market": 0.14
     },
     "Pile of Skulls": {
@@ -7764,7 +7764,7 @@
     },
     "Persecutor": {
       "Promotional": {
-        "standard": 164.03
+        "standard": 163.04
       },
       "Gothic": {
         "foil": 5.78,
@@ -8199,7 +8199,7 @@
     "Hellmouth": {
       "Gothic": {
         "foil": 100.45,
-        "standard": 4.57
+        "standard": 4.51
       }
     },
     "Pudge Butcher": {
@@ -9024,7 +9024,7 @@
       },
       "Gothic": {
         "foil": 3.8,
-        "standard": 0.28
+        "standard": 0.3
       }
     },
     "Putrid Presence": {
@@ -10069,7 +10069,7 @@
     "Lacuna Entity": {
       "Gothic": {
         "foil": 26.79,
-        "standard": 1.17
+        "standard": 1.27
       }
     },
     "Giant Shark": {
@@ -10770,7 +10770,7 @@
     "Into the Abyss": {
       "Gothic": {
         "foil": 17.75,
-        "standard": 0.68
+        "standard": 0.69
       }
     },
     "Lord of Destruction": {
@@ -10913,7 +10913,7 @@
     "Ophanim": {
       "Gothic": {
         "foil": 16.18,
-        "standard": 0.6
+        "standard": 0.61
       }
     },
     "Wayfaring Pilgrim": {
@@ -12215,7 +12215,7 @@
     "Plague Pits": {
       "Gothic": {
         "foil": 9.3,
-        "standard": 0.69
+        "standard": 0.68
       }
     },
     "Lugbog Cat": {
@@ -12823,7 +12823,7 @@
     "Kelp Cavern": {
       "Arthurian Legends": {
         "foil": 6.85,
-        "standard": 0.9
+        "standard": 0.91
       }
     },
     "Mage Slayer": {
@@ -14919,7 +14919,7 @@
     "Nommo Monitor": {
       "Gothic": {
         "foil": 1.03,
-        "standard": 0.14
+        "standard": 0.15
       }
     },
     "Vesper Swarm": {
