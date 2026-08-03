@@ -1,5 +1,5 @@
 {
-  "generated": "2026-08-03T10:09:42.120Z",
+  "generated": "2026-08-03T15:21:58.864Z",
   "source": "JustTCG (justtcg.com)",
   "game": "Sorcery: Contested Realm",
   "counts": {
@@ -218,7 +218,7 @@
       "market": 30.08
     },
     "Grigori Rasputin": {
-      "market": 29.95
+      "market": 29.91
     },
     "Innsmouth Dock": {
       "market": 29.75
@@ -268,11 +268,11 @@
     "Mesmerism": {
       "market": 21.32
     },
-    "The Void": {
-      "market": 21.26
-    },
     "Pnakotic Manuscript": {
       "market": 14.91
+    },
+    "The Void": {
+      "market": 21.18
     },
     "Moonsong Talagelum": {
       "market": 21.16
@@ -287,7 +287,7 @@
       "market": 20.85
     },
     "The Green Knight": {
-      "market": 20.81
+      "market": 20.8
     },
     "Foot Soldier (Forest)": {
       "market": 20.7
@@ -383,7 +383,7 @@
       "market": 14.77
     },
     "Questing Beast": {
-      "market": 14.72
+      "market": 14.71
     },
     "Young Master Damion": {
       "market": 14.43
@@ -512,7 +512,7 @@
       "market": 6.44
     },
     "Sinkhole": {
-      "market": 5.86
+      "market": 5.96
     },
     "Feast for Crows": {
       "market": 9.69
@@ -562,11 +562,11 @@
     "Mix Aqua": {
       "market": 3.6
     },
-    "Blaze of Glory": {
-      "market": 8.48
-    },
     "Rhitta Gawr of Snowdonia": {
       "market": 8.47
+    },
+    "Blaze of Glory": {
+      "market": 8.46
     },
     "Kingdom of Agartha": {
       "market": 2.37
@@ -626,7 +626,7 @@
       "market": 7.17
     },
     "Silver Bullet": {
-      "market": 7.12
+      "market": 7.11
     },
     "The Immortal Throne": {
       "market": 2
@@ -821,7 +821,7 @@
       "market": 4.54
     },
     "Valley of Delight": {
-      "market": 4.53
+      "market": 4.51
     },
     "The Faerie Queene": {
       "market": 4.49
@@ -914,7 +914,7 @@
       "market": 3.73
     },
     "Steppe": {
-      "market": 2.43
+      "market": 2.45
     },
     "Mother Nature (Preconstructed Deck)": {
       "market": 3.7
@@ -983,7 +983,7 @@
       "market": 3.19
     },
     "Craterize": {
-      "market": 1.44
+      "market": 1.45
     },
     "Polar Explorers": {
       "market": 1.28
@@ -1058,7 +1058,7 @@
       "market": 0.99
     },
     "Chaos Twister": {
-      "market": 1.02
+      "market": 1.03
     },
     "Mirage": {
       "market": 1.01
@@ -1121,7 +1121,7 @@
       "market": 1.49
     },
     "Root Spider": {
-      "market": 1.24
+      "market": 1.23
     },
     "Major Explosion (Preconstructed Deck)": {
       "market": 1.5
@@ -1151,7 +1151,7 @@
       "market": 0.28
     },
     "Poison Nova": {
-      "market": 0.67
+      "market": 0.68
     },
     "Atlas Wanderers": {
       "market": 0.76
@@ -2188,6 +2188,9 @@
     "Sentinel Trap": {
       "market": 0.28
     },
+    "Stygian Archers": {
+      "market": 0.28
+    },
     "Iron Shackles": {
       "market": 0.25
     },
@@ -2204,9 +2207,6 @@
       "market": 0.27
     },
     "Molten Maar": {
-      "market": 0.27
-    },
-    "Stygian Archers": {
       "market": 0.27
     },
     "Marine Voyage": {
@@ -2434,9 +2434,6 @@
     "Vanishment": {
       "market": 0.19
     },
-    "Yellow Knight": {
-      "market": 0.19
-    },
     "Avenging Angel": {
       "market": 0.19
     },
@@ -2483,6 +2480,9 @@
       "market": 0.18
     },
     "Town": {
+      "market": 0.18
+    },
+    "Yellow Knight": {
       "market": 0.18
     },
     "Flamecaller": {
@@ -3538,7 +3538,7 @@
       "market": 339.87
     },
     "Pristine Paradise": {
-      "market": 29.1
+      "market": 29.4
     },
     "Maelstrom": {
       "market": 25.39
@@ -6720,7 +6720,7 @@
       "market": 160.24
     },
     "Arthurian Legends Booster Box": {
-      "market": 118.34
+      "market": 118.26
     },
     "Druid (Box Topper) (Foil)": {
       "market": 101
@@ -6765,7 +6765,7 @@
       "market": 6.74
     },
     "Toolbox": {
-      "market": 5.19
+      "market": 5.22
     },
     "Sirian Templar (Box Topper)": {
       "market": 4.75
@@ -6780,7 +6780,7 @@
       "market": 1.99
     },
     "Rubble (Box Topper)": {
-      "market": 0.4
+      "market": 0.5
     },
     "Druid (Box Topper)": {
       "market": 0.84
@@ -7150,7 +7150,7 @@
         "standard": 18.87
       },
       "Beta": {
-        "foil": 29.1,
+        "foil": 29.4,
         "standard": 3.49
       }
     },
@@ -7852,7 +7852,7 @@
     "The Void": {
       "Gothic": {
         "foil": 146.27,
-        "standard": 21.26
+        "standard": 21.18
       }
     },
     "Kairos the Archivist": {
@@ -7927,7 +7927,7 @@
     "The Green Knight": {
       "Arthurian Legends": {
         "foil": 134.5,
-        "standard": 20.81
+        "standard": 20.8
       }
     },
     "Seer": {
@@ -7975,7 +7975,7 @@
       },
       "Beta": {
         "foil": 32.33,
-        "standard": 2.43
+        "standard": 2.45
       }
     },
     "War Horse": {
@@ -8060,7 +8060,7 @@
     "Grigori Rasputin": {
       "Gothic": {
         "foil": 120.63,
-        "standard": 29.95
+        "standard": 29.91
       }
     },
     "Draco Corvus": {
@@ -8422,7 +8422,7 @@
     "Questing Beast": {
       "Arthurian Legends": {
         "foil": 84.75,
-        "standard": 14.72
+        "standard": 14.71
       }
     },
     "Book of the Dead": {
@@ -8562,7 +8562,7 @@
     "Blaze of Glory": {
       "Gothic": {
         "foil": 74.56,
-        "standard": 8.48
+        "standard": 8.46
       }
     },
     "Locusts of Illyria": {
@@ -8596,7 +8596,7 @@
     "Valley of Delight": {
       "Arthurian Legends": {
         "foil": 70.4,
-        "standard": 4.53
+        "standard": 4.51
       }
     },
     "Root Spider": {
@@ -8606,7 +8606,7 @@
       },
       "Beta": {
         "foil": 8.27,
-        "standard": 1.24
+        "standard": 1.23
       }
     },
     "Whirling Blades": {
@@ -8740,7 +8740,7 @@
       },
       "Beta": {
         "foil": 18.51,
-        "standard": 5.86
+        "standard": 5.96
       }
     },
     "The Great Famine": {
@@ -9109,7 +9109,7 @@
       },
       "Beta": {
         "foil": 10.78,
-        "standard": 1.44
+        "standard": 1.45
       }
     },
     "Red Rock of Ravannis": {
@@ -9270,7 +9270,7 @@
       },
       "Beta": {
         "foil": 14,
-        "standard": 1.02
+        "standard": 1.03
       }
     },
     "Sir Mordred": {
@@ -9830,7 +9830,7 @@
     "Silver Bullet": {
       "Gothic": {
         "foil": 32.42,
-        "standard": 7.12
+        "standard": 7.11
       }
     },
     "Rebecks": {
@@ -10182,7 +10182,7 @@
       },
       "Beta": {
         "foil": 21,
-        "standard": 0.67
+        "standard": 0.68
       }
     },
     "Unravel": {
@@ -13620,7 +13620,7 @@
     "Stygian Archers": {
       "Gothic": {
         "foil": 3.71,
-        "standard": 0.27
+        "standard": 0.28
       }
     },
     "Mother Nature (Preconstructed Deck)": {
@@ -14156,7 +14156,7 @@
     "Yellow Knight": {
       "Arthurian Legends": {
         "foil": 2.35,
-        "standard": 0.19
+        "standard": 0.18
       }
     },
     "Ferryman's Coin": {
