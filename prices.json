@@ -1,5 +1,5 @@
 {
-  "generated": "2026-08-06T11:36:57.097Z",
+  "generated": "2026-08-06T14:39:53.501Z",
   "source": "JustTCG (justtcg.com)",
   "game": "Sorcery: Contested Realm",
   "counts": {
@@ -44,7 +44,7 @@
       "market": 210
     },
     "Ruler of Thul": {
-      "market": 16.67
+      "market": 16.7
     },
     "Ring of Morrigan": {
       "market": 192.06
@@ -118,11 +118,11 @@
     "Dank Omphalos": {
       "market": 64.93
     },
-    "Torrid Omphalos": {
-      "market": 60.15
-    },
     "Pied Piper of Hameln": {
       "market": 59.9
+    },
+    "Torrid Omphalos": {
+      "market": 59.56
     },
     "Aino": {
       "market": 57.21
@@ -145,11 +145,11 @@
     "Court of Equity": {
       "market": 48.98
     },
-    "Atlantean Fate": {
-      "market": 45.05
-    },
     "Waypoint Portal": {
       "market": 0.14
+    },
+    "Atlantean Fate": {
+      "market": 43.66
     },
     "Prophets of Doom Preconstructed Decks": {
       "market": 42.8
@@ -277,11 +277,11 @@
     "The Manor at Daperyll Hill": {
       "market": 21.7
     },
-    "Mesmerism": {
-      "market": 21.21
-    },
     "The Void": {
       "market": 21.16
+    },
+    "Mesmerism": {
+      "market": 21.12
     },
     "Adtonitum": {
       "market": 21.04
@@ -386,7 +386,7 @@
       "market": 14.77
     },
     "Questing Beast": {
-      "market": 14.61
+      "market": 14.56
     },
     "Young Master Damion": {
       "market": 14.43
@@ -709,9 +709,6 @@
     "Vile Imp": {
       "market": 0.19
     },
-    "Pendragon Legacy": {
-      "market": 5.88
-    },
     "De Vermis Mysteriis": {
       "market": 5.87
     },
@@ -720,6 +717,9 @@
     },
     "Locusts of Illyria": {
       "market": 5.83
+    },
+    "Pendragon Legacy": {
+      "market": 5.82
     },
     "Lord of Lies": {
       "market": 5.66
@@ -796,11 +796,11 @@
     "Deliverance": {
       "market": 4.7
     },
-    "Valley of Delight": {
-      "market": 4.63
-    },
     "A Midsummer Night's Dream": {
       "market": 4.62
+    },
+    "Valley of Delight": {
+      "market": 4.59
     },
     "Thing in the Ice": {
       "market": 4.59
@@ -857,7 +857,7 @@
       "market": 4.34
     },
     "Torshammar Trinket": {
-      "market": 1.92
+      "market": 1.85
     },
     "Defiler Spire": {
       "market": 4.13
@@ -907,14 +907,14 @@
     "Angel's Egg": {
       "market": 1.56
     },
-    "Steppe": {
-      "market": 2.5
-    },
     "Abundance": {
       "market": 0.86
     },
     "Screaming Skull (Preconstructed Deck)": {
       "market": 3.73
+    },
+    "Steppe": {
+      "market": 2.5
     },
     "Mother Nature (Preconstructed Deck)": {
       "market": 3.7
@@ -955,14 +955,14 @@
     "Blunderbore": {
       "market": 3.47
     },
-    "Oasis": {
-      "market": 1.18
-    },
     "Rest in Peace": {
       "market": 1
     },
     "Deathwish": {
       "market": 3.38
+    },
+    "Oasis": {
+      "market": 1.18
     },
     "Renatus Trueblood": {
       "market": 3.36
@@ -1007,7 +1007,7 @@
       "market": 0.94
     },
     "Hounds of Ondaros": {
-      "market": 2.24
+      "market": 2.23
     },
     "Highland Falconer": {
       "market": 1.53
@@ -1073,7 +1073,7 @@
       "market": 2.04
     },
     "Daperyll Vampire": {
-      "market": 1.25
+      "market": 1.24
     },
     "Silence": {
       "market": 0.7
@@ -1117,11 +1117,11 @@
     "Vril Revenant": {
       "market": 0.72
     },
-    "Nimbus Jinn": {
-      "market": 1.49
-    },
     "Root Spider": {
       "market": 1.24
+    },
+    "Nimbus Jinn": {
+      "market": 1.49
     },
     "Perilous Bridge": {
       "market": 1.51
@@ -1168,6 +1168,9 @@
     "Golden Dawn": {
       "market": 1.29
     },
+    "Floodplain": {
+      "market": 0.4
+    },
     "Panorama Manticore": {
       "market": 0.8
     },
@@ -1200,9 +1203,6 @@
     },
     "Demonic Contract": {
       "market": 1.22
-    },
-    "Floodplain": {
-      "market": 0.4
     },
     "Lacuna Entity": {
       "market": 1.21
@@ -1687,6 +1687,9 @@
     "Gneissgnath Gnomes": {
       "market": 0.16
     },
+    "Headless Haunt": {
+      "market": 0.27
+    },
     "Leap Attack": {
       "market": 0.34
     },
@@ -1728,9 +1731,6 @@
     },
     "Font of Life": {
       "market": 0.16
-    },
-    "Headless Haunt": {
-      "market": 0.27
     },
     "Shifting Sands": {
       "market": 0.16
@@ -2881,9 +2881,6 @@
     "Ice Lance": {
       "market": 0.11
     },
-    "Ogre Goons": {
-      "market": 0.06
-    },
     "Old Salt Anchorman": {
       "market": 0.07
     },
@@ -2949,6 +2946,9 @@
     },
     "Bone Rabble": {
       "market": 0.1
+    },
+    "Ogre Goons": {
+      "market": 0.06
     },
     "Plumed Pegasus": {
       "market": 0.05
@@ -6720,10 +6720,10 @@
       "market": 171.04
     },
     "Beta - Booster Box": {
-      "market": 158.76
+      "market": 158.69
     },
     "Arthurian Legends Booster Box": {
-      "market": 118.08
+      "market": 118.15
     },
     "Druid (Box Topper) (Foil)": {
       "market": 101
@@ -6768,7 +6768,7 @@
       "market": 6.74
     },
     "Toolbox": {
-      "market": 5.32
+      "market": 5.31
     },
     "Sirian Templar (Box Topper)": {
       "market": 4.75
@@ -6892,7 +6892,7 @@
       },
       "Beta": {
         "foil": 49.96,
-        "standard": 16.67
+        "standard": 16.7
       }
     },
     "Avatar of Water": {
@@ -7204,7 +7204,7 @@
       },
       "Beta": {
         "foil": 86.44,
-        "standard": 45.05
+        "standard": 43.66
       }
     },
     "Vile Imp": {
@@ -7467,7 +7467,7 @@
     "Torrid Omphalos": {
       "Gothic": {
         "foil": 226.38,
-        "standard": 60.15
+        "standard": 59.56
       }
     },
     "Boneyard": {
@@ -7802,7 +7802,7 @@
     },
     "Persecutor": {
       "Promotional": {
-        "standard": 163.04
+        "standard": 161.4
       },
       "Gothic": {
         "foil": 5.78,
@@ -7987,7 +7987,7 @@
     "Steppe": {
       "Alpha": {
         "foil": 129.9,
-        "standard": 3.75
+        "standard": 3.73
       },
       "Beta": {
         "foil": 32.33,
@@ -8233,7 +8233,7 @@
     "Oasis": {
       "Alpha": {
         "foil": 100.82,
-        "standard": 3.42
+        "standard": 3.36
       },
       "Beta": {
         "foil": 27.99,
@@ -8249,7 +8249,7 @@
     "Pudge Butcher": {
       "Alpha": {
         "foil": 100.01,
-        "standard": 1.61
+        "standard": 1.58
       },
       "Promotional": {
         "standard": 28
@@ -8402,7 +8402,7 @@
     "Mesmerism": {
       "Arthurian Legends": {
         "foil": 87.81,
-        "standard": 21.21
+        "standard": 21.12
       }
     },
     "Caerleon-Upon-Usk": {
@@ -8442,7 +8442,7 @@
     "Questing Beast": {
       "Arthurian Legends": {
         "foil": 85.25,
-        "standard": 14.61
+        "standard": 14.56
       }
     },
     "Peace Offering": {
@@ -8454,7 +8454,7 @@
     "Aqueduct": {
       "Alpha": {
         "foil": 82.6,
-        "standard": 3.62
+        "standard": 3.61
       },
       "Beta": {
         "foil": 22.35,
@@ -8476,7 +8476,7 @@
     "Lighthouse": {
       "Alpha": {
         "foil": 80.01,
-        "standard": 3.67
+        "standard": 3.65
       },
       "Beta": {
         "foil": 33.52,
@@ -8610,13 +8610,13 @@
     "Valley of Delight": {
       "Arthurian Legends": {
         "foil": 70.4,
-        "standard": 4.63
+        "standard": 4.59
       }
     },
     "Root Spider": {
       "Alpha": {
         "foil": 70.31,
-        "standard": 1.51
+        "standard": 1.55
       },
       "Beta": {
         "foil": 8.42,
@@ -9060,7 +9060,7 @@
       },
       "Beta": {
         "foil": 11.7,
-        "standard": 2.24
+        "standard": 2.23
       }
     },
     "Fields of Phyxis": {
@@ -9155,11 +9155,11 @@
     "Torshammar Trinket": {
       "Alpha": {
         "foil": 49.95,
-        "standard": 4.3
+        "standard": 4.26
       },
       "Beta": {
         "foil": 15.11,
-        "standard": 1.92
+        "standard": 1.85
       }
     },
     "Drums of Doom": {
@@ -9355,7 +9355,7 @@
     "Floodplain": {
       "Alpha": {
         "foil": 43.59,
-        "standard": 1.21
+        "standard": 1.27
       },
       "Beta": {
         "foil": 30,
@@ -9401,7 +9401,7 @@
       },
       "Beta": {
         "foil": 17.72,
-        "standard": 1.25
+        "standard": 1.24
       }
     },
     "Prophets of Doom Preconstructed Decks": {
@@ -9458,7 +9458,7 @@
     "Pendragon Legacy": {
       "Arthurian Legends": {
         "foil": 41.57,
-        "standard": 5.88
+        "standard": 5.82
       }
     },
     "Sphere of Animosity": {
@@ -9562,7 +9562,7 @@
     "Colicky Dragonettes": {
       "Alpha": {
         "foil": 38.92,
-        "standard": 1.24
+        "standard": 1.22
       },
       "Beta": {
         "foil": 17.05,
@@ -10178,7 +10178,7 @@
     "Poison Nova": {
       "Alpha": {
         "foil": 25,
-        "standard": 1.34
+        "standard": 1.33
       },
       "Beta": {
         "foil": 21,
@@ -10549,7 +10549,7 @@
     "Headless Haunt": {
       "Alpha": {
         "foil": 19.98,
-        "standard": 0.44
+        "standard": 0.46
       },
       "Beta": {
         "foil": 2.18,
@@ -10668,7 +10668,7 @@
     "Ogre Goons": {
       "Alpha": {
         "foil": 18.88,
-        "standard": 0.12
+        "standard": 0.11
       },
       "Beta": {
         "foil": 0.64,
