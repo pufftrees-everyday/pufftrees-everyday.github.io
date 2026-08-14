@@ -1,5 +1,5 @@
 {
-  "generated": "2026-08-14T07:54:57.290Z",
+  "generated": "2026-08-14T10:28:21.485Z",
   "source": "JustTCG (justtcg.com)",
   "game": "Sorcery: Contested Realm",
   "counts": {
@@ -2011,9 +2011,6 @@
     "Horn of Caerleon": {
       "market": 0.34
     },
-    "Lugbog Cat": {
-      "market": 0.34
-    },
     "Wedding Hall": {
       "market": 0.34
     },
@@ -2031,6 +2028,9 @@
     },
     "Dodge Roll": {
       "market": 0.2
+    },
+    "Lugbog Cat": {
+      "market": 0.33
     },
     "Seelie Court": {
       "market": 0.33
@@ -2299,9 +2299,6 @@
     "Drums of Doom (Preconstructed Deck)": {
       "market": 0.23
     },
-    "Fine Courser": {
-      "market": 0.23
-    },
     "Monastery Gargoyle": {
       "market": 0.23
     },
@@ -2336,6 +2333,9 @@
       "market": 0.15
     },
     "Beacon": {
+      "market": 0.22
+    },
+    "Fine Courser": {
       "market": 0.22
     },
     "Saracen Raiders": {
@@ -12233,7 +12233,7 @@
     "Lugbog Cat": {
       "Arthurian Legends": {
         "foil": 9.69,
-        "standard": 0.34
+        "standard": 0.33
       }
     },
     "Sir Agravaine": {
@@ -14473,7 +14473,7 @@
     "Fine Courser": {
       "Arthurian Legends": {
         "foil": 1.72,
-        "standard": 0.23
+        "standard": 0.22
       }
     },
     "Accusation": {
