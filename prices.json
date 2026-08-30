@@ -1,5 +1,5 @@
 {
-  "generated": "2026-08-30T12:01:28.542Z",
+  "generated": "2026-08-30T16:47:41.173Z",
   "source": "JustTCG (justtcg.com)",
   "game": "Sorcery: Contested Realm",
   "counts": {
@@ -107,7 +107,7 @@
       "market": 29.61
     },
     "Lilith": {
-      "market": 68.67
+      "market": 68.37
     },
     "Returned King": {
       "market": 65.15
@@ -160,20 +160,20 @@
     "Pied Piper of Hameln": {
       "market": 40.68
     },
-    "Joyous Garde": {
-      "market": 39.83
-    },
     "Prophets of Doom Preconstructed Decks": {
       "market": 39.83
     },
     "Fields of Phyxis": {
       "market": 0.35
     },
+    "Joyous Garde": {
+      "market": 39.56
+    },
     "Talamh Dreig": {
       "market": 38.18
     },
     "Boudicca": {
-      "market": 38.09
+      "market": 37.72
     },
     "Mount Ussar Sanctuary": {
       "market": 37.54
@@ -235,11 +235,11 @@
     "Kythera Mechanism": {
       "market": 7.62
     },
-    "Fields of Camlann": {
-      "market": 27.87
-    },
     "Imposter": {
       "market": 27.78
+    },
+    "Fields of Camlann": {
+      "market": 27.71
     },
     "Pudge Butcher": {
       "market": 0.41
@@ -298,17 +298,17 @@
     "Four Waters of Paradise": {
       "market": 20.26
     },
-    "Mesmerism": {
-      "market": 20.21
-    },
     "The Green Knight": {
       "market": 20.13
     },
-    "The Great Famine": {
-      "market": 20.1
-    },
     "Pact with the Devil": {
       "market": 6.97
+    },
+    "The Great Famine": {
+      "market": 19.8
+    },
+    "Mesmerism": {
+      "market": 19.63
     },
     "Mover of Mountains": {
       "market": 19.48
@@ -499,11 +499,11 @@
     "The Flood": {
       "market": 10.49
     },
-    "Merlin's Tower": {
-      "market": 10.35
-    },
     "Saint of Redemption": {
       "market": 10.33
+    },
+    "Merlin's Tower": {
+      "market": 10.22
     },
     "Caelestis": {
       "market": 10.02
@@ -548,7 +548,7 @@
       "market": 1.96
     },
     "Crown Prince": {
-      "market": 2.31
+      "market": 2.27
     },
     "Grandmaster Wizard (Preconstructed Deck)": {
       "market": 8.94
@@ -614,7 +614,7 @@
       "market": 7.46
     },
     "Witherwing Hero": {
-      "market": 2.1
+      "market": 2.06
     },
     "Mix Terra": {
       "market": 2.1
@@ -627,9 +627,6 @@
     },
     "Feast for Crows": {
       "market": 7.17
-    },
-    "Peasant Revolt": {
-      "market": 7.07
     },
     "Abaddon Succubus": {
       "market": 7.01
@@ -645,6 +642,9 @@
     },
     "Excalibur": {
       "market": 6.85
+    },
+    "Peasant Revolt": {
+      "market": 6.83
     },
     "Rhongomyniad": {
       "market": 6.76
@@ -814,9 +814,6 @@
     "Lord of Lies": {
       "market": 4.5
     },
-    "Bodach Bogeyman": {
-      "market": 4.47
-    },
     "Book of Blessings": {
       "market": 4.47
     },
@@ -828,6 +825,9 @@
     },
     "Fail-not Bow": {
       "market": 4.42
+    },
+    "Bodach Bogeyman": {
+      "market": 4.41
     },
     "The Ninth Legion": {
       "market": 4.4
@@ -929,7 +929,7 @@
       "market": 3.7
     },
     "Polar Explorers": {
-      "market": 1.28
+      "market": 1.31
     },
     "Lighthouse": {
       "market": 1.83
@@ -1061,7 +1061,7 @@
       "market": 1.03
     },
     "Imperial Road": {
-      "market": 1.06
+      "market": 1.08
     },
     "Replication": {
       "market": 0.54
@@ -1645,9 +1645,6 @@
     "Sling Pixies": {
       "market": 0.17
     },
-    "Tombstone Wardens": {
-      "market": 0.49
-    },
     "Lone Tower": {
       "market": 0.2
     },
@@ -1667,6 +1664,9 @@
       "market": 0.48
     },
     "Rat King": {
+      "market": 0.48
+    },
+    "Tombstone Wardens": {
       "market": 0.48
     },
     "Cornerstone": {
@@ -1765,6 +1765,9 @@
     "Dhol Chants": {
       "market": 0.43
     },
+    "Stagecoach": {
+      "market": 0.43
+    },
     "Trade Encampment": {
       "market": 0.43
     },
@@ -1793,9 +1796,6 @@
       "market": 0.42
     },
     "Peacemaker Arbalest": {
-      "market": 0.42
-    },
-    "Stagecoach": {
       "market": 0.42
     },
     "Wasteland (Preconstructed Deck)": {
@@ -1975,9 +1975,6 @@
     "Sir Bedivere": {
       "market": 0.35
     },
-    "Sir Pelleas": {
-      "market": 0.35
-    },
     "The Wild Hunt": {
       "market": 0.35
     },
@@ -2021,6 +2018,9 @@
       "market": 0.34
     },
     "Seelie Court": {
+      "market": 0.34
+    },
+    "Sir Pelleas": {
       "market": 0.34
     },
     "Thundering Giant": {
@@ -2089,9 +2089,6 @@
     "Blade of Thorns": {
       "market": 0.32
     },
-    "Golgor": {
-      "market": 0.32
-    },
     "Sawbones": {
       "market": 0.32
     },
@@ -2117,6 +2114,9 @@
       "market": 0.31
     },
     "War Horse": {
+      "market": 0.31
+    },
+    "Golgor": {
       "market": 0.31
     },
     "Malakhim": {
@@ -2236,9 +2236,6 @@
     "Sacred Scarabs": {
       "market": 0.12
     },
-    "Sir Ironside": {
-      "market": 0.26
-    },
     "Spearmarshal": {
       "market": 0.26
     },
@@ -2267,6 +2264,9 @@
       "market": 0.25
     },
     "Common Village": {
+      "market": 0.25
+    },
+    "Sir Ironside": {
       "market": 0.25
     },
     "Sword and Shield": {
@@ -3455,7 +3455,7 @@
       "market": 64.17
     },
     "Skeleton": {
-      "market": 36.74
+      "market": 36.76
     }
   },
   "foils": {
@@ -3475,7 +3475,7 @@
       "market": 177.2
     },
     "Amethyst Core": {
-      "market": 294.79
+      "market": 294.16
     },
     "Ruby Core": {
       "market": 126.31
@@ -4836,9 +4836,6 @@
     "Firebolts": {
       "market": 4.28
     },
-    "Merlin's Staff": {
-      "market": 19.61
-    },
     "Wizard's Den": {
       "market": 19.5
     },
@@ -4850,6 +4847,9 @@
     },
     "Flaming Sword": {
       "market": 4.13
+    },
+    "Merlin's Staff": {
+      "market": 19.23
     },
     "Peregrine Apparition": {
       "market": 1.75
@@ -6432,11 +6432,11 @@
     "Common Village": {
       "market": 1.37
     },
-    "Tactical Move": {
+    "Attack by Night": {
       "market": 1.36
     },
-    "Attack by Night": {
-      "market": 1.35
+    "Tactical Move": {
+      "market": 1.36
     },
     "Castle Haunt": {
       "market": 1.32
@@ -6723,16 +6723,16 @@
       "market": 521.54
     },
     "Gothic Booster Box": {
-      "market": 200.22
+      "market": 199.32
     },
     "Sorcery: Contested Realm - Pledge Pack": {
       "market": 179.37
     },
     "Beta - Booster Box": {
-      "market": 172.73
+      "market": 173.61
     },
     "Arthurian Legends Booster Box": {
-      "market": 122.9
+      "market": 122.38
     },
     "Druid (Box Topper) (Foil)": {
       "market": 101
@@ -6858,7 +6858,7 @@
     },
     "Skeleton": {
       "Alpha Investment Promo": {
-        "standard": 36.74
+        "standard": 36.76
       }
     },
     "Bone Rabble": {
@@ -6925,7 +6925,7 @@
         "standard": 104.67
       },
       "Beta": {
-        "foil": 294.79,
+        "foil": 294.16,
         "standard": 44.73
       }
     },
@@ -7262,7 +7262,7 @@
       },
       "Beta": {
         "foil": 13.33,
-        "standard": 2.1
+        "standard": 2.06
       }
     },
     "Vaults of Zul": {
@@ -7570,7 +7570,7 @@
       },
       "Beta": {
         "foil": 21.01,
-        "standard": 2.31
+        "standard": 2.27
       }
     },
     "Dank Omphalos": {
@@ -7783,7 +7783,7 @@
     "Lilith": {
       "Gothic": {
         "foil": 181.95,
-        "standard": 68.67
+        "standard": 68.37
       }
     },
     "Midland Army": {
@@ -7865,7 +7865,7 @@
     "Joyous Garde": {
       "Arthurian Legends": {
         "foil": 171.22,
-        "standard": 39.83
+        "standard": 39.56
       }
     },
     "Talamh Dreig": {
@@ -8169,7 +8169,7 @@
       },
       "Beta": {
         "foil": 13.47,
-        "standard": 1.28
+        "standard": 1.31
       }
     },
     "Eclipse": {
@@ -8217,7 +8217,7 @@
     "Boudicca": {
       "Arthurian Legends": {
         "foil": 109.79,
-        "standard": 38.09
+        "standard": 37.72
       }
     },
     "Highland Princess": {
@@ -8288,7 +8288,7 @@
     "Mesmerism": {
       "Arthurian Legends": {
         "foil": 101.72,
-        "standard": 20.21
+        "standard": 19.63
       }
     },
     "Bottomless Pit": {
@@ -8387,7 +8387,7 @@
     "Fields of Camlann": {
       "Arthurian Legends": {
         "foil": 96.18,
-        "standard": 27.87
+        "standard": 27.71
       }
     },
     "The Malleus Maleficarum": {
@@ -8607,7 +8607,7 @@
     "Peasant Revolt": {
       "Arthurian Legends": {
         "foil": 75.84,
-        "standard": 7.07
+        "standard": 6.83
       }
     },
     "Autumn Unicorn": {
@@ -8797,7 +8797,7 @@
     "The Great Famine": {
       "Arthurian Legends": {
         "foil": 63.71,
-        "standard": 20.1
+        "standard": 19.8
       }
     },
     "Darkest Dungeon": {
@@ -8986,7 +8986,7 @@
     "Merlin's Tower": {
       "Arthurian Legends": {
         "foil": 56.5,
-        "standard": 10.35
+        "standard": 10.22
       }
     },
     "Myrrh's Trophy Room": {
@@ -9014,7 +9014,7 @@
     "Bodach Bogeyman": {
       "Gothic": {
         "foil": 55.01,
-        "standard": 4.47
+        "standard": 4.41
       }
     },
     "Wicked Witch": {
@@ -10300,7 +10300,7 @@
     "Tombstone Wardens": {
       "Gothic": {
         "foil": 24.98,
-        "standard": 0.49
+        "standard": 0.48
       }
     },
     "Renatus Trueblood": {
@@ -10721,12 +10721,6 @@
         "standard": 0.13
       }
     },
-    "Merlin's Staff": {
-      "Arthurian Legends": {
-        "foil": 19.61,
-        "standard": 3.74
-      }
-    },
     "Wizard's Den": {
       "Arthurian Legends": {
         "foil": 19.5,
@@ -10757,6 +10751,12 @@
       "Beta": {
         "foil": 4.13,
         "standard": 0.28
+      }
+    },
+    "Merlin's Staff": {
+      "Arthurian Legends": {
+        "foil": 19.23,
+        "standard": 3.74
       }
     },
     "Peregrine Apparition": {
@@ -11827,7 +11827,7 @@
     "Stagecoach": {
       "Gothic": {
         "foil": 11.62,
-        "standard": 0.42
+        "standard": 0.43
       }
     },
     "Clairvoyant": {
@@ -11965,7 +11965,7 @@
     "Imperial Road": {
       "Beta": {
         "foil": 10.8,
-        "standard": 1.06
+        "standard": 1.08
       },
       "Alpha": {
         "standard": 2.27
@@ -12082,7 +12082,7 @@
     "Sir Pelleas": {
       "Arthurian Legends": {
         "foil": 10.23,
-        "standard": 0.35
+        "standard": 0.34
       }
     },
     "Amazon Warriors": {
@@ -12801,7 +12801,7 @@
     "Golgor": {
       "Gothic": {
         "foil": 7.32,
-        "standard": 0.32
+        "standard": 0.31
       }
     },
     "Megalurker": {
@@ -13273,7 +13273,7 @@
     "Sir Ironside": {
       "Arthurian Legends": {
         "foil": 5.11,
-        "standard": 0.26
+        "standard": 0.25
       }
     },
     "Order of the Sacred Oak": {
@@ -14651,15 +14651,15 @@
         "standard": 0.25
       }
     },
-    "Tactical Move": {
+    "Attack by Night": {
       "Arthurian Legends": {
         "foil": 1.36,
         "standard": 0.14
       }
     },
-    "Attack by Night": {
+    "Tactical Move": {
       "Arthurian Legends": {
-        "foil": 1.35,
+        "foil": 1.36,
         "standard": 0.14
       }
     },
