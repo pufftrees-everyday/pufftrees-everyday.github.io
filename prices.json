@@ -1,5 +1,5 @@
 {
-  "generated": "2026-09-23T17:13:24.002Z",
+  "generated": "2026-09-23T21:35:40.590Z",
   "source": "JustTCG (justtcg.com)",
   "game": "Sorcery: Contested Realm",
   "counts": {
@@ -14,7 +14,7 @@
       "market": 17.57
     },
     "King Arthur": {
-      "market": 8.03
+      "market": 8.02
     },
     "Courtesan Thaïs": {
       "market": 4.72
@@ -95,7 +95,7 @@
       "market": 85.03
     },
     "Mirror Realm": {
-      "market": 28.95
+      "market": 28.97
     },
     "Key to the City": {
       "market": 74.65
@@ -151,11 +151,11 @@
     "Algor Omphalos": {
       "market": 42.13
     },
+    "Prophets of Doom Preconstructed Decks": {
+      "market": 41.3
+    },
     "Waypoint Portal": {
       "market": 0.16
-    },
-    "Prophets of Doom Preconstructed Decks": {
-      "market": 41.07
     },
     "Vatn Draconis": {
       "market": 40.67
@@ -226,6 +226,9 @@
     "The Doom of Dilmun": {
       "market": 28.82
     },
+    "Adtonitum": {
+      "market": 28.72
+    },
     "Witch": {
       "market": 28.45
     },
@@ -243,9 +246,6 @@
     },
     "Pudge Butcher": {
       "market": 0.39
-    },
-    "Adtonitum": {
-      "market": 27.4
     },
     "Tintagel": {
       "market": 26.92
@@ -284,7 +284,7 @@
       "market": 7.02
     },
     "Grim Reaper": {
-      "market": 6.68
+      "market": 6.64
     },
     "Mover of Mountains": {
       "market": 20.69
@@ -343,14 +343,14 @@
     "Immolation": {
       "market": 6.14
     },
-    "Nelly Longarms": {
-      "market": 17.32
-    },
     "City of Souls": {
       "market": 17.32
     },
     "Foot Soldier (River)": {
       "market": 17.21
+    },
+    "Nelly Longarms": {
+      "market": 17
     },
     "The Black Plague": {
       "market": 16.98
@@ -404,7 +404,7 @@
       "market": 14.32
     },
     "Gigantism": {
-      "market": 9.85
+      "market": 9.9
     },
     "Young Master Damion": {
       "market": 14.23
@@ -497,10 +497,10 @@
       "market": 11.26
     },
     "Mix Aer": {
-      "market": 3.04
+      "market": 3.01
     },
     "The Geistwood": {
-      "market": 3.15
+      "market": 3.11
     },
     "Cerberus in Chains": {
       "market": 6.57
@@ -539,7 +539,7 @@
       "market": 4.42
     },
     "Infiltrate": {
-      "market": 7.29
+      "market": 7.31
     },
     "Earthquake (Preconstructed Deck)": {
       "market": 9.49
@@ -584,7 +584,7 @@
       "market": 2
     },
     "Great Wall": {
-      "market": 3.47
+      "market": 3.39
     },
     "The Pallid Bust": {
       "market": 7.69
@@ -611,7 +611,7 @@
       "market": 7.36
     },
     "Mix Terra": {
-      "market": 2.21
+      "market": 2.22
     },
     "Spellslinger (Draft Kit)": {
       "market": 7.29
@@ -623,13 +623,13 @@
       "market": 1.88
     },
     "Sturmgeist": {
-      "market": 7
+      "market": 7.09
     },
     "Tabula Rasa": {
       "market": 6.99
     },
     "White Hart": {
-      "market": 6.88
+      "market": 6.92
     },
     "Blaze of Glory": {
       "market": 6.87
@@ -641,7 +641,7 @@
       "market": 6.68
     },
     "Saintweald": {
-      "market": 6.67
+      "market": 6.68
     },
     "Orpheus' Crossing": {
       "market": 6.63
@@ -704,7 +704,7 @@
       "market": 5.9
     },
     "Windmill": {
-      "market": 3.17
+      "market": 3.14
     },
     "Bower of Bliss": {
       "market": 5.85
@@ -770,13 +770,13 @@
       "market": 4.95
     },
     "Valley of Delight": {
-      "market": 4.93
+      "market": 4.94
     },
     "Baba Yaga's Hut": {
       "market": 4.92
     },
     "Deathspeaker": {
-      "market": 0.78
+      "market": 0.79
     },
     "Midland Army": {
       "market": 1.85
@@ -820,11 +820,11 @@
     "Adept Illusionist": {
       "market": 1.5
     },
-    "I Am Colossus!": {
+    "Altar of Malachai": {
       "market": 4.5
     },
-    "Altar of Malachai": {
-      "market": 4.49
+    "I Am Colossus!": {
+      "market": 4.5
     },
     "Defiler Spire": {
       "market": 4.41
@@ -851,13 +851,13 @@
       "market": 4.3
     },
     "Ruins": {
-      "market": 3.14
+      "market": 3.17
     },
     "The Faerie Queene": {
       "market": 4.17
     },
     "Torshammar Trinket": {
-      "market": 1.87
+      "market": 1.88
     },
     "Doomsday Device": {
       "market": 1.12
@@ -902,7 +902,7 @@
       "market": 3.73
     },
     "Steppe": {
-      "market": 2.38
+      "market": 2.39
     },
     "Angel's Egg": {
       "market": 1.55
@@ -913,14 +913,11 @@
     "Avalon": {
       "market": 3.69
     },
-    "Satanic Panic": {
+    "Merlin's Staff": {
       "market": 3.67
     },
-    "Merlin's Staff": {
-      "market": 3.65
-    },
-    "Dozmary Pool": {
-      "market": 3.64
+    "Satanic Panic": {
+      "market": 3.67
     },
     "Old Mortimer's Den": {
       "market": 3.64
@@ -930,6 +927,9 @@
     },
     "Battlemage": {
       "market": 1.07
+    },
+    "Dozmary Pool": {
+      "market": 3.6
     },
     "Polar Explorers": {
       "market": 1.31
@@ -946,9 +946,6 @@
     "Apostles of Thamariel": {
       "market": 3.42
     },
-    "Darkest Dungeon": {
-      "market": 3.41
-    },
     "Ancient Dragon (Preconstructed Deck)": {
       "market": 3.4
     },
@@ -959,7 +956,10 @@
       "market": 3.4
     },
     "Oasis": {
-      "market": 1.27
+      "market": 1.26
+    },
+    "Darkest Dungeon": {
+      "market": 3.37
     },
     "Deathwish": {
       "market": 3.35
@@ -989,7 +989,7 @@
       "market": 3.1
     },
     "Bottomless Pit": {
-      "market": 1.58
+      "market": 1.63
     },
     "Elementalist": {
       "market": 0.88
@@ -998,7 +998,7 @@
       "market": 2.95
     },
     "Craterize": {
-      "market": 1.6
+      "market": 1.62
     },
     "Doomsday Prophet (Preconstructed Deck)": {
       "market": 2.94
@@ -1030,13 +1030,13 @@
     "Red Desert (Preconstructed Deck)": {
       "market": 2.6
     },
+    "Sir Gareth": {
+      "market": 2.57
+    },
     "Purgatory": {
       "market": 2.56
     },
     "Craterize (Preconstructed Deck)": {
-      "market": 2.54
-    },
-    "Sir Gareth": {
       "market": 2.54
     },
     "Seer": {
@@ -1055,10 +1055,10 @@
       "market": 2.44
     },
     "Imperial Road": {
-      "market": 0.97
+      "market": 0.99
     },
     "Whirling Blades": {
-      "market": 2.37
+      "market": 2.38
     },
     "Flame of the First Ones": {
       "market": 2.34
@@ -1082,10 +1082,10 @@
       "market": 1.31
     },
     "Primordial Spring": {
-      "market": 0.77
+      "market": 0.78
     },
     "Wizard's Den": {
-      "market": 2.17
+      "market": 2.18
     },
     "Conqueror Worm": {
       "market": 0.78
@@ -1118,7 +1118,7 @@
       "market": 1.88
     },
     "Edge of the World": {
-      "market": 0.49
+      "market": 0.5
     },
     "Assorted Animals": {
       "market": 1.5
@@ -1139,7 +1139,7 @@
       "market": 0.99
     },
     "Perilous Bridge": {
-      "market": 1.65
+      "market": 1.64
     },
     "Root Spider": {
       "market": 1.34
@@ -1154,13 +1154,13 @@
       "market": 0.79
     },
     "Payload Trebuchet": {
-      "market": 0.25
+      "market": 0.24
     },
     "Major Explosion (Preconstructed Deck)": {
       "market": 1.47
     },
     "Arcane Barrage": {
-      "market": 1.45
+      "market": 1.46
     },
     "Land Deed": {
       "market": 0.55
@@ -1178,7 +1178,7 @@
       "market": 0.4
     },
     "Poison Nova": {
-      "market": 0.81
+      "market": 0.8
     },
     "Seirawan Hydra": {
       "market": 0.6
@@ -1198,11 +1198,14 @@
     "Upwelling (Preconstructed Deck)": {
       "market": 1.33
     },
+    "Lacuna Entity": {
+      "market": 1.31
+    },
     "Chains of Prometheus": {
       "market": 0.87
     },
-    "Lacuna Entity": {
-      "market": 1.3
+    "Call of the Sea": {
+      "market": 1.27
     },
     "Maddening Bells": {
       "market": 0.6
@@ -1219,20 +1222,17 @@
     "Zephyranne Airship": {
       "market": 0.5
     },
-    "Call of the Sea": {
-      "market": 1.24
+    "Mismanaged Mortuary": {
+      "market": 1.25
     },
     "Flame Wave": {
       "market": 0.5
     },
     "Belfry": {
-      "market": 0.46
+      "market": 0.47
     },
     "Free City": {
       "market": 0.34
-    },
-    "Mismanaged Mortuary": {
-      "market": 1.22
     },
     "Magnetic Muzzle": {
       "market": 0.33
@@ -1298,7 +1298,7 @@
       "market": 0.89
     },
     "Vindictive Nation": {
-      "market": 1.01
+      "market": 1.02
     },
     "Nightmare": {
       "market": 0.55
@@ -1450,14 +1450,14 @@
     "Stone-gaze Gorgons": {
       "market": 0.5
     },
-    "Acid Rain": {
-      "market": 0.75
-    },
     "Stargazer": {
       "market": 0.75
     },
     "Puppet Master": {
-      "market": 0.31
+      "market": 0.32
+    },
+    "Acid Rain": {
+      "market": 0.72
     },
     "No Man's Land": {
       "market": 0.7
@@ -1465,26 +1465,23 @@
     "Mester Stoor Worm": {
       "market": 0.68
     },
-    "Infusion Factory": {
-      "market": 0.67
-    },
     "Vanguard Knights": {
       "market": 0.19
     },
-    "Lucid Dreamers": {
-      "market": 0.65
+    "Infusion Factory": {
+      "market": 0.66
     },
     "Troll Bridge": {
-      "market": 0.64
+      "market": 0.65
+    },
+    "Lucid Dreamers": {
+      "market": 0.65
     },
     "Cave-In": {
       "market": 0.22
     },
     "Stormy Seas": {
       "market": 0.22
-    },
-    "Monstrous Lion": {
-      "market": 0.62
     },
     "Into the Abyss": {
       "market": 0.62
@@ -1498,7 +1495,13 @@
     "Undertaker Engine": {
       "market": 0.33
     },
+    "Monstrous Lion": {
+      "market": 0.61
+    },
     "Forgotten Tomb": {
+      "market": 0.61
+    },
+    "Pilgrim's Shrine": {
       "market": 0.61
     },
     "Plague Pits": {
@@ -1511,9 +1514,6 @@
       "market": 0.6
     },
     "Bleeding Skull": {
-      "market": 0.6
-    },
-    "Pilgrim's Shrine": {
       "market": 0.6
     },
     "Symmetric Suffering": {
@@ -1555,16 +1555,22 @@
     "Deep Sea": {
       "market": 0.56
     },
+    "Interrogator": {
+      "market": 0.56
+    },
     "Lord of Fear": {
       "market": 0.56
     },
     "Valor": {
       "market": 0.55
     },
+    "Animist": {
+      "market": 0.55
+    },
     "Dread Thicket": {
       "market": 0.55
     },
-    "Interrogator": {
+    "Thin Ice": {
       "market": 0.55
     },
     "Silver Valkyries": {
@@ -1588,16 +1594,10 @@
     "Guards!": {
       "market": 0.53
     },
-    "Animist": {
-      "market": 0.53
-    },
     "Ophanim": {
       "market": 0.53
     },
     "Sold-out Cemetery": {
-      "market": 0.53
-    },
-    "Thin Ice": {
       "market": 0.53
     },
     "Call to War": {
@@ -1615,9 +1615,6 @@
     "Updraft Ridge": {
       "market": 0.27
     },
-    "Archimago": {
-      "market": 0.52
-    },
     "Dormant Monstrosity": {
       "market": 0.52
     },
@@ -1626,6 +1623,9 @@
     },
     "Flaming Sword": {
       "market": 0.28
+    },
+    "Archimago": {
+      "market": 0.51
     },
     "Cursed Land": {
       "market": 0.51
@@ -1711,6 +1711,9 @@
     "Blade of Thorns": {
       "market": 0.48
     },
+    "Tombstone Wardens": {
+      "market": 0.48
+    },
     "Valley (Preconstructed Deck)": {
       "market": 0.48
     },
@@ -1726,13 +1729,7 @@
     "Grand Old Boar": {
       "market": 0.47
     },
-    "Corruptor": {
-      "market": 0.47
-    },
     "Iron Maiden": {
-      "market": 0.47
-    },
-    "Tombstone Wardens": {
       "market": 0.47
     },
     "Giant Shark": {
@@ -1755,6 +1752,9 @@
     },
     "Clairvoyant": {
       "market": 0.46
+    },
+    "Corruptor": {
+      "market": 0.45
     },
     "Earl of the Ivory Towers": {
       "market": 0.45
@@ -1972,9 +1972,6 @@
     "Sir Lamorak": {
       "market": 0.37
     },
-    "Sir Pelleas": {
-      "market": 0.37
-    },
     "Angel Ascendant": {
       "market": 0.37
     },
@@ -1997,6 +1994,9 @@
       "market": 0.36
     },
     "Seelie Court": {
+      "market": 0.36
+    },
+    "Sir Pelleas": {
       "market": 0.36
     },
     "Golgor": {
@@ -2096,7 +2096,7 @@
       "market": 0.12
     },
     "Iron Shackles": {
-      "market": 0.19
+      "market": 0.2
     },
     "Monastery Gargoyle": {
       "market": 0.23
@@ -2106,6 +2106,9 @@
     },
     "Sirian Templar": {
       "market": 0.17
+    },
+    "Major City": {
+      "market": 0.33
     },
     "Sir Balin": {
       "market": 0.33
@@ -2119,20 +2122,14 @@
     "Fey Changeling": {
       "market": 0.25
     },
-    "Major City": {
-      "market": 0.32
-    },
     "Accursed Albatross": {
       "market": 0.17
     },
     "Battering Ram": {
-      "market": 0.1
+      "market": 0.11
     },
     "Dodge Roll": {
       "market": 0.24
-    },
-    "Love Potion": {
-      "market": 0.31
     },
     "Unseelie Court": {
       "market": 0.31
@@ -2160,6 +2157,9 @@
     },
     "Windblast": {
       "market": 0.17
+    },
+    "Love Potion": {
+      "market": 0.3
     },
     "Pendragon Banner": {
       "market": 0.3
@@ -2198,7 +2198,7 @@
       "market": 0.19
     },
     "Lightning Bolt": {
-      "market": 0.16
+      "market": 0.15
     },
     "Phantasmal Shade": {
       "market": 0.16
@@ -2252,7 +2252,7 @@
       "market": 0.24
     },
     "Wings of Invention": {
-      "market": 0.16
+      "market": 0.17
     },
     "Dame Britomart": {
       "market": 0.27
@@ -2299,12 +2299,6 @@
     "Sisters of Avalon": {
       "market": 0.26
     },
-    "Begone!": {
-      "market": 0.26
-    },
-    "Desecrate": {
-      "market": 0.26
-    },
     "Sjaelstrom": {
       "market": 0.26
     },
@@ -2329,6 +2323,9 @@
     "Swiven Scout": {
       "market": 0.25
     },
+    "Desecrate": {
+      "market": 0.25
+    },
     "Failed Mutation": {
       "market": 0.25
     },
@@ -2339,6 +2336,9 @@
       "market": 0.24
     },
     "Saracen Raiders": {
+      "market": 0.24
+    },
+    "Begone!": {
       "market": 0.24
     },
     "Forsaken Crypt": {
@@ -2432,7 +2432,7 @@
       "market": 0.1
     },
     "Drown": {
-      "market": 0.11
+      "market": 0.12
     },
     "Sea Serpent": {
       "market": 0.07
@@ -2447,9 +2447,6 @@
       "market": 0.21
     },
     "Fourberie Knot": {
-      "market": 0.21
-    },
-    "Pebbled Paths": {
       "market": 0.21
     },
     "Geomancer": {
@@ -2492,6 +2489,9 @@
       "market": 0.2
     },
     "Kettletop Leprechaun": {
+      "market": 0.2
+    },
+    "Pebbled Paths": {
       "market": 0.2
     },
     "Snowball": {
@@ -2566,9 +2566,6 @@
     "White Knight": {
       "market": 0.19
     },
-    "Accusation": {
-      "market": 0.19
-    },
     "Desecrated Ground": {
       "market": 0.19
     },
@@ -2605,7 +2602,13 @@
     "Shatter Strike": {
       "market": 0.18
     },
+    "Town": {
+      "market": 0.18
+    },
     "Sparkmage": {
+      "market": 0.18
+    },
+    "Accusation": {
       "market": 0.18
     },
     "Bone Jumble": {
@@ -2615,6 +2618,9 @@
       "market": 0.18
     },
     "Estranged Loner": {
+      "market": 0.18
+    },
+    "Ghost Town": {
       "market": 0.18
     },
     "Monstermorphosis": {
@@ -2653,9 +2659,6 @@
     "Sugarplum Pixies": {
       "market": 0.17
     },
-    "Town": {
-      "market": 0.17
-    },
     "Croll Morlocks": {
       "market": 0.17
     },
@@ -2663,9 +2666,6 @@
       "market": 0.17
     },
     "Fallen Angel": {
-      "market": 0.17
-    },
-    "Ghost Town": {
       "market": 0.17
     },
     "Khamaseen Mummy": {
@@ -2702,13 +2702,13 @@
       "market": 0.07
     },
     "Scarecrow": {
-      "market": 0.06
+      "market": 0.05
     },
     "Unravel": {
       "market": 0.1
     },
     "Wall of Fire": {
-      "market": 0.08
+      "market": 0.09
     },
     "Fae City": {
       "market": 0.16
@@ -2914,6 +2914,9 @@
     "Wall of Air": {
       "market": 0.07
     },
+    "Leyline Henge": {
+      "market": 0.13
+    },
     "Magic Missiles": {
       "market": 0.13
     },
@@ -2927,6 +2930,9 @@
       "market": 0.13
     },
     "Displace": {
+      "market": 0.13
+    },
+    "Eerie Coral": {
       "market": 0.13
     },
     "Hand of Glory": {
@@ -2971,9 +2977,6 @@
     "Dirium Fomorians": {
       "market": 0.12
     },
-    "Leyline Henge": {
-      "market": 0.12
-    },
     "Muirid Fomorians": {
       "market": 0.12
     },
@@ -2996,9 +2999,6 @@
       "market": 0.12
     },
     "Driftwood Marrows": {
-      "market": 0.12
-    },
-    "Eerie Coral": {
       "market": 0.12
     },
     "Ferryman's Coin": {
@@ -3074,9 +3074,6 @@
       "market": 0.11
     },
     "Ominous Owl": {
-      "market": 0.11
-    },
-    "Redbreast Robin": {
       "market": 0.11
     },
     "Vikings": {
@@ -3158,6 +3155,9 @@
       "market": 0.1
     },
     "Kingswood Poachers": {
+      "market": 0.1
+    },
+    "Redbreast Robin": {
       "market": 0.1
     },
     "Shameless Squire": {
@@ -4432,7 +4432,7 @@
       "market": 9.72
     },
     "Major Explosion": {
-      "market": 9.19
+      "market": 9.5
     },
     "King Arthur": {
       "market": 44.45
@@ -4843,7 +4843,7 @@
       "market": 5.92
     },
     "Peregrine Apparition": {
-      "market": 1.69
+      "market": 1.71
     },
     "Tvinnax Berserker": {
       "market": 1.03
@@ -4867,7 +4867,7 @@
       "market": 2.99
     },
     "Bury": {
-      "market": 2.42
+      "market": 2.49
     },
     "Muck Lampreys": {
       "market": 1
@@ -4888,7 +4888,7 @@
       "market": 1.19
     },
     "Firebolts": {
-      "market": 4.5
+      "market": 4.48
     },
     "Shifting Sands": {
       "market": 2.74
@@ -4980,6 +4980,9 @@
     "Ophanim": {
       "market": 18.1
     },
+    "Guile Sirens": {
+      "market": 1.69
+    },
     "Brobdingnag Bullfrog": {
       "market": 1.86
     },
@@ -5003,9 +5006,6 @@
     },
     "Buried Treasure": {
       "market": 1.94
-    },
-    "Guile Sirens": {
-      "market": 1.69
     },
     "Monster Hunter": {
       "market": 3.06
@@ -5526,11 +5526,11 @@
     "Geomancer": {
       "market": 8.56
     },
-    "Ghoul": {
-      "market": 8.52
-    },
     "Men of Leng": {
       "market": 1.21
+    },
+    "Ghoul": {
+      "market": 8.51
     },
     "Twilight Bloom": {
       "market": 8.5
@@ -5920,7 +5920,7 @@
       "market": 4.37
     },
     "Firebreathing": {
-      "market": 4.24
+      "market": 4.34
     },
     "Hotwheel": {
       "market": 4.23
@@ -6315,6 +6315,9 @@
     "Maze Minotaur": {
       "market": 1.88
     },
+    "Lava Flow": {
+      "market": 1.85
+    },
     "Mudslide": {
       "market": 1.81
     },
@@ -6347,9 +6350,6 @@
     },
     "Avenging Angel": {
       "market": 1.75
-    },
-    "Lava Flow": {
-      "market": 1.72
     },
     "Baptize": {
       "market": 1.72
@@ -6747,7 +6747,7 @@
       "market": 531.95
     },
     "Gothic Booster Box": {
-      "market": 197.3
+      "market": 197.06
     },
     "Sorcery: Contested Realm - Pledge Pack": {
       "market": 187.2
@@ -6771,7 +6771,7 @@
       "market": 46.49
     },
     "The Four Elementals Preconstructed Deck Box (Beta)": {
-      "market": 43.78
+      "market": 43.76
     },
     "Toolbox (Foil)": {
       "market": 37.09
@@ -6801,7 +6801,7 @@
       "market": 6.74
     },
     "Toolbox": {
-      "market": 5.5
+      "market": 5.47
     },
     "Critical Strike (Box Topper)": {
       "market": 4.83
@@ -6985,7 +6985,7 @@
       },
       "Beta": {
         "foil": 141.38,
-        "standard": 28.95
+        "standard": 28.97
       }
     },
     "The Geistwood": {
@@ -6995,7 +6995,7 @@
       },
       "Beta": {
         "foil": 30,
-        "standard": 3.15
+        "standard": 3.11
       }
     },
     "Pathfinder": {
@@ -7055,7 +7055,7 @@
       },
       "Beta": {
         "foil": 17.8,
-        "standard": 2.21
+        "standard": 2.22
       }
     },
     "Smokestacks of Gnaak": {
@@ -7105,7 +7105,7 @@
       },
       "Arthurian Legends": {
         "foil": 44.45,
-        "standard": 8.03
+        "standard": 8.02
       }
     },
     "Deathspeaker": {
@@ -7115,7 +7115,7 @@
       },
       "Beta": {
         "foil": 49.6,
-        "standard": 0.78
+        "standard": 0.79
       }
     },
     "Ultimate Horror": {
@@ -7276,7 +7276,7 @@
       },
       "Beta": {
         "foil": 31.28,
-        "standard": 6.68
+        "standard": 6.64
       }
     },
     "River of Flame": {
@@ -7482,7 +7482,7 @@
       },
       "Beta": {
         "foil": 14.95,
-        "standard": 3.47
+        "standard": 3.39
       }
     },
     "Pact with the Devil": {
@@ -7756,7 +7756,7 @@
       },
       "Beta": {
         "foil": 36.19,
-        "standard": 9.85
+        "standard": 9.9
       }
     },
     "Gilded Aegis": {
@@ -7802,7 +7802,7 @@
       },
       "Beta": {
         "foil": 17.47,
-        "standard": 3.04
+        "standard": 3.01
       }
     },
     "Avatar of Fire (Preconstructed Deck)": {
@@ -7877,7 +7877,7 @@
     "Adtonitum": {
       "Dragonlord": {
         "foil": 180,
-        "standard": 27.4
+        "standard": 28.72
       }
     },
     "Moonsong Talagelum": {
@@ -8108,7 +8108,7 @@
       },
       "Beta": {
         "foil": 66.4,
-        "standard": 3.14
+        "standard": 3.17
       }
     },
     "Seer": {
@@ -8140,7 +8140,7 @@
       },
       "Beta": {
         "foil": 35.54,
-        "standard": 7.29
+        "standard": 7.31
       }
     },
     "Grigori Rasputin": {
@@ -8178,7 +8178,7 @@
       },
       "Beta": {
         "foil": 35.59,
-        "standard": 2.38
+        "standard": 2.39
       }
     },
     "Highland Princess": {
@@ -8261,7 +8261,7 @@
       },
       "Beta": {
         "foil": 29.35,
-        "standard": 3.17
+        "standard": 3.14
       }
     },
     "The Four Elementals Preconstructed Deck: Fire": {
@@ -8372,7 +8372,7 @@
       },
       "Beta": {
         "foil": 11.99,
-        "standard": 1.58
+        "standard": 1.63
       }
     },
     "Jack the Ripper": {
@@ -8388,7 +8388,7 @@
       },
       "Beta": {
         "foil": 28.79,
-        "standard": 1.27
+        "standard": 1.26
       }
     },
     "Hellmouth": {
@@ -8410,7 +8410,7 @@
       },
       "Beta": {
         "foil": 2.77,
-        "standard": 0.25
+        "standard": 0.24
       }
     },
     "Rest in Peace": {
@@ -8436,7 +8436,7 @@
       },
       "Beta": {
         "foil": 41.02,
-        "standard": 2.37
+        "standard": 2.38
       }
     },
     "Sacred Stag": {
@@ -8506,7 +8506,7 @@
       },
       "Beta": {
         "foil": 8.8,
-        "standard": 0.49
+        "standard": 0.5
       }
     },
     "City of Traitors": {
@@ -8558,7 +8558,7 @@
     "Altar of Malachai": {
       "Gothic": {
         "foil": 86.94,
-        "standard": 4.49
+        "standard": 4.5
       }
     },
     "Sea of Ash": {
@@ -8666,7 +8666,7 @@
     "Interrogator": {
       "Gothic": {
         "foil": 77.05,
-        "standard": 0.55
+        "standard": 0.56
       }
     },
     "Thing in the Ice": {
@@ -8678,7 +8678,7 @@
     "Sturmgeist": {
       "Gothic": {
         "foil": 76.52,
-        "standard": 7
+        "standard": 7.09
       }
     },
     "Peasant Revolt": {
@@ -8718,7 +8718,7 @@
     "Valley of Delight": {
       "Arthurian Legends": {
         "foil": 74.39,
-        "standard": 4.93
+        "standard": 4.94
       }
     },
     "Autumn Unicorn": {
@@ -8788,7 +8788,7 @@
       },
       "Beta": {
         "foil": 21.24,
-        "standard": 0.81
+        "standard": 0.8
       }
     },
     "Sisters of Silence": {
@@ -8859,7 +8859,7 @@
     "Animist": {
       "Gothic": {
         "foil": 66.37,
-        "standard": 0.53
+        "standard": 0.55
       }
     },
     "Common Sense": {
@@ -8881,7 +8881,7 @@
     "Nelly Longarms": {
       "Arthurian Legends": {
         "foil": 65.56,
-        "standard": 17.32
+        "standard": 17
       }
     },
     "Nosferatu": {
@@ -8913,7 +8913,7 @@
     "Darkest Dungeon": {
       "Gothic": {
         "foil": 63.55,
-        "standard": 3.41
+        "standard": 3.37
       }
     },
     "Army of the Dead": {
@@ -9013,7 +9013,7 @@
     "White Hart": {
       "Arthurian Legends": {
         "foil": 58.93,
-        "standard": 6.88
+        "standard": 6.92
       }
     },
     "Bower of Bliss": {
@@ -9099,7 +9099,7 @@
     "Corruptor": {
       "Gothic": {
         "foil": 55.07,
-        "standard": 0.47
+        "standard": 0.45
       }
     },
     "Grösse Poltergeist": {
@@ -9149,7 +9149,7 @@
       },
       "Beta": {
         "foil": 5.18,
-        "standard": 0.77
+        "standard": 0.78
       }
     },
     "Merlin's Tower": {
@@ -9253,7 +9253,7 @@
       },
       "Beta": {
         "foil": 13.43,
-        "standard": 1.6
+        "standard": 1.62
       }
     },
     "Tithe": {
@@ -9275,7 +9275,7 @@
       },
       "Beta": {
         "foil": 17.34,
-        "standard": 1.87
+        "standard": 1.88
       }
     },
     "Mirage": {
@@ -9325,7 +9325,7 @@
     "Mismanaged Mortuary": {
       "Gothic": {
         "foil": 49.93,
-        "standard": 1.22
+        "standard": 1.25
       }
     },
     "Overflowing Court": {
@@ -9345,7 +9345,7 @@
     "Saintweald": {
       "Gothic": {
         "foil": 49.48,
-        "standard": 6.67
+        "standard": 6.68
       }
     },
     "Drums of Doom": {
@@ -9489,7 +9489,7 @@
         "standard": 1.02
       },
       "Beta": {
-        "foil": 9.19,
+        "foil": 9.5,
         "standard": 0.89
       }
     },
@@ -9558,7 +9558,7 @@
     "Archimago": {
       "Arthurian Legends": {
         "foil": 42.78,
-        "standard": 0.52
+        "standard": 0.51
       }
     },
     "Sir Yvain": {
@@ -9583,6 +9583,11 @@
         "standard": 5.99
       }
     },
+    "Prophets of Doom Preconstructed Decks": {
+      "Gothic": {
+        "standard": 41.3
+      }
+    },
     "Waypoint Portal": {
       "Promotional": {
         "standard": 41.29
@@ -9594,11 +9599,6 @@
       "Beta": {
         "foil": 1.19,
         "standard": 0.16
-      }
-    },
-    "Prophets of Doom Preconstructed Decks": {
-      "Gothic": {
-        "standard": 41.07
       }
     },
     "Phantasmal Shade": {
@@ -9802,7 +9802,7 @@
       },
       "Beta": {
         "foil": 4.18,
-        "standard": 0.46
+        "standard": 0.47
       }
     },
     "East-West Dragon": {
@@ -10054,7 +10054,7 @@
       },
       "Beta": {
         "foil": 3.35,
-        "standard": 0.31
+        "standard": 0.32
       }
     },
     "Truesight Crossbow": {
@@ -10216,7 +10216,7 @@
       },
       "Beta": {
         "foil": 2.42,
-        "standard": 0.19
+        "standard": 0.2
       }
     },
     "Evil Presence": {
@@ -10338,13 +10338,13 @@
     "Tombstone Wardens": {
       "Gothic": {
         "foil": 26.01,
-        "standard": 0.47
+        "standard": 0.48
       }
     },
     "Lacuna Entity": {
       "Gothic": {
         "foil": 26,
-        "standard": 1.3
+        "standard": 1.31
       }
     },
     "Cave-In": {
@@ -10360,13 +10360,13 @@
     "Call of the Sea": {
       "Gothic": {
         "foil": 25.68,
-        "standard": 1.24
+        "standard": 1.27
       }
     },
     "Dozmary Pool": {
       "Arthurian Legends": {
         "foil": 25.67,
-        "standard": 3.64
+        "standard": 3.6
       }
     },
     "Lord of Greed": {
@@ -10521,7 +10521,7 @@
     "Sir Gareth": {
       "Arthurian Legends": {
         "foil": 23.57,
-        "standard": 2.54
+        "standard": 2.57
       }
     },
     "Awakened Mummies": {
@@ -10708,7 +10708,7 @@
         "standard": 0.37
       },
       "Beta": {
-        "foil": 1.69,
+        "foil": 1.71,
         "standard": 0.19
       }
     },
@@ -10780,7 +10780,7 @@
         "standard": 0.27
       },
       "Beta": {
-        "foil": 2.42,
+        "foil": 2.49,
         "standard": 0.15
       }
     },
@@ -10831,7 +10831,7 @@
       },
       "Beta": {
         "foil": 0.7,
-        "standard": 0.1
+        "standard": 0.11
       }
     },
     "Mad Dash": {
@@ -10850,7 +10850,7 @@
         "standard": 0.17
       },
       "Beta": {
-        "foil": 4.5,
+        "foil": 4.48,
         "standard": 0.15
       }
     },
@@ -10903,7 +10903,7 @@
     "Wizard's Den": {
       "Arthurian Legends": {
         "foil": 19.5,
-        "standard": 2.17
+        "standard": 2.18
       }
     },
     "Shield Wall": {
@@ -10949,7 +10949,7 @@
     "Merlin's Staff": {
       "Arthurian Legends": {
         "foil": 19.3,
-        "standard": 3.65
+        "standard": 3.67
       }
     },
     "Geyser": {
@@ -11000,13 +11000,13 @@
     "Acid Rain": {
       "Gothic": {
         "foil": 18.78,
-        "standard": 0.75
+        "standard": 0.72
       }
     },
     "Vindictive Nation": {
       "Gothic": {
         "foil": 18.71,
-        "standard": 1.01
+        "standard": 1.02
       }
     },
     "Quagmire": {
@@ -11052,7 +11052,7 @@
       },
       "Beta": {
         "foil": 3.42,
-        "standard": 0.11
+        "standard": 0.12
       }
     },
     "Hyperparasite": {
@@ -11102,6 +11102,16 @@
     "Foot Soldier (Mountain)": {
       "Promotional": {
         "standard": 17.89
+      }
+    },
+    "Guile Sirens": {
+      "Alpha": {
+        "foil": 17.87,
+        "standard": 0.44
+      },
+      "Beta": {
+        "foil": 1.69,
+        "standard": 0.19
       }
     },
     "Brobdingnag Bullfrog": {
@@ -11170,16 +11180,6 @@
       "Beta": {
         "foil": 1.94,
         "standard": 0.15
-      }
-    },
-    "Guile Sirens": {
-      "Alpha": {
-        "foil": 17.23,
-        "standard": 0.44
-      },
-      "Beta": {
-        "foil": 1.69,
-        "standard": 0.19
       }
     },
     "Foot Soldier (River)": {
@@ -11511,7 +11511,7 @@
     "Troll Bridge": {
       "Arthurian Legends": {
         "foil": 14.33,
-        "standard": 0.64
+        "standard": 0.65
       }
     },
     "Lightning Bolt": {
@@ -11521,7 +11521,7 @@
       },
       "Beta": {
         "foil": 4.63,
-        "standard": 0.16
+        "standard": 0.15
       }
     },
     "Unland Eel": {
@@ -11665,7 +11665,7 @@
     "Perilous Bridge": {
       "Arthurian Legends": {
         "foil": 13.71,
-        "standard": 1.65
+        "standard": 1.64
       }
     },
     "Elder Ruins": {
@@ -11769,7 +11769,7 @@
       },
       "Beta": {
         "foil": 1.59,
-        "standard": 0.16
+        "standard": 0.17
       }
     },
     "Simple Village": {
@@ -11849,7 +11849,7 @@
     "Infusion Factory": {
       "Gothic": {
         "foil": 12.45,
-        "standard": 0.67
+        "standard": 0.66
       }
     },
     "Lucid Dreamers": {
@@ -11988,7 +11988,7 @@
     "Pilgrim's Shrine": {
       "Gothic": {
         "foil": 11.59,
-        "standard": 0.6
+        "standard": 0.61
       }
     },
     "Homecoming": {
@@ -12098,7 +12098,7 @@
     "Imperial Road": {
       "Beta": {
         "foil": 10.8,
-        "standard": 0.97
+        "standard": 0.99
       },
       "Alpha": {
         "standard": 2.44
@@ -12187,7 +12187,7 @@
     "Sir Pelleas": {
       "Arthurian Legends": {
         "foil": 10.18,
-        "standard": 0.37
+        "standard": 0.36
       }
     },
     "Sea Raider": {
@@ -12259,7 +12259,7 @@
     "Thin Ice": {
       "Gothic": {
         "foil": 9.9,
-        "standard": 0.53
+        "standard": 0.55
       }
     },
     "Sir Agravaine": {
@@ -12365,7 +12365,7 @@
       },
       "Beta": {
         "foil": 1.5,
-        "standard": 0.08
+        "standard": 0.09
       }
     },
     "Scent Hounds": {
@@ -12409,7 +12409,7 @@
     "Arcane Barrage": {
       "Arthurian Legends": {
         "foil": 9.23,
-        "standard": 1.45
+        "standard": 1.46
       }
     },
     "Kettletop Leprechaun": {
@@ -12648,12 +12648,6 @@
         "standard": 0.21
       }
     },
-    "Ghoul": {
-      "Gothic": {
-        "foil": 8.52,
-        "standard": 0.1
-      }
-    },
     "Men of Leng": {
       "Alpha": {
         "foil": 8.51,
@@ -12662,6 +12656,12 @@
       "Beta": {
         "foil": 1.21,
         "standard": 0.08
+      }
+    },
+    "Ghoul": {
+      "Gothic": {
+        "foil": 8.51,
+        "standard": 0.1
       }
     },
     "Twilight Bloom": {
@@ -12729,7 +12729,7 @@
       },
       "Beta": {
         "foil": 1.07,
-        "standard": 0.06
+        "standard": 0.05
       }
     },
     "Snow Leopard": {
@@ -13265,7 +13265,7 @@
     "Monstrous Lion": {
       "Arthurian Legends": {
         "foil": 5.4,
-        "standard": 0.62
+        "standard": 0.61
       }
     },
     "Devil's Egg": {
@@ -13409,13 +13409,13 @@
     "Love Potion": {
       "Arthurian Legends": {
         "foil": 4.79,
-        "standard": 0.31
+        "standard": 0.3
       }
     },
     "Major City": {
       "Arthurian Legends": {
         "foil": 4.76,
-        "standard": 0.32
+        "standard": 0.33
       }
     },
     "Wolpertinger": {
@@ -13540,7 +13540,7 @@
     },
     "Firebreathing": {
       "Arthurian Legends": {
-        "foil": 4.24,
+        "foil": 4.34,
         "standard": 0.19
       }
     },
@@ -14103,7 +14103,7 @@
     "Pebbled Paths": {
       "Arthurian Legends": {
         "foil": 2.49,
-        "standard": 0.21
+        "standard": 0.2
       }
     },
     "Enduring Faith": {
@@ -14174,7 +14174,7 @@
     "Desecrate": {
       "Gothic": {
         "foil": 2.31,
-        "standard": 0.26
+        "standard": 0.25
       }
     },
     "Grief Larvae": {
@@ -14204,7 +14204,7 @@
     "Town": {
       "Arthurian Legends": {
         "foil": 2.29,
-        "standard": 0.17
+        "standard": 0.18
       }
     },
     "Monks of Kobalsa": {
@@ -14275,7 +14275,7 @@
     "Begone!": {
       "Gothic": {
         "foil": 2.15,
-        "standard": 0.26
+        "standard": 0.24
       }
     },
     "Undesirables": {
@@ -14415,6 +14415,12 @@
         "standard": 0.52
       }
     },
+    "Lava Flow": {
+      "Arthurian Legends": {
+        "foil": 1.85,
+        "standard": 0.26
+      }
+    },
     "Mudslide": {
       "Gothic": {
         "foil": 1.81,
@@ -14475,12 +14481,6 @@
         "standard": 0.21
       }
     },
-    "Lava Flow": {
-      "Arthurian Legends": {
-        "foil": 1.72,
-        "standard": 0.26
-      }
-    },
     "Baptize": {
       "Gothic": {
         "foil": 1.72,
@@ -14508,7 +14508,7 @@
     "Accusation": {
       "Gothic": {
         "foil": 1.7,
-        "standard": 0.19
+        "standard": 0.18
       }
     },
     "Croll Morlocks": {
@@ -14562,7 +14562,7 @@
     "Eerie Coral": {
       "Gothic": {
         "foil": 1.6,
-        "standard": 0.12
+        "standard": 0.13
       }
     },
     "Estranged Loner": {
@@ -14820,7 +14820,7 @@
     "Ghost Town": {
       "Gothic": {
         "foil": 1.13,
-        "standard": 0.17
+        "standard": 0.18
       }
     },
     "Bailey": {
@@ -14892,7 +14892,7 @@
     "Redbreast Robin": {
       "Arthurian Legends": {
         "foil": 1.08,
-        "standard": 0.11
+        "standard": 0.1
       }
     },
     "Hunting Party": {
@@ -15259,7 +15259,7 @@
     "Leyline Henge": {
       "Arthurian Legends": {
         "foil": 0.79,
-        "standard": 0.12
+        "standard": 0.13
       }
     },
     "Shameless Squire": {
