@@ -1,5 +1,5 @@
 {
-  "generated": "2026-11-12T11:29:23.102Z",
+  "generated": "2026-11-12T20:06:09.974Z",
   "source": "JustTCG (justtcg.com)",
   "game": "Sorcery: Contested Realm",
   "counts": {
@@ -149,7 +149,7 @@
       "market": 0.25
     },
     "Mobbed Court": {
-      "market": 45.05
+      "market": 45
     },
     "Algor Omphalos": {
       "market": 42.18
@@ -158,7 +158,7 @@
       "market": 42.05
     },
     "Court of Equity": {
-      "market": 41.36
+      "market": 41.78
     },
     "Waypoint Portal": {
       "market": 0.15
@@ -172,17 +172,17 @@
     "Browse": {
       "market": 28.72
     },
-    "Mount Ussar Sanctuary": {
-      "market": 38.28
-    },
     "Vatn Draconis": {
       "market": 38.1
+    },
+    "Mount Ussar Sanctuary": {
+      "market": 37.97
     },
     "Joyous Garde": {
       "market": 37.39
     },
     "Boudicca": {
-      "market": 37.02
+      "market": 37
     },
     "Talamh Dreig": {
       "market": 36.47
@@ -236,7 +236,7 @@
       "market": 27.74
     },
     "Pudge Butcher": {
-      "market": 0.48
+      "market": 0.51
     },
     "Star-seeds of Uhr": {
       "market": 5
@@ -533,7 +533,7 @@
       "market": 9.94
     },
     "Sinkhole": {
-      "market": 7.63
+      "market": 7.56
     },
     "Warp Spasm": {
       "market": 3.37
@@ -680,7 +680,7 @@
       "market": 6.05
     },
     "Rift Valley": {
-      "market": 3.57
+      "market": 3.58
     },
     "Queen Guinevere": {
       "market": 6.02
@@ -985,6 +985,9 @@
     "Satanic Panic": {
       "market": 3.14
     },
+    "Grey Wolves": {
+      "market": 1
+    },
     "Koschei's Egg": {
       "market": 3.1
     },
@@ -1008,9 +1011,6 @@
     },
     "Doomsday Prophet (Preconstructed Deck)": {
       "market": 2.94
-    },
-    "Grey Wolves": {
-      "market": 1
     },
     "Chorus of Condemnation": {
       "market": 2.92
@@ -1103,7 +1103,7 @@
       "market": 0.46
     },
     "Silence": {
-      "market": 0.63
+      "market": 0.64
     },
     "Flame of the First Ones": {
       "market": 2.11
@@ -1250,7 +1250,7 @@
       "market": 1.22
     },
     "Purge Juggernaut": {
-      "market": 0.31
+      "market": 0.32
     },
     "Call of the Sea": {
       "market": 1.18
@@ -1420,6 +1420,9 @@
     "Wills-o'-the-Wisp (Preconstructed Deck)": {
       "market": 0.92
     },
+    "Autumn Unicorn": {
+      "market": 0.27
+    },
     "Diluvian Kraken": {
       "market": 0.5
     },
@@ -1455,9 +1458,6 @@
     },
     "Sneak Thief": {
       "market": 0.48
-    },
-    "Autumn Unicorn": {
-      "market": 0.27
     },
     "Puppet Master": {
       "market": 0.33
@@ -1675,6 +1675,9 @@
     "Tombstone Wardens": {
       "market": 0.5
     },
+    "Hillock Basilisk": {
+      "market": 0.2
+    },
     "Iceberg": {
       "market": 0.34
     },
@@ -1827,9 +1830,6 @@
     },
     "Headless Haunt": {
       "market": 0.28
-    },
-    "Hillock Basilisk": {
-      "market": 0.2
     },
     "Minecart Madness": {
       "market": 0.18
@@ -2078,7 +2078,7 @@
       "market": 0.19
     },
     "Watchtower": {
-      "market": 0.28
+      "market": 0.3
     },
     "Horn of Caerleon": {
       "market": 0.34
@@ -4627,7 +4627,7 @@
       "market": 2.75
     },
     "Shield Maidens": {
-      "market": 6.52
+      "market": 6.57
     },
     "Nightmare": {
       "market": 3.54
@@ -6786,7 +6786,7 @@
       "market": 85
     },
     "Alpha - Booster Pack": {
-      "market": 64.28
+      "market": 64.3
     },
     "Occult Ritual (Pledge Pack)": {
       "market": 46.49
@@ -7776,7 +7776,7 @@
     "Mount Ussar Sanctuary": {
       "Gothic": {
         "foil": 199.99,
-        "standard": 38.28
+        "standard": 37.97
       }
     },
     "Mix Aer": {
@@ -7884,7 +7884,7 @@
     "Court of Equity": {
       "Promotional": {
         "foil": 176,
-        "standard": 41.36
+        "standard": 41.78
       }
     },
     "Doomsday Prophet": {
@@ -7915,7 +7915,7 @@
     "Mobbed Court": {
       "Promotional": {
         "foil": 173.23,
-        "standard": 45.05
+        "standard": 45
       }
     },
     "Four Waters of Paradise": {
@@ -8128,7 +8128,7 @@
       },
       "Beta": {
         "foil": 27.48,
-        "standard": 7.63
+        "standard": 7.56
       }
     },
     "Eclipse": {
@@ -8244,7 +8244,7 @@
       },
       "Beta": {
         "foil": 18.02,
-        "standard": 0.48
+        "standard": 0.51
       }
     },
     "Mesmerism": {
@@ -8271,7 +8271,7 @@
     "Boudicca": {
       "Arthurian Legends": {
         "foil": 110.35,
-        "standard": 37.02
+        "standard": 37
       }
     },
     "Ghost Ship": {
@@ -8702,7 +8702,7 @@
     "Autumn Unicorn": {
       "Alpha": {
         "foil": 74.17,
-        "standard": 0.81
+        "standard": 0.91
       },
       "Beta": {
         "foil": 14.91,
@@ -8885,7 +8885,7 @@
     "Grey Wolves": {
       "Alpha": {
         "foil": 66.89,
-        "standard": 2.93
+        "standard": 3.12
       },
       "Beta": {
         "foil": 16.94,
@@ -9208,7 +9208,7 @@
       },
       "Beta": {
         "foil": 13.7,
-        "standard": 3.57
+        "standard": 3.58
       }
     },
     "Unland Angler": {
@@ -9228,7 +9228,7 @@
       },
       "Beta": {
         "foil": 3.16,
-        "standard": 0.31
+        "standard": 0.32
       }
     },
     "Hounds of Ondaros": {
@@ -9396,7 +9396,7 @@
       },
       "Beta": {
         "foil": 6.22,
-        "standard": 0.63
+        "standard": 0.64
       }
     },
     "Lady Iseult": {
@@ -9993,7 +9993,7 @@
       },
       "Beta": {
         "foil": 6.37,
-        "standard": 0.28
+        "standard": 0.3
       }
     },
     "Fields of Phyxis": {
@@ -10061,7 +10061,7 @@
         "standard": 0.37
       },
       "Beta": {
-        "foil": 6.52,
+        "foil": 6.57,
         "standard": 0.25
       }
     },
@@ -11444,7 +11444,7 @@
     "Hillock Basilisk": {
       "Alpha": {
         "foil": 15.63,
-        "standard": 0.4
+        "standard": 0.49
       },
       "Beta": {
         "foil": 4.78,
