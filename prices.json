@@ -1,5 +1,5 @@
 {
-  "generated": "2026-11-12T20:06:09.974Z",
+  "generated": "2026-11-13T01:56:29.172Z",
   "source": "JustTCG (justtcg.com)",
   "game": "Sorcery: Contested Realm",
   "counts": {
@@ -23,7 +23,7 @@
       "market": 409.02
     },
     "Avatar of Air (Preconstructed Deck)": {
-      "market": 398.33
+      "market": 390.55
     },
     "Philosopher's Stone": {
       "market": 89
@@ -385,14 +385,14 @@
     "Amulet of Niniane": {
       "market": 15.53
     },
-    "Kor Crematory": {
-      "market": 15.48
-    },
     "Disintegrate": {
       "market": 7
     },
     "Sir Galahad": {
-      "market": 15.26
+      "market": 15.32
+    },
+    "Kor Crematory": {
+      "market": 15.28
     },
     "Salt the Earth": {
       "market": 14.99
@@ -629,7 +629,7 @@
       "market": 6.98
     },
     "Observatory": {
-      "market": 2.77
+      "market": 2.78
     },
     "Chaoswish": {
       "market": 6.84
@@ -695,7 +695,7 @@
       "market": 5.94
     },
     "Mother Nature": {
-      "market": 2.56
+      "market": 2.54
     },
     "Goat for Azazel": {
       "market": 5.9
@@ -740,7 +740,7 @@
       "market": 5.25
     },
     "Hounds of Ondaros": {
-      "market": 2.92
+      "market": 2.91
     },
     "Evil Twin": {
       "market": 5.22
@@ -790,11 +790,11 @@
     "Sir Yvain": {
       "market": 4.87
     },
-    "Sir Lancelot": {
-      "market": 4.83
-    },
     "Thing in the Ice": {
       "market": 4.83
+    },
+    "Sir Lancelot": {
+      "market": 4.82
     },
     "City of Traitors": {
       "market": 4.8
@@ -863,10 +863,10 @@
       "market": 4.21
     },
     "Ruins": {
-      "market": 3.24
+      "market": 3.25
     },
     "Plate of the Whale": {
-      "market": 4.17
+      "market": 4.11
     },
     "Defiler Spire": {
       "market": 4.09
@@ -884,7 +884,7 @@
       "market": 3.98
     },
     "Doomsday Device": {
-      "market": 1.12
+      "market": 1.17
     },
     "Doomsday Prophet": {
       "market": 0.93
@@ -908,7 +908,7 @@
       "market": 3.78
     },
     "Steppe": {
-      "market": 2.44
+      "market": 2.45
     },
     "Screaming Skull (Preconstructed Deck)": {
       "market": 3.73
@@ -938,7 +938,7 @@
       "market": 0.64
     },
     "Aqueduct": {
-      "market": 1.47
+      "market": 1.46
     },
     "Avalon": {
       "market": 3.49
@@ -959,7 +959,7 @@
       "market": 1.8
     },
     "Oasis": {
-      "market": 1.35
+      "market": 1.33
     },
     "Whirling Blades": {
       "market": 3.31
@@ -1039,6 +1039,9 @@
     "Shifting Sands (Preconstructed Deck)": {
       "market": 2.72
     },
+    "Conqueror Worm": {
+      "market": 0.72
+    },
     "Sir Gareth": {
       "market": 2.68
     },
@@ -1056,9 +1059,6 @@
     },
     "Red Desert (Preconstructed Deck)": {
       "market": 2.54
-    },
-    "Conqueror Worm": {
-      "market": 0.72
     },
     "Legion of Gall": {
       "market": 2.49
@@ -1207,6 +1207,9 @@
     "Demonic Contract": {
       "market": 1.35
     },
+    "Askelon Phoenix": {
+      "market": 0.41
+    },
     "Unlikely Alliance": {
       "market": 0.5
     },
@@ -1217,9 +1220,6 @@
       "market": 0.69
     },
     "Colicky Dragonettes": {
-      "market": 0.41
-    },
-    "Askelon Phoenix": {
       "market": 0.41
     },
     "Poison Nova": {
@@ -1459,6 +1459,9 @@
     "Sneak Thief": {
       "market": 0.48
     },
+    "Giant Shark": {
+      "market": 0.27
+    },
     "Puppet Master": {
       "market": 0.33
     },
@@ -1476,9 +1479,6 @@
     },
     "Battlefield": {
       "market": 0.33
-    },
-    "Giant Shark": {
-      "market": 0.27
     },
     "Undertaker Engine": {
       "market": 0.36
@@ -1618,9 +1618,6 @@
     "Cursed Land": {
       "market": 0.51
     },
-    "Hyperparasite": {
-      "market": 0.51
-    },
     "Call to War": {
       "market": 0.18
     },
@@ -1691,6 +1688,9 @@
       "market": 0.49
     },
     "Hemogoblin": {
+      "market": 0.49
+    },
+    "Hyperparasite": {
       "market": 0.49
     },
     "Lone Tower": {
@@ -1786,6 +1786,9 @@
     "Apply Alkahest": {
       "market": 0.43
     },
+    "Bane Widow": {
+      "market": 0.16
+    },
     "Chain Lightning": {
       "market": 0.2
     },
@@ -1818,9 +1821,6 @@
     },
     "False Idol": {
       "market": 0.41
-    },
-    "Bane Widow": {
-      "market": 0.16
     },
     "Evil Presence": {
       "market": 0.27
@@ -1970,7 +1970,7 @@
       "market": 0.17
     },
     "Phase Assassin": {
-      "market": 0.35
+      "market": 0.34
     },
     "Remote Desert": {
       "market": 0.17
@@ -2099,7 +2099,7 @@
       "market": 0.34
     },
     "Blaze": {
-      "market": 0.27
+      "market": 0.26
     },
     "Psionic Blast": {
       "market": 0.15
@@ -2662,9 +2662,6 @@
     "Scent Hounds": {
       "market": 0.11
     },
-    "Sedge Crabs": {
-      "market": 0.06
-    },
     "Sirocco Scorpions": {
       "market": 0.1
     },
@@ -2745,6 +2742,9 @@
     },
     "Polar Bears": {
       "market": 0.12
+    },
+    "Sedge Crabs": {
+      "market": 0.06
     },
     "Attack by Night": {
       "market": 0.16
@@ -3610,7 +3610,7 @@
       "market": 26.05
     },
     "Grim Reaper": {
-      "market": 36.54
+      "market": 35.73
     },
     "River of Flame": {
       "market": 70.93
@@ -4053,9 +4053,6 @@
     "Diluvian Kraken": {
       "market": 5.49
     },
-    "Plague of Frogs": {
-      "market": 88.11
-    },
     "City of Traitors": {
       "market": 87.88
     },
@@ -4064,6 +4061,9 @@
     },
     "Sea of Ash": {
       "market": 86.93
+    },
+    "Plague of Frogs": {
+      "market": 86.46
     },
     "Merlin": {
       "market": 85.92
@@ -5487,11 +5487,11 @@
     "Sea Serpent": {
       "market": 0.89
     },
-    "Arcane Barrage": {
-      "market": 9.21
-    },
     "Panpipes of Pnom": {
       "market": 9.21
+    },
+    "Arcane Barrage": {
+      "market": 9.19
     },
     "Savior": {
       "market": 9.19
@@ -6774,13 +6774,13 @@
       "market": 172.21
     },
     "Arthurian Legends Booster Box": {
-      "market": 117.11
+      "market": 116.75
     },
     "Druid (Box Topper) (Foil)": {
       "market": 101
     },
     "Frost Mage vs Lavamancer Box": {
-      "market": 94.94
+      "market": 94.51
     },
     "Death's Door (Foil) (Pledge Pack)": {
       "market": 85
@@ -7155,15 +7155,15 @@
         "standard": 83.76
       }
     },
-    "Avatar of Air (Preconstructed Deck)": {
-      "Alpha": {
-        "standard": 398.33
-      }
-    },
     "Aino": {
       "Gothic": {
         "foil": 393.97,
         "standard": 55.13
+      }
+    },
+    "Avatar of Air (Preconstructed Deck)": {
+      "Alpha": {
+        "standard": 390.55
       }
     },
     "Magician": {
@@ -7290,7 +7290,7 @@
         "standard": 21.35
       },
       "Beta": {
-        "foil": 36.54,
+        "foil": 35.73,
         "standard": 6.53
       }
     },
@@ -7483,7 +7483,7 @@
       },
       "Beta": {
         "foil": 15.62,
-        "standard": 2.56
+        "standard": 2.54
       }
     },
     "Tadpole Pool": {
@@ -7801,7 +7801,7 @@
       },
       "Beta": {
         "foil": 13.85,
-        "standard": 1.12
+        "standard": 1.17
       }
     },
     "The Green Knight": {
@@ -8118,7 +8118,7 @@
       },
       "Beta": {
         "foil": 67.48,
-        "standard": 3.24
+        "standard": 3.25
       }
     },
     "Sinkhole": {
@@ -8166,7 +8166,7 @@
       },
       "Beta": {
         "foil": 38.92,
-        "standard": 2.44
+        "standard": 2.45
       }
     },
     "Highland Princess": {
@@ -8297,7 +8297,7 @@
       },
       "Beta": {
         "foil": 29,
-        "standard": 2.77
+        "standard": 2.78
       }
     },
     "Saint of Redemption": {
@@ -8337,7 +8337,7 @@
       },
       "Beta": {
         "foil": 28.89,
-        "standard": 1.35
+        "standard": 1.33
       }
     },
     "Book of the Dead": {
@@ -8496,15 +8496,6 @@
         "standard": 0.5
       }
     },
-    "Plague of Frogs": {
-      "Beta": {
-        "foil": 88.11,
-        "standard": 14.45
-      },
-      "Alpha": {
-        "standard": 33.54
-      }
-    },
     "City of Traitors": {
       "Gothic": {
         "foil": 87.88,
@@ -8521,6 +8512,15 @@
       "Gothic": {
         "foil": 86.93,
         "standard": 8.08
+      }
+    },
+    "Plague of Frogs": {
+      "Beta": {
+        "foil": 86.46,
+        "standard": 14.45
+      },
+      "Alpha": {
+        "standard": 33.54
       }
     },
     "Merlin": {
@@ -8572,7 +8572,7 @@
       },
       "Beta": {
         "foil": 22.51,
-        "standard": 1.47
+        "standard": 1.46
       }
     },
     "Root Spider": {
@@ -8594,7 +8594,7 @@
     "Kor Crematory": {
       "Gothic": {
         "foil": 80.92,
-        "standard": 15.48
+        "standard": 15.28
       }
     },
     "Lighthouse": {
@@ -8662,7 +8662,7 @@
     "Plate of the Whale": {
       "Gothic": {
         "foil": 75.73,
-        "standard": 4.17
+        "standard": 4.11
       }
     },
     "Valley of Delight": {
@@ -8690,7 +8690,7 @@
     "Sir Galahad": {
       "Arthurian Legends": {
         "foil": 74.55,
-        "standard": 15.26
+        "standard": 15.32
       }
     },
     "Vivien the Enchantress": {
@@ -9168,7 +9168,7 @@
     "Askelon Phoenix": {
       "Alpha": {
         "foil": 54.69,
-        "standard": 1.26
+        "standard": 1.34
       },
       "Beta": {
         "foil": 10.8,
@@ -9188,7 +9188,7 @@
     "Sir Lancelot": {
       "Arthurian Legends": {
         "foil": 53.79,
-        "standard": 4.83
+        "standard": 4.82
       }
     },
     "Highland Falconer": {
@@ -9238,7 +9238,7 @@
       },
       "Beta": {
         "foil": 12.49,
-        "standard": 2.92
+        "standard": 2.91
       }
     },
     "Craterize": {
@@ -9382,7 +9382,7 @@
     "Conqueror Worm": {
       "Alpha": {
         "foil": 47.99,
-        "standard": 2.52
+        "standard": 2.69
       },
       "Beta": {
         "foil": 5.29,
@@ -10172,7 +10172,7 @@
     "Giant Shark": {
       "Alpha": {
         "foil": 30.66,
-        "standard": 0.71
+        "standard": 0.79
       },
       "Beta": {
         "foil": 3.39,
@@ -10403,7 +10403,7 @@
     "Hyperparasite": {
       "Gothic": {
         "foil": 26.56,
-        "standard": 0.51
+        "standard": 0.49
       }
     },
     "Bedrock": {
@@ -10626,7 +10626,7 @@
       },
       "Beta": {
         "foil": 3,
-        "standard": 0.27
+        "standard": 0.26
       }
     },
     "Flood": {
@@ -11408,7 +11408,7 @@
       },
       "Beta": {
         "foil": 6.59,
-        "standard": 0.35
+        "standard": 0.34
       }
     },
     "House Arn Bannerman": {
@@ -12108,7 +12108,7 @@
     "Bane Widow": {
       "Alpha": {
         "foil": 11,
-        "standard": 0.4
+        "standard": 0.42
       },
       "Beta": {
         "foil": 1.76,
@@ -12538,16 +12538,16 @@
         "standard": 0.05
       }
     },
-    "Arcane Barrage": {
-      "Arthurian Legends": {
-        "foil": 9.21,
-        "standard": 1.62
-      }
-    },
     "Panpipes of Pnom": {
       "Gothic": {
         "foil": 9.21,
         "standard": 0.4
+      }
+    },
+    "Arcane Barrage": {
+      "Arthurian Legends": {
+        "foil": 9.19,
+        "standard": 1.62
       }
     },
     "Wild Fanatic": {
@@ -12640,7 +12640,7 @@
     "Sedge Crabs": {
       "Alpha": {
         "foil": 8.8,
-        "standard": 0.17
+        "standard": 0.16
       },
       "Beta": {
         "foil": 0.8,
