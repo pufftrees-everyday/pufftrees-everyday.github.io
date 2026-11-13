@@ -1,5 +1,5 @@
 {
-  "generated": "2026-11-13T11:13:54.204Z",
+  "generated": "2026-11-13T19:51:54.424Z",
   "source": "JustTCG (justtcg.com)",
   "game": "Sorcery: Contested Realm",
   "counts": {
@@ -389,7 +389,7 @@
       "market": 7
     },
     "Sir Galahad": {
-      "market": 15.32
+      "market": 15.37
     },
     "Kor Crematory": {
       "market": 15.28
@@ -485,7 +485,7 @@
       "market": 5.35
     },
     "River of Flame": {
-      "market": 7.59
+      "market": 7.52
     },
     "Kiss of Judas": {
       "market": 11.3
@@ -676,14 +676,14 @@
     "Vaults of Zul": {
       "market": 1.22
     },
+    "Queen Guinevere": {
+      "market": 6.05
+    },
     "Boulevard of Bones": {
       "market": 6.05
     },
     "Rift Valley": {
       "market": 3.58
-    },
-    "Queen Guinevere": {
-      "market": 6.02
     },
     "Queen of Midland (Preconstructed Deck)": {
       "market": 5.95
@@ -820,9 +820,6 @@
     "Bodach Bogeyman": {
       "market": 4.59
     },
-    "The Faerie Queene": {
-      "market": 4.51
-    },
     "Hellstar": {
       "market": 4.51
     },
@@ -834,6 +831,9 @@
     },
     "Deathspeaker": {
       "market": 0.8
+    },
+    "The Faerie Queene": {
+      "market": 4.46
     },
     "Howl from Beyond": {
       "market": 4.44
@@ -853,17 +853,17 @@
     "Midland Army": {
       "market": 1.54
     },
-    "Torshammar Trinket": {
-      "market": 1.94
-    },
     "Sacred Stag": {
       "market": 4.26
     },
-    "All Mortals Gone": {
-      "market": 4.21
-    },
     "Ruins": {
       "market": 3.24
+    },
+    "Torshammar Trinket": {
+      "market": 1.94
+    },
+    "All Mortals Gone": {
+      "market": 4.18
     },
     "Plate of the Whale": {
       "market": 4.11
@@ -968,7 +968,7 @@
       "market": 1.48
     },
     "Renatus Trueblood": {
-      "market": 3.29
+      "market": 3.28
     },
     "Grey Wolves": {
       "market": 1
@@ -1060,9 +1060,6 @@
     "Red Desert (Preconstructed Deck)": {
       "market": 2.54
     },
-    "Legion of Gall": {
-      "market": 2.47
-    },
     "Bull Demons of Adum (Preconstructed Deck)": {
       "market": 2.45
     },
@@ -1074,6 +1071,9 @@
     },
     "Seer": {
       "market": 0.83
+    },
+    "Legion of Gall": {
+      "market": 2.41
     },
     "Panorama Manticore": {
       "market": 0.8
@@ -1324,9 +1324,6 @@
     "Gyre Hippogriffs (Preconstructed Deck)": {
       "market": 1
     },
-    "Heirloom Lost": {
-      "market": 1
-    },
     "Ironclad": {
       "market": 1
     },
@@ -1353,6 +1350,9 @@
     },
     "Undertow (Preconstructed Deck)": {
       "market": 0.99
+    },
+    "Yokai Kappas": {
+      "market": 0.33
     },
     "Crave Golem": {
       "market": 0.14
@@ -1429,6 +1429,9 @@
     "Ersatz Platz": {
       "market": 0.89
     },
+    "Heirloom Lost": {
+      "market": 0.89
+    },
     "Ghost Ship": {
       "market": 0.6
     },
@@ -1449,9 +1452,6 @@
     },
     "Thunderstorm": {
       "market": 0.25
-    },
-    "Yokai Kappas": {
-      "market": 0.33
     },
     "Bureau of Occult Control": {
       "market": 0.83
@@ -1484,7 +1484,7 @@
       "market": 0.33
     },
     "Undertaker Engine": {
-      "market": 0.36
+      "market": 0.39
     },
     "No Man's Land": {
       "market": 0.7
@@ -6150,14 +6150,14 @@
     "Hauntless Head": {
       "market": 2.75
     },
+    "Yellow Knight": {
+      "market": 2.67
+    },
     "Blessed Well": {
       "market": 2.67
     },
     "Order of the White Wing": {
       "market": 2.67
-    },
-    "Yellow Knight": {
-      "market": 2.64
     },
     "Accursed Tower": {
       "market": 2.62
@@ -6309,14 +6309,14 @@
     "Black Knight": {
       "market": 1.9
     },
+    "Finwife": {
+      "market": 1.9
+    },
     "Pookas": {
       "market": 1.88
     },
     "Sugarplum Pixies": {
       "market": 1.88
-    },
-    "Finwife": {
-      "market": 1.86
     },
     "Road to Perdition": {
       "market": 1.86
@@ -6768,7 +6768,7 @@
       "market": 202.35
     },
     "Beta - Booster Box": {
-      "market": 182.77
+      "market": 182.41
     },
     "Gothic Booster Box": {
       "market": 172.34
@@ -6780,7 +6780,7 @@
       "market": 101
     },
     "Frost Mage vs Lavamancer Box": {
-      "market": 93.74
+      "market": 93.72
     },
     "Death's Door (Foil) (Pledge Pack)": {
       "market": 85
@@ -6795,7 +6795,7 @@
       "market": 41.47
     },
     "The Four Elementals Preconstructed Deck Box (Beta)": {
-      "market": 40.84
+      "market": 40.47
     },
     "Guile Sirens (Pledge Pack)": {
       "market": 31.35
@@ -7301,7 +7301,7 @@
       },
       "Beta": {
         "foil": 70.93,
-        "standard": 7.59
+        "standard": 7.52
       }
     },
     "Orb of Ba'al Berith": {
@@ -8690,7 +8690,7 @@
     "Sir Galahad": {
       "Arthurian Legends": {
         "foil": 74.55,
-        "standard": 15.32
+        "standard": 15.37
       }
     },
     "Vivien the Enchantress": {
@@ -8702,7 +8702,7 @@
     "Autumn Unicorn": {
       "Alpha": {
         "foil": 74.17,
-        "standard": 0.91
+        "standard": 0.9
       },
       "Beta": {
         "foil": 14.91,
@@ -8804,7 +8804,7 @@
     "Legion of Gall": {
       "Gothic": {
         "foil": 70,
-        "standard": 2.47
+        "standard": 2.41
       }
     },
     "Darkest Dungeon": {
@@ -8999,7 +8999,7 @@
     "Queen Guinevere": {
       "Arthurian Legends": {
         "foil": 61.84,
-        "standard": 6.02
+        "standard": 6.05
       }
     },
     "Blood Mana": {
@@ -9266,7 +9266,7 @@
     "Torshammar Trinket": {
       "Alpha": {
         "foil": 50.33,
-        "standard": 4.26
+        "standard": 4.19
       },
       "Beta": {
         "foil": 19.09,
@@ -9320,7 +9320,7 @@
     "All Mortals Gone": {
       "Gothic": {
         "foil": 49.52,
-        "standard": 4.21
+        "standard": 4.18
       }
     },
     "Haystack": {
@@ -9365,7 +9365,7 @@
       },
       "Beta": {
         "foil": 2.77,
-        "standard": 0.36
+        "standard": 0.39
       }
     },
     "Overflowing Court": {
@@ -9615,7 +9615,7 @@
     "The Faerie Queene": {
       "Arthurian Legends": {
         "foil": 40.93,
-        "standard": 4.51
+        "standard": 4.46
       }
     },
     "Sphere of Animosity": {
@@ -10493,7 +10493,7 @@
     "Renatus Trueblood": {
       "Gothic": {
         "foil": 25.06,
-        "standard": 3.29
+        "standard": 3.28
       }
     },
     "Unravel": {
@@ -10570,7 +10570,7 @@
     "Heirloom Lost": {
       "Gothic": {
         "foil": 24.14,
-        "standard": 1
+        "standard": 0.89
       }
     },
     "Muck Lampreys": {
@@ -13845,7 +13845,7 @@
         "standard": 0.33
       },
       "Alpha": {
-        "standard": 0.84
+        "standard": 0.96
       }
     },
     "Raise Militia": {
@@ -14025,6 +14025,12 @@
         "standard": 2.72
       }
     },
+    "Yellow Knight": {
+      "Arthurian Legends": {
+        "foil": 2.67,
+        "standard": 0.2
+      }
+    },
     "Blessed Well": {
       "Gothic": {
         "foil": 2.67,
@@ -14035,12 +14041,6 @@
       "Gothic": {
         "foil": 2.67,
         "standard": 0.19
-      }
-    },
-    "Yellow Knight": {
-      "Arthurian Legends": {
-        "foil": 2.64,
-        "standard": 0.2
       }
     },
     "Accursed Tower": {
@@ -14372,6 +14372,12 @@
         "standard": 0.18
       }
     },
+    "Finwife": {
+      "Arthurian Legends": {
+        "foil": 1.9,
+        "standard": 0.11
+      }
+    },
     "Nightmare (Preconstructed Deck)": {
       "Alpha": {
         "standard": 1.89
@@ -14392,12 +14398,6 @@
     "Sacred Scarabs (Preconstructed Deck)": {
       "Alpha": {
         "standard": 1.87
-      }
-    },
-    "Finwife": {
-      "Arthurian Legends": {
-        "foil": 1.86,
-        "standard": 0.11
       }
     },
     "Road to Perdition": {
