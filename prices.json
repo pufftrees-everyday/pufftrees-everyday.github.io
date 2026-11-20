@@ -1,5 +1,5 @@
 {
-  "generated": "2026-11-20T11:54:21.101Z",
+  "generated": "2026-11-20T20:31:31.540Z",
   "source": "JustTCG (justtcg.com)",
   "game": "Sorcery: Contested Realm",
   "counts": {
@@ -104,7 +104,7 @@
       "market": 71
     },
     "Key to the City": {
-      "market": 69.02
+      "market": 68.94
     },
     "Balor of the Evil Eye": {
       "market": 66.03
@@ -170,7 +170,7 @@
       "market": 28.53
     },
     "Prophets of Doom Preconstructed Decks": {
-      "market": 38.76
+      "market": 38.79
     },
     "Vatn Draconis": {
       "market": 38.6
@@ -382,14 +382,14 @@
     "Sow the Earth": {
       "market": 15.8
     },
-    "Amulet of Niniane": {
-      "market": 15.6
-    },
     "Lady Iseult": {
       "market": 15.6
     },
     "Tadpole Pool": {
       "market": 12.9
+    },
+    "Amulet of Niniane": {
+      "market": 15.54
     },
     "Sir Galahad": {
       "market": 15.49
@@ -547,6 +547,9 @@
     "Infiltrate": {
       "market": 8.15
     },
+    "Terraform": {
+      "market": 10.5
+    },
     "Jormungand": {
       "market": 10.25
     },
@@ -557,9 +560,6 @@
       "market": 10
     },
     "Rite of Eruption": {
-      "market": 10
-    },
-    "Terraform": {
       "market": 10
     },
     "Gargantula": {
@@ -746,7 +746,7 @@
       "market": 2.93
     },
     "Sturmgeist": {
-      "market": 5.88
+      "market": 5.86
     },
     "Selfsame Simulacrum": {
       "market": 2.33
@@ -871,11 +871,11 @@
     "I Am Colossus!": {
       "market": 4.5
     },
+    "Fail-not Bow": {
+      "market": 4.48
+    },
     "The Faerie Queene": {
       "market": 4.46
-    },
-    "Fail-not Bow": {
-      "market": 4.44
     },
     "Rebecks": {
       "market": 4.44
@@ -1015,20 +1015,23 @@
     "Polar Explorers": {
       "market": 1.37
     },
+    "Hailstriker": {
+      "market": 3.33
+    },
     "Oasis": {
       "market": 1.02
     },
     "Crossroads": {
       "market": 1.46
     },
-    "Renatus Trueblood": {
-      "market": 3.19
-    },
     "Rest in Peace": {
       "market": 1
     },
     "Battlemage": {
       "market": 1.12
+    },
+    "Renatus Trueblood": {
+      "market": 3.17
     },
     "Vesuvius (Preconstructed Deck)": {
       "market": 3.14
@@ -1038,6 +1041,12 @@
     },
     "Whirling Blades": {
       "market": 3.06
+    },
+    "Frost Elemental": {
+      "market": 3.04
+    },
+    "Shatter": {
+      "market": 3.04
     },
     "Avalanche": {
       "market": 3
@@ -1050,6 +1059,9 @@
     },
     "Lifewish": {
       "market": 3
+    },
+    "Frostbolt": {
+      "market": 2.99
     },
     "Armageddon": {
       "market": 2.99
@@ -1130,9 +1142,6 @@
       "market": 2.5
     },
     "Ash of Effort": {
-      "market": 2.5
-    },
-    "Hailstriker": {
       "market": 2.5
     },
     "Humming Hummocks": {
@@ -1237,9 +1246,6 @@
     "Vril Revenant": {
       "market": 0.56
     },
-    "Assorted Animals": {
-      "market": 1.6
-    },
     "Black Obelisk": {
       "market": 0.6
     },
@@ -1248,6 +1254,9 @@
     },
     "Chains of Prometheus": {
       "market": 0.62
+    },
+    "Assorted Animals": {
+      "market": 1.6
     },
     "Edge of the World": {
       "market": 0.52
@@ -1281,9 +1290,6 @@
     },
     "Nimbus Jinn": {
       "market": 0.52
-    },
-    "Frostbolt": {
-      "market": 1.5
     },
     "Payload Trebuchet": {
       "market": 0.24
@@ -1372,6 +1378,9 @@
     "Magnetic Muzzle": {
       "market": 0.28
     },
+    "Vindictive Nation": {
+      "market": 1.15
+    },
     "Drums of Doom": {
       "market": 0.65
     },
@@ -1381,9 +1390,6 @@
     "Sisters of Silence": {
       "market": 0.4
     },
-    "Vindictive Nation": {
-      "market": 1.14
-    },
     "Divine Healing": {
       "market": 0.37
     },
@@ -1392,6 +1398,9 @@
     },
     "Wraetannis Titan": {
       "market": 0.5
+    },
+    "Runeling": {
+      "market": 1.09
     },
     "Court Jester": {
       "market": 0.28
@@ -1405,9 +1414,6 @@
     "Wicked Witch": {
       "market": 0.42
     },
-    "Frost Elemental": {
-      "market": 1.07
-    },
     "Ground Slam": {
       "market": 1.07
     },
@@ -1415,12 +1421,6 @@
       "market": 1.07
     },
     "Reed Cord Measurer": {
-      "market": 1.07
-    },
-    "Runeling": {
-      "market": 1.07
-    },
-    "Shatter": {
       "market": 1.07
     },
     "Seasoned Sellsword": {
@@ -1442,7 +1442,7 @@
       "market": 0.52
     },
     "Call of the Sea": {
-      "market": 1.02
+      "market": 0.98
     },
     "Bedrock": {
       "market": 0.24
@@ -1606,11 +1606,11 @@
     "Ironclad": {
       "market": 0.83
     },
-    "Orm Infestor": {
-      "market": 0.83
-    },
     "Sneak Thief": {
       "market": 0.48
+    },
+    "Orm Infestor": {
+      "market": 0.82
     },
     "Maze Minotaur": {
       "market": 0.38
@@ -2834,7 +2834,7 @@
       "market": 0.08
     },
     "Scarecrow": {
-      "market": 0.05
+      "market": 0.07
     },
     "Spectral Stalker": {
       "market": 0.13
@@ -4636,7 +4636,7 @@
       "market": 40.67
     },
     "Magellan Globe": {
-      "market": 4.93
+      "market": 4.97
     },
     "Bull Demons of Adum": {
       "market": 4.2
@@ -5853,9 +5853,6 @@
     "Kelp Cavern": {
       "market": 6.6
     },
-    "Sir Bedivere": {
-      "market": 6.56
-    },
     "Corpse Explosion": {
       "market": 6.55
     },
@@ -5864,6 +5861,9 @@
     },
     "Mortal Soil": {
       "market": 6.52
+    },
+    "Sir Bedivere": {
+      "market": 6.49
     },
     "Smite": {
       "market": 6.48
@@ -6483,9 +6483,6 @@
     "Haystack": {
       "market": 1.79
     },
-    "Scatter": {
-      "market": 1.78
-    },
     "Blue Knight": {
       "market": 1.77
     },
@@ -6503,6 +6500,9 @@
     },
     "Exhume": {
       "market": 1.7
+    },
+    "Scatter": {
+      "market": 1.69
     },
     "Treetop Hideout": {
       "market": 1.68
@@ -6906,7 +6906,7 @@
       "market": 748.75
     },
     "Dragonlord Box": {
-      "market": 492.58
+      "market": 475.56
     },
     "Sorcery: Contested Realm - Pledge Pack": {
       "market": 201.53
@@ -6918,10 +6918,10 @@
       "market": 171.55
     },
     "Frost Mage vs Lavamancer Box": {
-      "market": 120.06
+      "market": 117.59
     },
     "Arthurian Legends Booster Box": {
-      "market": 116.37
+      "market": 116.34
     },
     "Druid (Box Topper) (Foil)": {
       "market": 101
@@ -7804,7 +7804,7 @@
     "Key to the City": {
       "Gothic": {
         "foil": 220.63,
-        "standard": 69.02
+        "standard": 68.94
       }
     },
     "Lilith": {
@@ -8565,7 +8565,7 @@
     "Amulet of Niniane": {
       "Arthurian Legends": {
         "foil": 92.71,
-        "standard": 15.6
+        "standard": 15.54
       }
     },
     "Megamoeba": {
@@ -8806,7 +8806,7 @@
     "Sturmgeist": {
       "Gothic": {
         "foil": 77.13,
-        "standard": 5.88
+        "standard": 5.86
       }
     },
     "Grapple Shot": {
@@ -9272,7 +9272,7 @@
     "Assorted Animals": {
       "Alpha": {
         "foil": 56.48,
-        "standard": 1.86
+        "standard": 1.8
       },
       "Beta": {
         "foil": 11,
@@ -9783,7 +9783,7 @@
         "standard": 2.17
       },
       "Beta": {
-        "foil": 4.93,
+        "foil": 4.97,
         "standard": 0.71
       }
     },
@@ -9910,7 +9910,7 @@
     },
     "Prophets of Doom Preconstructed Decks": {
       "Gothic": {
-        "standard": 38.76
+        "standard": 38.79
       }
     },
     "East-West Dragon": {
@@ -10026,7 +10026,7 @@
     "Fail-not Bow": {
       "Arthurian Legends": {
         "foil": 36.99,
-        "standard": 4.44
+        "standard": 4.48
       }
     },
     "Recurring Specter": {
@@ -10486,6 +10486,9 @@
       "Gothic": {
         "foil": 27.74,
         "standard": 1.02
+      },
+      "Frost Mage vs Lavamancer": {
+        "standard": 0.98
       }
     },
     "Cage of Sidrak": {
@@ -10667,7 +10670,7 @@
     "Renatus Trueblood": {
       "Gothic": {
         "foil": 25.05,
-        "standard": 3.19
+        "standard": 3.17
       }
     },
     "Unravel": {
@@ -11116,7 +11119,7 @@
     "Vindictive Nation": {
       "Gothic": {
         "foil": 19.78,
-        "standard": 1.14
+        "standard": 1.15
       }
     },
     "Acid Rain": {
@@ -12119,7 +12122,7 @@
     "Orm Infestor": {
       "Gothic": {
         "foil": 12.46,
-        "standard": 0.83
+        "standard": 0.82
       }
     },
     "Bleeding Skull": {
@@ -12237,7 +12240,7 @@
       },
       "Beta": {
         "foil": 1.07,
-        "standard": 0.05
+        "standard": 0.07
       }
     },
     "Exorcism": {
@@ -12396,6 +12399,11 @@
         "standard": 0.17
       }
     },
+    "Terraform": {
+      "Frost Mage vs Lavamancer": {
+        "standard": 10.5
+      }
+    },
     "Displace": {
       "Gothic": {
         "foil": 10.5,
@@ -12527,11 +12535,6 @@
       }
     },
     "Rite of Eruption": {
-      "Frost Mage vs Lavamancer": {
-        "standard": 10
-      }
-    },
-    "Terraform": {
       "Frost Mage vs Lavamancer": {
         "standard": 10
       }
@@ -13278,12 +13281,6 @@
         "standard": 1.04
       }
     },
-    "Sir Bedivere": {
-      "Arthurian Legends": {
-        "foil": 6.56,
-        "standard": 0.33
-      }
-    },
     "Corpse Explosion": {
       "Gothic": {
         "foil": 6.55,
@@ -13300,6 +13297,12 @@
       "Gothic": {
         "foil": 6.52,
         "standard": 0.35
+      }
+    },
+    "Sir Bedivere": {
+      "Arthurian Legends": {
+        "foil": 6.49,
+        "standard": 0.33
       }
     },
     "Smite": {
@@ -13971,6 +13974,11 @@
         "standard": 0.1
       }
     },
+    "Hailstriker": {
+      "Frost Mage vs Lavamancer": {
+        "standard": 3.33
+      }
+    },
     "Annual Fair": {
       "Arthurian Legends": {
         "foil": 3.3,
@@ -14054,6 +14062,16 @@
         "standard": 0.25
       }
     },
+    "Frost Elemental": {
+      "Frost Mage vs Lavamancer": {
+        "standard": 3.04
+      }
+    },
+    "Shatter": {
+      "Frost Mage vs Lavamancer": {
+        "standard": 3.04
+      }
+    },
     "Zombie Horde": {
       "Gothic": {
         "foil": 3.04,
@@ -14124,6 +14142,11 @@
       "Arthurian Legends": {
         "foil": 2.99,
         "standard": 0.3
+      }
+    },
+    "Frostbolt": {
+      "Frost Mage vs Lavamancer": {
+        "standard": 2.99
       }
     },
     "Slimy Mutants": {
@@ -14359,11 +14382,6 @@
       }
     },
     "Ash of Effort": {
-      "Frost Mage vs Lavamancer": {
-        "standard": 2.5
-      }
-    },
-    "Hailstriker": {
       "Frost Mage vs Lavamancer": {
         "standard": 2.5
       }
@@ -14756,12 +14774,6 @@
         "standard": 0.79
       }
     },
-    "Scatter": {
-      "Gothic": {
-        "foil": 1.78,
-        "standard": 0.21
-      }
-    },
     "Blue Knight": {
       "Arthurian Legends": {
         "foil": 1.77,
@@ -14796,6 +14808,12 @@
       "Gothic": {
         "foil": 1.7,
         "standard": 0.17
+      }
+    },
+    "Scatter": {
+      "Gothic": {
+        "foil": 1.69,
+        "standard": 0.21
       }
     },
     "Treetop Hideout": {
@@ -14904,11 +14922,6 @@
       "Gothic": {
         "foil": 1.52,
         "standard": 0.1
-      }
-    },
-    "Frostbolt": {
-      "Frost Mage vs Lavamancer": {
-        "standard": 1.5
       }
     },
     "Gravedigger": {
@@ -15198,6 +15211,11 @@
         "standard": 0.15
       }
     },
+    "Runeling": {
+      "Frost Mage vs Lavamancer": {
+        "standard": 1.09
+      }
+    },
     "Ghost Town": {
       "Gothic": {
         "foil": 1.08,
@@ -15216,11 +15234,6 @@
         "standard": 0.11
       }
     },
-    "Frost Elemental": {
-      "Frost Mage vs Lavamancer": {
-        "standard": 1.07
-      }
-    },
     "Ground Slam": {
       "Frost Mage vs Lavamancer": {
         "standard": 1.07
@@ -15232,16 +15245,6 @@
       }
     },
     "Reed Cord Measurer": {
-      "Frost Mage vs Lavamancer": {
-        "standard": 1.07
-      }
-    },
-    "Runeling": {
-      "Frost Mage vs Lavamancer": {
-        "standard": 1.07
-      }
-    },
-    "Shatter": {
       "Frost Mage vs Lavamancer": {
         "standard": 1.07
       }
